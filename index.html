@@ -286,20 +286,19 @@ async function sendAIMessage() {
     }
 }
 
-// Data Management Logic
+// Data Management Logic (FULL SYNC)
 function exportData() {
     const data = {};
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key.startsWith('dim_')) {
-            data[key] = localStorage.getItem(key);
-        }
+        // Exportamos TODO para asegurar que no falte ningún módulo
+        data[key] = localStorage.getItem(key);
     }
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `backup_dimalcco_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `backup_completo_dimalcco_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
 }
 
