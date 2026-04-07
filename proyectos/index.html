@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Comercial y Producción | DIMALCCO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: rgba(24, 24, 27, 0.7);
+            --bg-kanban: rgba(255, 255, 255, 0.02);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #8b5cf6;
+            --accent-soft: rgba(139, 92, 246, 0.12);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; overflow: hidden; }
+
+        .sidebar { width: 280px; background: rgba(15, 15, 18, 0.95); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 2rem 1.5rem; backdrop-filter: blur(20px); }
+        .brand { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 3rem; }
+        .brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent), #7c3aed); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+        .brand h2 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+
+        .nav-menu { flex-grow: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+        .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; border-radius: 12px; color: var(--text-muted); text-decoration: none; transition: all 0.2s; font-weight: 500; font-size: 0.95rem; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left;}
+        .nav-item:hover, .nav-item.active { background: var(--accent-soft); color: var(--accent); }
+        .nav-item-content { display: flex; align-items: center; gap: 0.75rem; }
+        .nav-item i { font-size: 1.25rem; }
+        .badge-count { background: var(--accent); color: white; font-size: 0.7rem; font-weight: 800; padding: 2px 6px; border-radius: 10px; }
+
+        .sidebar-footer { margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border); }
+        .back-link { display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+        .back-link:hover { color: white; }
+
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 2.5rem 3rem; display: flex; flex-direction: column; }
+        .top-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem; }
+        .top-header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.25rem; }
+        .top-header p { color: var(--text-muted); font-size: 1rem; }
+
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; border: none; }
+        .btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25); }
+        .btn-primary:hover { background: #7c3aed; transform: translateY(-2px); }
+        .btn-success { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .btn-success:hover { background: rgba(16, 185, 129, 0.25); }
+        .btn-danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-outline:hover { background: var(--bg-card); color: white; }
+
+        /* Board Styles */
+        .board-container { display: flex; gap: 1.5rem; overflow-x: auto; padding-bottom: 1rem; flex-grow: 1; align-items: flex-start; }
+        .board-column { flex: 0 0 320px; background: var(--bg-kanban); border: 1px solid var(--border); border-radius: 16px; display: flex; flex-direction: column; max-height: 100%; }
+        .column-header { padding: 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .column-title { font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem; }
+        .column-count { font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 12px; color: var(--text-muted); }
+        
+        .column-body { padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; flex-grow: 1; min-height: 150px; }
+
+        /* Card Styles */
+        .task-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; cursor: grab; transition: transform 0.2s, border-color 0.2s; position: relative; }
+        .task-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .task-card:active { cursor: grabbing; transform: scale(0.98); }
+        
+        .task-meta { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+        .task-tag { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.05em; }
+        .tag-cli { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+        .tag-op { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        
+        .task-date { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
+        .task-title { font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem; line-height: 1.3; }
+        .task-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.4; }
+        
+        .task-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+
+        /* View toggles */
+        .view-section { display: none; height: 100%; flex-direction: column; }
+        .view-section.active { display: flex; }
+
+        /* Alert styling */
+        .alert-banner { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--danger); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; font-size: 0.9rem; }
+
+        /* Modal Settings */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background: #111827; border: 1px solid var(--border); width: 450px; border-radius: 16px; padding: 2rem; }
+        .modal-header { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+        .form-control { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 0.75rem; border-radius: 8px; font-family: inherit; }
+        .form-control:focus { outline: none; border-color: var(--accent); }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="ph-bold ph-strategy"></i></div>
+            <h2>ProyeOps</h2>
+        </div>
+        <nav class="nav-menu">
+            <div style="font-size: 0.75rem; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em; padding-left: 0.5rem;">Flujos de Trabajo</div>
+            
+            <button class="nav-item active" onclick="switchView('comercial', this)">
+                <div class="nav-item-content"><i class="ph ph-handshake"></i> Área Comercial</div>
+                <span class="badge-count" id="badge-comercial">3</span>
+            </button>
+            <button class="nav-item" onclick="switchView('produccion', this)">
+                <div class="nav-item-content"><i class="ph ph-factory"></i> Producción (OPs)</div>
+                <span class="badge-count" id="badge-produccion" style="background: var(--warning)">2</span>
+            </button>
+            <button class="nav-item" onclick="switchView('informes', this)">
+                <div class="nav-item-content"><i class="ph ph-chart-bar"></i> Informes Fallidos</div>
+            </button>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="../index.html" target="_top" class="back-link"><i class="ph ph-arrow-left"></i> Volver al Workspace</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <!-- VISTA: COMERCIAL (COTIZACIONES) -->
+        <section id="view-comercial" class="view-section active">
+            <header class="top-header">
+                <div>
+                    <h1>Gestión Comercial</h1>
+                    <p>Recepción de correos, cotizaciones y aprobación de clientes.</p>
+                </div>
+                <div style="display:flex; gap:12px">
+                    <button class="btn btn-outline" onclick="alert('Se ha sincronizado la bandeja de entrada.')"><i class="ph ph-envelope-simple-open"></i> Sincronizar Correos</button>
+                    <button class="btn btn-primary" onclick="openModal('modal-cotizacion')"><i class="ph ph-plus"></i> Nueva Solicitud Manual</button>
+                </div>
+            </header>
+
+            <div class="board-container">
+                <!-- Columna 1 -->
+                <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title" style="color: var(--info);"><i class="ph-fill ph-tray"></i> Bandeja (Por Cotizar)</div>
+                        <div class="column-count">2</div>
+                    </div>
+                    <div class="column-body" id="col-solicitudes" ondragover="allowDrop(event)" ondrop="drop(event, 'solicitudes')">
+                        <div class="task-card" draggable="true" ondragstart="drag(event)" id="card-1">
+                            <div class="task-meta">
+                                <span class="task-tag tag-cli">Solicitud Muebles</span>
+                                <span class="task-date">Hace 2h</span>
+                            </div>
+                            <div class="task-title">Recepción Hotel Centro</div>
+                            <div class="task-desc">Cotizar mobiliario para la recepción principal y área de espera.</div>
+                            <div class="task-actions">
+                                <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;" onclick="moveCard('card-1', 'cotizando')">Iniciar Cotización</button>
+                            </div>
+                        </div>
+
+                        <div class="task-card" draggable="true" ondragstart="drag(event)" id="card-2">
+                            <div class="task-meta">
+                                <span class="task-tag tag-cli">Urgente</span>
+                                <span class="task-date">Ayer</span>
+                            </div>
+                            <div class="task-title">Planos Edificio Norte</div>
+                            <div class="task-desc">El cliente solicita cotización inmediata según planos adjuntos.</div>
+                            <div class="task-actions">
+                                <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;" onclick="moveCard('card-2', 'cotizando')">Iniciar Cotización</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna 2 -->
+                <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title" style="color: var(--warning);"><i class="ph-fill ph-pencil-line"></i> En Cotización</div>
+                        <div class="column-count">1</div>
+                    </div>
+                    <div class="column-body" id="col-cotizando" ondragover="allowDrop(event)" ondrop="drop(event, 'cotizando')">
+                        <div class="task-card" draggable="true" ondragstart="drag(event)" id="card-3">
+                            <div class="task-meta">
+                                <span class="task-tag tag-cli">Cotización</span>
+                                <span class="task-date">Hoy</span>
+                            </div>
+                            <div class="task-title">Armarios Residencial Sur</div>
+                            <div class="task-desc">Calculando madera y herrajes.</div>
+                            <div class="task-actions">
+                                <button class="btn btn-outline" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;" onclick="moveCard('card-3', 'enviado')"><i class="ph ph-paper-plane-tilt"></i> Enviar a Cliente</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna 3 -->
+                <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title" style="color: var(--accent);"><i class="ph-fill ph-paper-plane-right"></i> Enviada a Cliente</div>
+                        <div class="column-count">1</div>
+                    </div>
+                    <div class="column-body" id="col-enviado" ondragover="allowDrop(event)" ondrop="drop(event, 'enviado')">
+                         <div class="task-card" draggable="true" ondragstart="drag(event)" id="card-4">
+                            <div class="task-meta">
+                                <span class="task-tag tag-cli">Validación</span>
+                                <span class="task-date">Hace 3 días</span>
+                            </div>
+                            <div class="task-title">Mobiliario Oficina Piso 4</div>
+                            <div class="task-desc">Enviada Cotización #402 por $12,500,000 COP. En espera de respuesta.</div>
+                            <div class="task-actions" style="justify-content: space-between;">
+                                <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.4rem 0.6rem;" onclick="approveToOP('card-4')"><i class="ph ph-check"></i> Aprueba</button>
+                                <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.4rem 0.6rem;" onclick="rejectCotizacion('card-4')"><i class="ph ph-x"></i> Rechaza</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA: PRODUCCIÓN (OPs) -->
+        <section id="view-produccion" class="view-section">
+            <header class="top-header">
+                <div>
+                    <h1>Flujo de Producción (OP)</h1>
+                    <p>Gestión de órdenes de producción, medidas, compras y personal.</p>
+                </div>
+                <div style="display:flex; gap:12px">
+                    <button class="btn btn-primary" onclick="alert('Se ha guardado el estado de las OPs.')"><i class="ph ph-floppy-disk"></i> Guardar Tablero</button>
+                </div>
+            </header>
+
+            <div class="board-container">
+                <!-- Columna 1 -->
+                <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title" style="color: var(--warning)"><i class="ph-fill ph-clipboard-text"></i> OPs Recibidas</div>
+                        <div class="column-count">1</div>
+                    </div>
+                    <div class="column-body" id="col-op-nueva" ondragover="allowDrop(event)" ondrop="drop(event, 'op-nueva')">
+                        <div class="task-card" draggable="true" ondragstart="drag(event)" id="op-1">
+                            <div class="task-meta">
+                                <span class="task-tag tag-op">OP-1045</span>
+                                <span class="task-date">Hoy</span>
+                            </div>
+                            <div class="task-title">Cocina Integral Av. 5</div>
+                            <div class="task-desc">Orden creada. Require iniciar gestión.</div>
+                            <div class="task-actions">
+                                <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; width:100%" onclick="moveCard('op-1', 'op-medidas')">1. Verificar Medidas</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna 2 -->
+                <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title" style="color: var(--info)"><i class="ph-fill ph-ruler"></i> Verificación Medidas</div>
+                        <div class="column-count">1</div>
+                    </div>
+                    <div class="column-body" id="col-op-medidas" ondragover="allowDrop(event)" ondrop="drop(event, 'op-medidas')">
+                         <div class="task-card" draggable="true" ondragstart="drag(event)" id="op-2">
+                            <div class="task-meta">
+                                <span class="task-tag tag-op">OP-1044</span>
+                                <span class="task-date">Ayer</span>
+                            </div>
+                            <div class="task-title">Mobiliario Local Comercial</div>
+                            <div class="task-desc">Se requiere visita en sitio para rectificar planos vs realidad.</div>
+                            <div class="task-actions">
+                                <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; width:100%" onclick="moveCard('op-2', 'op-compras')">2. Solicitar Materiales</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna 3 -->
+                <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title" style="color: var(--accent)"><i class="ph-fill ph-shopping-cart"></i> Solicitud de Compras</div>
+                        <div class="column-count">0</div>
+                    </div>
+                    <div class="column-body" id="col-op-compras" ondragover="allowDrop(event)" ondrop="drop(event, 'op-compras')">
+                    </div>
+                </div>
+
+                <!-- Columna 4 -->
+                <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title" style="color: #6366f1"><i class="ph-fill ph-users"></i> Asignación Personal</div>
+                        <div class="column-count">0</div>
+                    </div>
+                    <div class="column-body" id="col-op-personal" ondragover="allowDrop(event)" ondrop="drop(event, 'op-personal')">
+                    </div>
+                </div>
+
+                 <!-- Columna 5 -->
+                 <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title" style="color: var(--text-main)"><i class="ph-fill ph-file-signature"></i> Req. Administrativos</div>
+                        <div class="column-count">0</div>
+                    </div>
+                    <div class="column-body" id="col-op-admin" ondragover="allowDrop(event)" ondrop="drop(event, 'op-admin')">
+                        <!-- Polizas, contratos -->
+                    </div>
+                </div>
+
+                 <!-- Columna 6 -->
+                 <div class="board-column">
+                    <div class="column-header">
+                        <div class="column-title" style="color: var(--success)"><i class="ph-fill ph-hammer"></i> En Producción</div>
+                        <div class="column-count">1</div>
+                    </div>
+                    <div class="column-body" id="col-op-prod" ondragover="allowDrop(event)" ondrop="drop(event, 'op-prod')">
+                         <div class="task-card" draggable="true" ondragstart="drag(event)" id="op-3">
+                            <div class="task-meta">
+                                <span class="task-tag tag-op">OP-1040</span>
+                                <span class="task-date">Hace 5 días</span>
+                            </div>
+                            <div class="task-title">Carpintería Conjunto</div>
+                            <div class="task-desc">En fabricación en planta central.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VISTA: INFORMES FALLIDOS -->
+        <section id="view-informes" class="view-section">
+            <header class="top-header">
+                <div>
+                    <h1>Cotizaciones Fallidas</h1>
+                    <p>Registro y análisis de cotizaciones rechazadas por los clientes.</p>
+                </div>
+            </header>
+            <div class="alert-banner">
+                <i class="ph-fill ph-warning" style="font-size: 1.5rem;"></i>
+                <div>
+                    <strong>Informe en desarrollo:</strong> Aquí aparecerán las cotizaciones rechazadas para análisis de motivos (precio, tiempos, etc).
+                </div>
+            </div>
+            <div class="board-column" style="width: 100%; max-width: 500px;">
+                <div class="column-header"><div class="column-title" style="color: var(--danger)">Historial de Rechazos</div></div>
+                <div class="column-body" id="col-rechazados">
+                    <!-- Cotizaciones rechazadas caen aquí -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Nueva Cotización -->
+    <div class="modal-overlay" id="modal-cotizacion">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nueva Solicitud de Cotización</h3>
+                <i class="ph ph-x" style="cursor: pointer; color: var(--text-muted);" onclick="closeModal('modal-cotizacion')"></i>
+            </div>
+            <div class="form-group">
+                <label>Cliente / Empresa *</label>
+                <input type="text" id="req-client" class="form-control" placeholder="Ej: Constructora ABC">
+            </div>
+            <div class="form-group">
+                <label>Asunto / Proyecto *</label>
+                <input type="text" id="req-title" class="form-control" placeholder="Ej: Puertas para edificio corporativo">
+            </div>
+            <div class="form-group">
+                <label>Notas / Descripción</label>
+                <textarea id="req-desc" class="form-control" rows="3" placeholder="Requerimientos iniciales según correo..."></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem;">
+                <button class="btn btn-outline" onclick="closeModal('modal-cotizacion')">Cancelar</button>
+                <button class="btn btn-primary" onclick="crearSolicitud()">Crear Solicitud</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nueva OP (Al aprobar cotización) -->
+    <div class="modal-overlay" id="modal-nueva-op">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: var(--success)">Cotización Aprobada</h3>
+                <i class="ph ph-x" style="cursor: pointer; color: var(--text-muted);" onclick="closeModal('modal-nueva-op')"></i>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.5;">El cliente ha aprobado la cotización. Se generará automáticamente una <strong>Orden de Producción (OP)</strong> y pasará al flujo productivo.</p>
+            
+            <input type="hidden" id="aprob-card-id">
+            <div class="form-group">
+                <label>Generar Número de OP</label>
+                <input type="text" id="op-number" class="form-control" value="OP-1046" readonly>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 1.5rem;">
+                <button class="btn btn-outline" onclick="closeModal('modal-nueva-op')">Cancelar</button>
+                <button class="btn btn-success" onclick="confirmarOP()"><i class="ph ph-factory"></i> Crear y Enviar a Producción</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function switchView(viewId, element) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+        }
+
+        // Modals
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // Mover tarjetas entre columnas programáticamente
+        function moveCard(cardId, colId) {
+            const card = document.getElementById(cardId);
+            const col = document.getElementById('col-' + colId);
+            if(card && col) {
+                // Actualizar los botones dependiendo de la columna
+                actualizarBotones(card, colId);
+                col.appendChild(card);
+                actualizarContadores();
+            }
+        }
+
+        function actualizarBotones(card, colId) {
+            const actions = card.querySelector('.task-actions');
+            if(!actions) return;
+
+            if(colId === 'cotizando') {
+                actions.innerHTML = `<button class="btn btn-outline" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;" onclick="moveCard('${card.id}', 'enviado')"><i class="ph ph-paper-plane-tilt"></i> Enviar a Cliente</button>`;
+            } else if (colId === 'enviado') {
+                actions.style.justifyContent = 'space-between';
+                actions.innerHTML = `
+                    <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.4rem 0.6rem;" onclick="approveToOP('${card.id}')"><i class="ph ph-check"></i> Aprueba</button>
+                    <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.4rem 0.6rem;" onclick="rejectCotizacion('${card.id}')"><i class="ph ph-x"></i> Rechaza</button>
+                `;
+            } else if (colId === 'rechazados') {
+                actions.innerHTML = '';
+            } else if (colId === 'op-nueva') {
+                actions.innerHTML = `<button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; width:100%" onclick="moveCard('${card.id}', 'op-medidas')">1. Verificar Medidas</button>`;
+            } else if (colId === 'op-medidas') {
+                actions.innerHTML = `<button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; width:100%" onclick="moveCard('${card.id}', 'op-compras')">2. Solicitar Materiales</button>`;
+            } else if (colId === 'op-compras') {
+                actions.innerHTML = `<button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; width:100%" onclick="moveCard('${card.id}', 'op-personal')">3. Asignar Personal</button>`;
+            } else if (colId === 'op-personal') {
+                actions.innerHTML = `<button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; width:100%" onclick="moveCard('${card.id}', 'op-admin')">4. Req. Administrativos</button>`;
+            } else if (colId === 'op-admin') {
+                actions.innerHTML = `<button class="btn btn-success" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; width:100%" onclick="moveCard('${card.id}', 'op-prod')"><i class="ph ph-hammer"></i> 5. A Producción</button>`;
+            } else if (colId === 'op-prod') {
+                actions.innerHTML = '';
+            }
+        }
+
+        // Crear una nueva solicitud manualmente
+        function crearSolicitud() {
+            const client = document.getElementById('req-client').value;
+            const title = document.getElementById('req-title').value;
+            const desc = document.getElementById('req-desc').value;
+
+            if(!client || !title) return alert("Completa los campos obligatorios");
+
+            const cardId = 'card-' + Date.now();
+            const col = document.getElementById('col-solicitudes');
+            
+            const cardHTML = `
+                <div class="task-card" draggable="true" ondragstart="drag(event)" id="${cardId}">
+                    <div class="task-meta">
+                        <span class="task-tag tag-cli">${client}</span>
+                        <span class="task-date">Ahora</span>
+                    </div>
+                    <div class="task-title">${title}</div>
+                    <div class="task-desc">${desc}</div>
+                    <div class="task-actions">
+                        <button class="btn btn-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;" onclick="moveCard('${cardId}', 'cotizando')">Iniciar Cotización</button>
+                    </div>
+                </div>
+            `;
+            col.insertAdjacentHTML('beforeend', cardHTML);
+            closeModal('modal-cotizacion');
+            
+            document.getElementById('req-client').value = '';
+            document.getElementById('req-title').value = '';
+            document.getElementById('req-desc').value = '';
+            actualizarContadores();
+        }
+
+        // Flujo Aprobación Cotización
+        function approveToOP(cardId) {
+            document.getElementById('aprob-card-id').value = cardId;
+            openModal('modal-nueva-op');
+        }
+
+        function confirmarOP() {
+            const cardId = document.getElementById('aprob-card-id').value;
+            const card = document.getElementById(cardId);
+            const opNumber = document.getElementById('op-number').value;
+
+            if(card) {
+                // Transformar la tarjeta comercial a tarjeta OP
+                const title = card.querySelector('.task-title').innerText;
+                const desc = card.querySelector('.task-desc').innerText;
+                
+                card.querySelector('.task-tag').className = 'task-tag tag-op';
+                card.querySelector('.task-tag').innerText = opNumber;
+                
+                // Mover a la columna de OPs Recibidas en la otra vista
+                const destCol = document.getElementById('col-op-nueva');
+                
+                actualizarBotones(card, 'op-nueva');
+                destCol.appendChild(card);
+                
+                alert(`Cotización aprobada. Se ha generado la ${opNumber} en el flujo de Producción.`);
+            }
+            
+            closeModal('modal-nueva-op');
+            // Incrementar número de OP falso para la siguiente
+            document.getElementById('op-number').value = "OP-" + (parseInt(opNumber.split('-')[1]) + 1);
+            actualizarContadores();
+        }
+
+        function rejectCotizacion(cardId) {
+            if(confirm("¿Estás seguro de marcar esta cotización como RECHAZADA por el cliente?")) {
+                const card = document.getElementById(cardId);
+                const destCol = document.getElementById('col-rechazados');
+                
+                card.style.borderColor = 'var(--danger)';
+                card.querySelector('.task-title').style.color = 'var(--danger)';
+                card.querySelector('.task-tag').style.background = 'rgba(239, 68, 68, 0.15)';
+                card.querySelector('.task-tag').style.color = 'var(--danger)';
+                
+                actualizarBotones(card, 'rechazados');
+                destCol.appendChild(card);
+                actualizarContadores();
+            }
+        }
+
+        // Drag and Drop (opcional, para mover con el mouse)
+        function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drop(ev, colId) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const card = document.getElementById(data);
+            const col = document.getElementById('col-' + colId);
+            
+            // Lógica simple de validación (no dejar cruzar tarjetas de cotizacion a produccion arrastrando)
+            if (card && col) {
+                const isOp = card.querySelector('.tag-op') !== null;
+                const isOpCol = colId.startsWith('op-');
+                
+                if (isOp == isOpCol) {
+                    actualizarBotones(card, colId);
+                    col.appendChild(card);
+                    actualizarContadores();
+                } else {
+                    alert('No puedes arrastrar tarjetas entre flujos diferentes sin aprobación formal.');
+                }
+            }
+        }
+
+        function actualizarContadores() {
+            // Comercial
+            document.getElementById('badge-comercial').innerText = 
+                document.getElementById('col-solicitudes').children.length + 
+                document.getElementById('col-cotizando').children.length;
+            
+            // Contadores de columnas
+            document.querySelectorAll('.board-column').forEach(col => {
+                const countBadge = col.querySelector('.column-count');
+                const body = col.querySelector('.column-body');
+                if(countBadge && body) {
+                    countBadge.innerText = body.children.length;
+                }
+            });
+        }
+    </script>
+</body>
+</html>

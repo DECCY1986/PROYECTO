@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Presupuesto · DIMALCCO SAS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--s:#fff;--b:#e2e8f0;--bs:#f8fafc;--t:#0f172a;--t2:#475569;--t3:#94a3b8;--ac:#4338ca;--as:#eef2ff;--in:#059669;--ib:#ecfdf5;--ex:#dc2626;--eb:#fef2f2;--w:#d97706;--wb:#fffbeb;--hd:#0f172a;--fn:'Sora',sans-serif;--mo:'DM Mono',monospace;--r:10px;--rsm:6px}
+body{font-family:var(--fn);background:var(--bg);color:var(--t);font-size:14px;min-height:100vh}
+.hdr{background:var(--hd);color:#f8fafc;padding:18px 28px 20px}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.hdr-ey{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#64748b;margin-bottom:3px}
+.hdr-ti{font-size:20px;font-weight:600}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1e293b;border-radius:8px;overflow:hidden}
+.metric{background:var(--hd);padding:13px 16px}
+.metric-lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#64748b;margin-bottom:5px}
+.metric-val{font-family:var(--mo);font-size:16px;font-weight:500;color:#f8fafc}
+.metric-val.g{color:#34d399}.metric-val.r{color:#f87171}.metric-val.y{color:#fbbf24}
+.metric-sub{font-size:10px;color:#475569;margin-top:2px}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 168px)}
+.sidebar{background:var(--s);border-right:1px solid var(--b);padding:18px 14px}
+.sec-ti{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+.period-btn{display:block;width:100%;padding:8px 10px;text-align:left;border:1px solid transparent;border-radius:7px;background:none;font-family:var(--fn);font-size:12px;color:var(--t2);cursor:pointer;margin-bottom:4px;transition:all .15s}
+.period-btn:hover{background:var(--bg);border-color:var(--b)}
+.period-btn.active{background:var(--as);border-color:var(--ac);color:var(--ac);font-weight:500}
+.exec-donut-wrap{text-align:center;padding:16px 0}
+.exec-pct{font-family:var(--mo);font-size:24px;font-weight:500;color:var(--t)}
+.exec-lbl{font-size:11px;color:var(--t3);margin-top:2px}
+.exec-bar{height:8px;background:var(--b);border-radius:4px;overflow:hidden;margin-top:12px}
+.exec-bar-fill{height:100%;border-radius:4px;transition:width .5s}
+.main{padding:20px 22px;overflow-y:auto}
+.controls{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);text-decoration:none;margin-bottom:16px;transition:color .15s}
+.back-link:hover{color:var(--ac)}
+.period-label{font-size:14px;font-weight:600;color:var(--t)}
+.spacer{flex:1}
+.btn-pri{display:flex;align-items:center;gap:5px;padding:8px 15px;background:var(--ac);color:#fff;border:none;border-radius:7px;font-family:var(--fn);font-size:12px;font-weight:500;cursor:pointer;transition:background .15s}
+.btn-pri:hover{background:#3730a3}
+.btn-sec{padding:7px 14px;background:none;border:1px solid var(--b);border-radius:var(--rsm);font-family:var(--fn);font-size:12px;cursor:pointer;color:var(--t2)}
+.btn-sec:hover{border-color:var(--t3)}
+select,input[type=number],input[type=text]{font-family:var(--fn);font-size:12px;color:var(--t);background:var(--s);border:1px solid var(--b);border-radius:var(--rsm);padding:6px 9px;outline:none}
+select:focus,input:focus{border-color:var(--ac)}
+.section-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.section-header{padding:12px 16px;background:#f8fafc;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
+.section-name{font-size:12px;font-weight:600;color:var(--t);text-transform:uppercase;letter-spacing:.05em}
+.section-totals{font-family:var(--mo);font-size:11px;color:var(--t3)}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 12px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);white-space:nowrap}
+th.num{text-align:right}
+td{padding:10px 12px;font-size:12px;color:var(--t);border-bottom:1px solid var(--bs);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+td.num{text-align:right;font-family:var(--mo);font-size:11px}
+.semaforo{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.sem-g{background:#22c55e}.sem-y{background:#f59e0b}.sem-r{background:#ef4444}.sem-n{background:#cbd5e1}
+.var-bar-wrap{width:80px;height:6px;background:var(--b);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:6px}
+.var-bar{height:100%;border-radius:3px;transition:width .4s}
+.var-g{background:#22c55e}.var-y{background:#f59e0b}.var-r{background:#ef4444}
+.edit-cell{font-family:var(--mo);font-size:11px}
+.edit-input{width:110px;padding:4px 8px;font-family:var(--mo);font-size:11px;border:1px solid var(--ac);border-radius:4px;text-align:right;color:var(--t);background:#fff}
+.btn-tiny{padding:2px 7px;border:1px solid var(--b);border-radius:3px;background:none;font-family:var(--fn);font-size:10px;cursor:pointer;color:var(--t3);transition:all .15s}
+.btn-tiny:hover{border-color:var(--ac);color:var(--ac)}
+.total-row td{background:#f8fafc;font-weight:600;font-size:12px;color:var(--t);border-top:1px solid var(--b)}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--s);border-radius:14px;padding:26px;width:460px;max-width:95vw;box-shadow:0 20px 40px rgba(0,0,0,.2);animation:mi .2s ease}
+@keyframes mi{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{width:28px;height:28px;border:none;background:var(--bg);border-radius:5px;cursor:pointer;font-size:15px;color:var(--t2);display:flex;align-items:center;justify-content:center}
+.form-row{margin-bottom:14px}
+.form-lbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t2);margin-bottom:5px}
+.form-row input,.form-row select{width:100%;padding:9px 11px;font-family:var(--fn);font-size:13px;background:var(--bg);border:1px solid var(--b);border-radius:8px;color:var(--t);outline:none}
+.form-row input:focus,.form-row select:focus{border-color:var(--ac);background:#fff}
+.form-g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-ftr{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--b)}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-ey">DIMALCCO SAS · Módulo Finanzas</div>
+      <div class="hdr-ti">Presupuesto vs. Ejecución</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px">
+      <button class="btn-pri" onclick="save(); alert('Presupuesto guardado correctamente')">Guardar Todo</button>
+    </div>
+  </div>
+  <div class="metrics" id="metrics"></div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sec-ti">Período activo</div>
+    <div id="period-list"></div>
+    <div style="margin-top:18px" class="sec-ti">Ejecución global</div>
+    <div class="exec-donut-wrap">
+      <div class="exec-pct" id="exec-pct">—</div>
+      <div class="exec-lbl">ejecutado</div>
+      <div class="exec-bar"><div class="exec-bar-fill" id="exec-bar-fill" style="background:var(--ac)"></div></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <a class="back-link" href="index.html">← Volver al workspace</a>
+    <div class="controls">
+      <span class="period-label" id="period-label">—</span>
+      <select id="mes-sel" onchange="render()">
+        <option value="0">Vista anual</option>
+        <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+        <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+        <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+      </select>
+      <div class="spacer"></div>
+      <button class="btn-sec" onclick="openModalRubro()">+ Agregar rubro</button>
+      <button class="btn-pri" onclick="openModalEjec()">Registrar ejecución</button>
+    </div>
+    <div id="presup-content"></div>
+  </main>
+</div>
+
+<!-- MODAL: Nuevo rubro -->
+<div class="modal-backdrop" id="modal-rb-bk">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">Agregar rubro presupuestal</div><button class="modal-close" onclick="closeModalRubro()">✕</button></div>
+    <div class="form-row"><label class="form-lbl">Nombre del rubro *</label><input type="text" id="rb-nombre" placeholder="Ej. Ventas proyectos carpintería"></div>
+    <div class="form-g2">
+      <div class="form-row"><label class="form-lbl">Sección</label>
+        <select id="rb-seccion">
+          <option value="Ingresos">Ingresos</option>
+          <option value="Costos de producción">Costos de producción</option>
+          <option value="Gastos operacionales">Gastos operacionales</option>
+          <option value="Gastos administrativos">Gastos administrativos</option>
+          <option value="Gastos financieros">Gastos financieros</option>
+        </select>
+      </div>
+      <div class="form-row"><label class="form-lbl">Tipo</label>
+        <select id="rb-tipo"><option value="ingreso">Ingreso</option><option value="gasto">Gasto</option></select>
+      </div>
+    </div>
+    <div class="form-row"><label class="form-lbl">Presupuesto anual COP *</label><input type="number" id="rb-anual" placeholder="0" min="0" step="100000"></div>
+    <div class="modal-ftr"><button class="btn-sec" onclick="closeModalRubro()">Cancelar</button><button class="btn-pri" onclick="saveRubro()">Guardar rubro</button></div>
+  </div>
+</div>
+
+<!-- MODAL: Registrar ejecución -->
+<div class="modal-backdrop" id="modal-ej-bk">
+  <div class="modal">
+    <div class="modal-hdr"><div class="modal-title">Registrar ejecución</div><button class="modal-close" onclick="closeModalEjec()">✕</button></div>
+    <div class="form-row"><label class="form-lbl">Rubro *</label><select id="ej-rubro"></select></div>
+    <div class="form-g2">
+      <div class="form-row"><label class="form-lbl">Mes *</label>
+        <select id="ej-mes">
+          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+      </div>
+      <div class="form-row"><label class="form-lbl">Valor ejecutado COP *</label><input type="number" id="ej-valor" placeholder="0" min="0"></div>
+    </div>
+    <div class="modal-ftr"><button class="btn-sec" onclick="closeModalEjec()">Cancelar</button><button class="btn-pri" onclick="saveEjec()">Registrar</button></div>
+  </div>
+</div>
+
+<script>
+const DB='dim_presupuesto_v1';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
+const fmt=v=>'$ '+Math.abs(v).toLocaleString('es-CO');
+const MESES=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function defaultRubros(){
+  // Each rubro has ejecucion: {1:0,...,12:0}
+  const mkEj=()=>{const o={};for(let i=1;i<=12;i++)o[i]=0;return o;};
+  return[
+    {id:'r1',nombre:'Ventas proyectos carpintería',seccion:'Ingresos',tipo:'ingreso',anual:280000000,ejecucion:{1:18000000,2:22000000,3:25000000,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}},
+    {id:'r2',nombre:'Ventas otros productos',seccion:'Ingresos',tipo:'ingreso',anual:60000000,ejecucion:{1:4200000,2:5100000,3:3800000,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}},
+    {id:'r3',nombre:'Materiales directos',seccion:'Costos de producción',tipo:'gasto',anual:95000000,ejecucion:{1:7800000,2:8500000,3:9200000,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}},
+    {id:'r4',nombre:'Mano de obra directa',seccion:'Costos de producción',tipo:'gasto',anual:72000000,ejecucion:{1:5800000,2:5800000,3:5800000,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}},
+    {id:'r5',nombre:'Costos indirectos fab.',seccion:'Costos de producción',tipo:'gasto',anual:18000000,ejecucion:{1:1400000,2:1500000,3:1600000,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}},
+    {id:'r6',nombre:'Nómina administrativa',seccion:'Gastos administrativos',tipo:'gasto',anual:36000000,ejecucion:{1:2900000,2:2900000,3:2900000,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}},
+    {id:'r7',nombre:'Arriendo y servicios',seccion:'Gastos administrativos',tipo:'gasto',anual:32400000,ejecucion:{1:2680000,2:2680000,3:2680000,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}},
+    {id:'r8',nombre:'Seguros y pólizas',seccion:'Gastos administrativos',tipo:'gasto',anual:4500000,ejecucion:{1:380000,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}},
+    {id:'r9',nombre:'Parafiscales y seguridad social',seccion:'Gastos operacionales',tipo:'gasto',anual:28000000,ejecucion:{1:2200000,2:2200000,3:2200000,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}},
+    {id:'r10',nombre:'Transportes y fletes',seccion:'Gastos operacionales',tipo:'gasto',anual:8400000,ejecucion:{1:640000,2:580000,3:720000,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}},
+    {id:'r11',nombre:'Intereses y comisiones bancarias',seccion:'Gastos financieros',tipo:'gasto',anual:6000000,ejecucion:{1:480000,2:480000,3:480000,4:0,5:0,6:0,7:0,8:0,9:0,10:0,11:0,12:0}}
+  ];
+}
+
+function defaultState(){
+  const now=new Date();
+  return{
+    anio:now.getFullYear(),
+    rubros:defaultRubros()
+  };
+}
+
+let S, curAnio, curMes=0;
+
+function load(){try{const s=localStorage.getItem(DB);if(s)return JSON.parse(s);}catch(e){}return defaultState();}
+function save(){localStorage.setItem(DB,JSON.stringify(S));}
+
+function getPpto(r,mes){
+  if(mes===0) return r.anual;
+  return Math.round(r.anual/12);
+}
+
+function getEjec(r,mes){
+  if(mes===0) return Object.values(r.ejecucion).reduce((a,b)=>a+b,0);
+  return r.ejecucion[mes]||0;
+}
+
+function semaforo(ppto,ejec,tipo){
+  if(ppto===0) return 'n';
+  const pct=ejec/ppto;
+  if(tipo==='ingreso') return pct>=0.9?'g':pct>=0.7?'y':'r';
+  else return pct<=1.05?'g':pct<=1.15?'y':'r';
+}
+
+function renderSidebar(){
+  document.getElementById('period-list').innerHTML=
+    `<button class="period-btn ${curAnio===S.anio?'active':''}" onclick="setAnio(${S.anio})">${S.anio}</button>
+     <button class="period-btn ${curAnio===S.anio-1?'active':''}" onclick="setAnio(${S.anio-1})">${S.anio-1}</button>`;
+
+  // Global execution
+  let totPpto=0,totEjec=0;
+  S.rubros.forEach(r=>{ totPpto+=getPpto(r,curMes); totEjec+=getEjec(r,curMes); });
+  const pct=totPpto>0?Math.round(totEjec/totPpto*100):0;
+  document.getElementById('exec-pct').textContent=pct+'%';
+  const fill=document.getElementById('exec-bar-fill');
+  fill.style.width=Math.min(pct,100)+'%';
+  fill.style.background=pct>115?'#ef4444':pct>100?'#f59e0b':'#4338ca';
+}
+
+function renderHeader(){
+  const mes=parseInt(document.getElementById('mes-sel').value);
+  const mesNom=mes===0?`Año ${curAnio}`:`${MESES[mes]} ${curAnio}`;
+  document.getElementById('period-label').textContent=mesNom;
+
+  let totIngPpto=0,totIngEjec=0,totGtoPpto=0,totGtoEjec=0;
+  S.rubros.forEach(r=>{
+    const ppto=getPpto(r,mes), ejec=getEjec(r,mes);
+    if(r.tipo==='ingreso'){totIngPpto+=ppto;totIngEjec+=ejec;}
+    else{totGtoPpto+=ppto;totGtoEjec+=ejec;}
+  });
+  const utilPpto=totIngPpto-totGtoPpto, utilEjec=totIngEjec-totGtoEjec;
+  const execPct=totGtoPpto>0?Math.round(totGtoEjec/totGtoPpto*100):0;
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric"><div class="metric-lbl">Ingresos presup.</div><div class="metric-val g">${fmt(totIngPpto)}</div><div class="metric-sub">Ejecutado: ${fmt(totIngEjec)}</div></div>
+    <div class="metric"><div class="metric-lbl">Gastos presup.</div><div class="metric-val y">${fmt(totGtoPpto)}</div><div class="metric-sub">Ejecutado: ${fmt(totGtoEjec)}</div></div>
+    <div class="metric"><div class="metric-lbl">Utilidad proyectada</div><div class="metric-val ${utilPpto>=0?'g':'r'}">${fmt(utilPpto)}</div><div class="metric-sub">Real: ${fmt(utilEjec)}</div></div>
+    <div class="metric"><div class="metric-lbl">Ejecución gastos</div><div class="metric-val ${execPct>115?'r':execPct>100?'y':'g'}">${execPct}%</div><div class="metric-sub">Sobre presupuesto</div></div>`;
+}
+
+function renderContent(){
+  const mes=parseInt(document.getElementById('mes-sel').value);
+  const secciones=[...new Set(S.rubros.map(r=>r.seccion))];
+  let html='';
+  secciones.forEach(sec=>{
+    const rubros=S.rubros.filter(r=>r.seccion===sec);
+    let secPpto=0,secEjec=0;
+    rubros.forEach(r=>{secPpto+=getPpto(r,mes);secEjec+=getEjec(r,mes);});
+    const secVar=secEjec-secPpto;
+    html+=`<div class="section-card"><div class="section-header">
+      <span class="section-name">${sec}</span>
+      <span class="section-totals">Ppto: ${fmt(secPpto)} · Ejec: ${fmt(secEjec)} · Var: <span style="color:${secVar>0?'var(--ex)':'var(--in)'}">${secVar>=0?'+':''}${fmt(secVar)}</span></span>
+    </div>
+    <table><thead><tr>
+      <th>Rubro</th><th class="num">Presupuesto</th><th class="num">Ejecutado</th>
+      <th class="num">Variación $</th><th class="num">Variación %</th><th>Estado</th><th></th>
+    </tr></thead><tbody>`;
+    rubros.forEach(r=>{
+      const ppto=getPpto(r,mes), ejec=getEjec(r,mes), varDin=ejec-ppto;
+      const varPct=ppto>0?Math.round(varDin/ppto*100):0;
+      const sem=semaforo(ppto,ejec,r.tipo);
+      const barPct=Math.min(Math.abs(varPct),100);
+      const barCls=sem==='g'?'var-g':sem==='y'?'var-y':'var-r';
+      html+=`<tr>
+        <td><span class="semaforo sem-${sem}"></span>${r.nombre}</td>
+        <td class="num">${fmt(ppto)}</td>
+        <td class="num">${fmt(ejec)}</td>
+        <td class="num" style="color:${varDin>0?'var(--ex)':'var(--in)'};font-weight:500">${varDin>=0?'+':''}${fmt(varDin)}</td>
+        <td class="num">
+          <span style="color:${varDin>0?'var(--ex)':'var(--in)'}">${varPct>=0?'+':''}${varPct}%</span>
+          <div class="var-bar-wrap"><div class="var-bar ${barCls}" style="width:${barPct}%"></div></div>
+        </td>
+        <td><span class="semaforo sem-${sem}"></span>${sem==='g'?'Normal':sem==='y'?'Alerta':'Crítico'}</td>
+        <td><button class="btn-tiny" onclick="deleteRubro('${r.id}')">×</button></td>
+      </tr>`;
+    });
+    // Total row
+    html+=`<tr class="total-row"><td><strong>Total ${sec}</strong></td><td class="num">${fmt(secPpto)}</td><td class="num">${fmt(secEjec)}</td>
+      <td class="num" style="color:${secVar>0?'var(--ex)':'var(--in)'}">${secVar>=0?'+':''}${fmt(secVar)}</td><td class="num"></td><td></td><td></td></tr>`;
+    html+=`</tbody></table></div>`;
+  });
+  document.getElementById('presup-content').innerHTML=html;
+}
+
+function render(){
+  curMes=parseInt(document.getElementById('mes-sel').value);
+  // set current month as default
+  if(document.getElementById('mes-sel').value==='0'){
+    const m=new Date().getMonth()+1;
+    // keep annual view
+  }
+  renderHeader();
+  renderSidebar();
+  renderContent();
+}
+
+function setAnio(y){curAnio=y;render();}
+
+// Modal Rubro
+function openModalRubro(){document.getElementById('modal-rb-bk').classList.add('open');}
+function closeModalRubro(){document.getElementById('modal-rb-bk').classList.remove('open');}
+function saveRubro(){
+  const nombre=document.getElementById('rb-nombre').value.trim();
+  const anual=parseFloat(document.getElementById('rb-anual').value);
+  if(!nombre||!anual){alert('Completa los campos.');return;}
+  const ej={};for(let i=1;i<=12;i++)ej[i]=0;
+  S.rubros.push({id:uid(),nombre,seccion:document.getElementById('rb-seccion').value,tipo:document.getElementById('rb-tipo').value,anual,ejecucion:ej});
+  save();closeModalRubro();render();
+}
+
+// Modal Ejecución
+function openModalEjec(){
+  const sel=document.getElementById('ej-rubro');
+  sel.innerHTML=S.rubros.map(r=>`<option value="${r.id}">${r.seccion} · ${r.nombre}</option>`).join('');
+  const m=new Date().getMonth()+1;
+  document.getElementById('ej-mes').value=m;
+  document.getElementById('ej-valor').value='';
+  document.getElementById('modal-ej-bk').classList.add('open');
+}
+function closeModalEjec(){document.getElementById('modal-ej-bk').classList.remove('open');}
+function saveEjec(){
+  const rid=document.getElementById('ej-rubro').value;
+  const mes=parseInt(document.getElementById('ej-mes').value);
+  const val=parseFloat(document.getElementById('ej-valor').value);
+  if(!val){alert('Ingresa un valor.');return;}
+  const r=S.rubros.find(x=>x.id===rid);
+  if(r) r.ejecucion[mes]=(r.ejecucion[mes]||0)+val;
+  save();closeModalEjec();render();
+}
+
+function deleteRubro(id){
+  if(!confirm('¿Eliminar este rubro?'))return;
+  S.rubros=S.rubros.filter(r=>r.id!==id);
+  save();render();
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModalRubro();closeModalEjec();}});
+['modal-rb-bk','modal-ej-bk'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('open');});
+});
+
+S=load();
+curAnio=S.anio;
+document.getElementById('mes-sel').value=new Date().getMonth()+1;
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Impuestos</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Iconos Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="ph ph-receipt"></i>
+                <span>TaxFlow</span>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <i class="ph ph-circles-four"></i>
+                    <span>Resumen</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="ph ph-file-text"></i>
+                    <span>Declaraciones</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="ph ph-wallet"></i>
+                    <span>Pagos</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="ph ph-chart-line-up"></i>
+                    <span>Proyecciones</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item">
+                    <i class="ph ph-gear"></i>
+                    <span>Configuración</span>
+                </a>
+                <div class="user-profile">
+                    <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Avatar">
+                    <div class="user-info">
+                        <span class="user-name">Hola, Janus</span>
+                        <span class="user-role">Autónomo</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Header -->
+            <header class="topbot-header">
+                <div>
+                    <h1>Resumen Fiscal 2026</h1>
+                    <p class="subtitle">Monitorea tus obligaciones e impuestos del año.</p>
+                </div>
+                <div class="header-actions">
+                    <a href="index.html" class="primary-btn" style="text-decoration: none; background: #3b82f6;"><i
+                            class="ph ph-house"></i> Volver al Hub</a>
+                    <button class="icon-btn" aria-label="Notificaciones">
+                        <i class="ph ph-bell"></i>
+                        <span class="badge">2</span>
+                    </button>
+                    <button class="primary-btn" id="openModalBtn">
+                        <i class="ph ph-plus"></i> Nuevo Pago
+                    </button>
+                </div>
+            </header>
+
+            <!-- Metrics Cards -->
+            <section class="metrics-grid">
+                <div class="card metric-card">
+                    <div class="metric-header">
+                        <div class="icon-box blue">
+                            <i class="ph ph-bank"></i>
+                        </div>
+                        <span class="trend positive"><i class="ph-bold ph-arrow-up-right"></i> 12% vs 2025</span>
+                    </div>
+                    <div>
+                        <p class="metric-title">Total Pagado a la Fecha</p>
+                        <h2 class="metric-value" id="totalPaid">$0.00</h2>
+                    </div>
+                </div>
+
+                <div class="card metric-card">
+                    <div class="metric-header">
+                        <div class="icon-box green">
+                            <i class="ph ph-trend-up"></i>
+                        </div>
+                        <span class="trend positive"><i class="ph-bold ph-arrow-up-right"></i> Ingreso Neto</span>
+                    </div>
+                    <div>
+                        <p class="metric-title">Ingreso Neto del Periodo</p>
+                        <h2 class="metric-value" id="netIncome">$0.00</h2>
+                    </div>
+                </div>
+
+                <div class="card metric-card">
+                    <div class="metric-header">
+                        <div class="icon-box orange">
+                            <i class="ph ph-receipt"></i>
+                        </div>
+                        <span class="trend"><i class="ph-bold ph-scales"></i> Balance IVA</span>
+                    </div>
+                    <div>
+                        <p class="metric-title">IVA Neto por Pagar</p>
+                        <h2 class="metric-value" id="netIVA">$0.00</h2>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts & Tables Area -->
+            <section class="content-grid">
+
+                <!-- Main Chart -->
+                <div class="card chart-container">
+                    <div class="card-header">
+                        <h3>Evolución de Pagos Anuales</h3>
+                        <div class="chart-controls">
+                            <select class="custom-select" id="viewSelect">
+                                <option value="total">Vista Total</option>
+                                <option value="category">Por Impuesto</option>
+                            </select>
+                            <select class="custom-select" id="yearSelect">
+                                <option>2026</option>
+                                <option>2025</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="taxChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Distribution Chart -->
+                <div class="card distribution-container">
+                    <div class="card-header">
+                        <h3>Distribución por Impuesto</h3>
+                    </div>
+                    <div class="chart-wrapper doughnut">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Upcoming Deadlines -->
+                <div class="card deadlines-container">
+                    <div class="card-header">
+                        <h3>Calendario de Vencimientos</h3>
+                    </div>
+                    <ul id="deadlinesList" class="deadline-list">
+                        <!-- Se llenará dinámicamente -->
+                    </ul>
+                </div>
+
+                <!-- Recent Payments -->
+                <div class="card list-container">
+                    <div class="card-header">
+                        <h3>Últimos Movimientos</h3>
+                        <button class="text-btn">Ver Todos</button>
+                    </div>
+                    <ul class="transaction-list">
+                        <li class="transaction-item">
+                            <div class="tx-info">
+                                <div class="tx-icon generic">
+                                    <i class="ph ph-files"></i>
+                                </div>
+                                <div class="tx-details">
+                                    <h4>Pago ISR - Febrero</h4>
+                                    <span>Pagado el 15 Feb 2026</span>
+                                </div>
+                            </div>
+                            <div class="tx-amount negative">-$15,300.00</div>
+                        </li>
+                        <li class="transaction-item">
+                            <div class="tx-info">
+                                <div class="tx-icon generic">
+                                    <i class="ph ph-shopping-cart"></i>
+                                </div>
+                                <div class="tx-details">
+                                    <h4>Pago IVA - Febrero</h4>
+                                    <span>Pagado el 15 Feb 2026</span>
+                                </div>
+                            </div>
+                            <div class="tx-amount negative">-$6,100.00</div>
+                        </li>
+                        <li class="transaction-item">
+                            <div class="tx-info">
+                                <div class="tx-icon pending">
+                                    <i class="ph ph-hourglass-high"></i>
+                                </div>
+                                <div class="tx-details">
+                                    <h4>Impuesto Predial Anual</h4>
+                                    <span>Vence el 30 Mar 2026</span>
+                                </div>
+                            </div>
+                            <div class="tx-amount pending-amt">$4,500.00</div>
+                        </li>
+                        <li class="transaction-item">
+                            <div class="tx-info">
+                                <div class="tx-icon generic">
+                                    <i class="ph ph-files"></i>
+                                </div>
+                                <div class="tx-details">
+                                    <h4>Pago ISR - Enero</h4>
+                                    <span>Pagado el 17 Ene 2026</span>
+                                </div>
+                            </div>
+                            <div class="tx-amount negative">-$14,800.00</div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modal para Nuevo Pago -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <h2>Registrar Nuevo Pago</h2>
+                <button id="closeModal" class="icon-btn"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="paymentForm" class="modal-form">
+                <div class="form-group">
+                    <label for="concept">Concepto</label>
+                    <input type="text" id="concept" placeholder="Ej. Pago ISR Marzo" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="amount">Monto ($)</label>
+                        <input type="number" id="amount" placeholder="0.00" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Fecha</label>
+                        <input type="date" id="date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="type">Tipo de Operación</label>
+                    <select id="type" class="custom-select">
+                        <optgroup label="Ingresos">
+                            <option value="ingreso_general">Ingreso Tarifa General (19%)</option>
+                            <option value="ingreso_aiu">Ingreso por AIU (19%)</option>
+                            <option value="ingreso_no_gravado">Ingreso No Gravado</option>
+                            <option value="devolucion_venta">Devolución de Venta</option>
+                        </optgroup>
+                        <optgroup label="Impuesto Descontable">
+                            <option value="iva_descontable">IVA Descontable (Sujeto a Prorrateo)</option>
+                        </optgroup>
+                        <optgroup label="Otros Impuestos">
+                            <option value="retencion">Retención en la Fuente</option>
+                            <option value="renta">Renta</option>
+                            <option value="reteica_soacha">RETEICA Soacha</option>
+                            <option value="reteica_bogota">RETEICA Bogotá</option>
+                            <option value="autoretencion_soacha">Autoretención de ICA Soacha</option>
+                            <option value="autoretencion_bogota">Autoretención de ICA Bogotá</option>
+                            <option value="ica_anual">ICA Anual</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="text-btn" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="primary-btn">Guardar Pago</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cargar Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

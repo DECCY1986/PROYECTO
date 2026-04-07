@@ -1,0 +1,685 @@
+/* ====== DESIGN SYSTEM & VARIABLES ====== */
+:root {
+    --primary: #6366f1;
+    /* Indigo */
+    --primary-glow: rgba(99, 102, 241, 0.4);
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+
+    --bg-main: #0f172a;
+    /* Deep Dark */
+    --sidebar-bg: #1e293b;
+    --card-glass: rgba(30, 41, 59, 0.7);
+    --border-glass: rgba(255, 255, 255, 0.08);
+
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+
+    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.2);
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+}
+
+/* ====== RESET & BASE ====== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    background-image:
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+.brand {
+    font-family: 'Outfit', sans-serif;
+}
+
+/* ====== LAYOUT ====== */
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ====== SIDEBAR ====== */
+.sidebar {
+    width: 280px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border-glass);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 3rem;
+}
+
+.brand i {
+    font-size: 2.5rem;
+    filter: drop-shadow(0 0 8px var(--primary-glow));
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-grow: 1;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    text-decoration: none;
+    color: var(--text-secondary);
+    border-radius: var(--radius-md);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    transform: translateX(5px);
+}
+
+.nav-link.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: var(--shadow-glow);
+}
+
+.nav-link i {
+    font-size: 1.25rem;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+}
+
+.export-btn {
+    width: 100%;
+    padding: 1rem;
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.export-btn:hover {
+    background: var(--primary);
+    color: white;
+    box-shadow: var(--shadow-glow);
+}
+
+.export-btn.mb-1 {
+    margin-bottom: 0.75rem;
+}
+
+.export-btn.danger {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.export-btn.danger:hover {
+    background: var(--danger);
+    color: white;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
+
+/* ====== MAIN CONTENT ====== */
+.content {
+    flex-grow: 1;
+    padding: 3rem;
+    max-width: calc(100vw - 280px);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.header h1 {
+    font-size: 2.25rem;
+    letter-spacing: -0.02em;
+}
+
+.header p {
+    color: var(--text-secondary);
+}
+
+.user-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--sidebar-bg);
+    padding: 0.5rem 1rem 0.5rem 0.5rem;
+    border-radius: 50px;
+    border: 1px solid var(--border-glass);
+}
+
+.user-pill img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+/* ====== GRID LAYOUT ====== */
+.grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 2rem;
+    align-items: start;
+}
+
+.forms-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* ====== CARDS ====== */
+.glass-card {
+    background: var(--card-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.card-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+}
+
+.add-btn {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px dashed var(--primary);
+    color: var(--primary);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.2s;
+}
+
+.add-btn:hover {
+    background: var(--primary);
+    color: white;
+    transform: scale(1.1);
+}
+
+/* ====== TABLES ====== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-bottom: 1rem;
+}
+
+td {
+    padding: 0.75rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-glass);
+    color: white;
+    padding: 0.6rem;
+    border-radius: var(--radius-sm);
+    width: 100%;
+    font-family: inherit;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.base-input {
+    font-weight: 600;
+}
+
+.aiu-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    align-items: center;
+}
+
+.aiu-container div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.aiu-container label {
+    font-size: 0.6rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.aiu-container input {
+    padding: 0.3rem !important;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+.iva-cell {
+    font-weight: 700;
+    color: var(--primary);
+    text-align: right;
+    padding-right: 1.5rem;
+}
+
+.row-delete {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+}
+
+.row-delete:hover {
+    color: var(--danger);
+}
+
+/* ====== SUMMARY ASIDE ====== */
+.summary-card {
+    background: linear-gradient(135deg, var(--sidebar-bg), #0f172a);
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    position: sticky;
+    top: 3rem;
+    box-shadow: var(--shadow-glow);
+}
+
+.summary-card h2 {
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.summary-item span:first-child {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.val {
+    font-weight: 700;
+}
+
+.item-divider {
+    height: 1px;
+    background: var(--border-glass);
+    margin: 1.5rem 0;
+}
+
+.highlight {
+    font-size: 1.1rem;
+}
+
+.highlight .val.positive {
+    color: var(--success);
+}
+
+.highlight .val.negative {
+    color: var(--danger);
+}
+
+.reteiva-box {
+    margin-top: 2rem;
+}
+
+.reteiva-box label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.input-with-icon {
+    position: relative;
+}
+
+.input-with-icon i {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary);
+}
+
+.input-with-icon input {
+    padding-left: 2rem;
+}
+
+.final-result {
+    margin-top: 2.5rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.final-result p {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+
+@media (max-width: 1200px) {
+    .grid-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-section {
+        position: static;
+    }
+}
+
+/* ====== STYLES FOR PRINT / PDF EXPORT (FINAL FIX) ====== */
+@media print {
+
+    /* 1. Reset everything to pure black and white */
+    * {
+        color: #000 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        border-radius: 0 !important;
+    }
+
+    @page {
+        size: auto;
+        margin: 0.3cm 0.5cm;
+        /* Minimal page margins */
+    }
+
+    html,
+    body {
+        width: 100% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        font-family: 'Inter', sans-serif !important;
+        font-size: 8.5pt !important;
+        /* Slightly smaller base font */
+        overflow: visible !important;
+    }
+
+    /* 2. Force every container to be purely block-level and auto-height */
+    .app-container,
+    .content,
+    .grid-layout,
+    .forms-section,
+    .summary-section {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: static !important;
+        overflow: visible !important;
+        height: auto !important;
+        min-height: 0 !important;
+        /* Override 100vh */
+    }
+
+    /* 3. Hide all UI noise */
+    .sidebar,
+    .export-btn,
+    .add-btn,
+    .row-delete,
+    .ph-trash,
+    .ph-plus,
+    .user-pill,
+    .toast,
+    .sidebar-footer,
+    .brand,
+    .ph-calculator,
+    .ph-trend-up,
+    .ph-trend-down,
+    i,
+    .sidebar-link-icon {
+        display: none !important;
+    }
+
+    /* 4. Ultra-tight Header */
+    .header {
+        margin: 0 !important;
+        padding: 0.2cm 0.4cm !important;
+        border-bottom: 1.5pt solid #000 !important;
+    }
+
+    .header h1 {
+        font-size: 16pt !important;
+        margin: 0 !important;
+    }
+
+    .header p {
+        font-size: 8pt !important;
+        margin: 0 !important;
+        line-height: 1 !important;
+    }
+
+    /* 5. Section/Card Resets: Keep things tight to fit Page 1 */
+    .glass-card,
+    .summary-card {
+        border: none !important;
+        background: transparent !important;
+        padding: 0.2cm !important;
+        /* Reduced padding */
+        margin: 0 !important;
+        width: 100% !important;
+        page-break-inside: avoid !important;
+        /* Keep sections together */
+        page-break-before: auto !important;
+    }
+
+    .card-header {
+        margin-bottom: 2pt !important;
+    }
+
+    .card-header h3 {
+        font-size: 11pt !important;
+        /* Smaller headers */
+        border-bottom: 1pt solid #000 !important;
+        margin: 0 !important;
+        padding-bottom: 1pt !important;
+        text-transform: uppercase;
+    }
+
+    /* 6. Table: Absolute Visibility & No Cutoff */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        table-layout: fixed !important;
+        /* Fixed layout for absolute control */
+        margin: 0 0 0.5cm 0 !important;
+        background: #fff !important;
+    }
+
+    /* Fixed widths to prevent truncation */
+    #sales-table th:nth-child(1),
+    #sales-table td:nth-child(1) {
+        width: 30% !important;
+    }
+
+    #sales-table th:nth-child(2),
+    #sales-table td:nth-child(2) {
+        width: 20% !important;
+    }
+
+    #sales-table th:nth-child(3),
+    #sales-table td:nth-child(3) {
+        width: 15% !important;
+    }
+
+    #sales-table th:nth-child(4),
+    #sales-table td:nth-child(4) {
+        width: 22% !important;
+    }
+
+    /* AIU Space */
+    #sales-table th:nth-child(5),
+    #sales-table td:nth-child(5) {
+        width: 13% !important;
+    }
+
+    th,
+    td {
+        border: 1px solid #000 !important;
+        padding: 5px 8px !important;
+        font-size: 8.5pt !important;
+        text-align: left !important;
+        line-height: 1.2 !important;
+        height: auto !important;
+        word-break: break-word !important;
+        overflow: visible !important;
+    }
+
+    th {
+        background: #eee !important;
+        font-weight: bold !important;
+    }
+
+    /* 7. Input/Select Reset: Prevent collapsing */
+    input,
+    select {
+        border: none !important;
+        background: transparent !important;
+        font-family: inherit !important;
+        font-weight: bold !important;
+        font-size: 8.5pt !important;
+        color: #000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        display: block !important;
+        white-space: normal !important;
+    }
+
+    .iva-cell,
+    .base-cell {
+        font-weight: 900 !important;
+        text-align: right !important;
+    }
+
+    /* 8. AIU Container Fix: CLASS-BASED & SPECIFIC */
+    .aiu-container {
+        display: none !important;
+    }
+
+    .row-aiu .aiu-container {
+        display: flex !important;
+        gap: 3px !important;
+        justify-content: space-between !important;
+    }
+
+    .aiu-container div {
+        display: flex !important;
+        align-items: center !important;
+        border: 1px solid #000 !important;
+        padding: 1px 2px !important;
+        background: #fff !important;
+    }
+
+    .aiu-container label {
+        font-size: 7pt !important;
+        margin-right: 1px !important;
+        font-weight: bold !important;
+    }
+
+    .aiu-container input {
+        width: 18pt !important;
+        font-size: 8pt !important;
+        text-align: center !important;
+    }
+
+    /* 9. Final Visibility Enforcement */
+    #sales,
+    #purchases,
+    .summary-section {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        page-break-inside: avoid !important;
+    }
+
+    th:last-child,
+    td:last-child,
+    .row-delete,
+    .add-btn,
+    .export-btn {
+        display: none !important;
+    }
+}

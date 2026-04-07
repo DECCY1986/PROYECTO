@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora IVA Cuatrimestral | DIAN Form 300</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar / Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="ph-fill ph-calculator"></i>
+                <span>TaxTool IVA</span>
+            </div>
+            <nav class="nav">
+                <a href="#sales" class="nav-link active"><i class="ph ph-trend-up"></i> Ingresos (Ventas)</a>
+                <a href="#purchases" class="nav-link"><i class="ph ph-trend-down"></i> Egresos (Compras)</a>
+                <a href="#summary" class="nav-link"><i class="ph ph-scroll"></i> Resumen Formulario</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="export-btn mb-1" onclick="saveData()"><i class="ph ph-floppy-disk"></i> Guardar
+                    Progreso</button>
+                <button class="export-btn mb-1" onclick="exportSummary()"><i class="ph ph-file-pdf"></i> Exportar
+                    Resumen</button>
+                <button class="export-btn mb-1" onclick="window.print()"><i class="ph ph-printer"></i> Imprimir
+                    Reporte</button>
+                <button class="export-btn danger" onclick="clearData()"><i class="ph ph-trash"></i> Limpiar
+                    Todo</button>
+                <a href="../../index.html" target="_top" style="text-decoration:none; margin-top:10px; display:block; text-align:center; color:var(--text-secondary); font-size:12px">
+                    <i class="ph ph-house"></i> Volver al Hub
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content">
+            <header class="header">
+                <div>
+                    <h1>Declaración de IVA</h1>
+                    <p>Cálculo automático cuatrimestral - Formulario 300</p>
+                </div>
+                <div class="user-pill">
+                    <img src="https://i.pravatar.cc/150?u=tax" alt="User">
+                    <span>Janus</span>
+                </div>
+            </header>
+
+            <div class="grid-layout">
+                <!-- Data Entry Section -->
+                <section class="forms-section">
+                    <!-- Sales Card -->
+                    <div id="sales" class="glass-card">
+                        <div class="card-header">
+                            <h3><i class="ph ph-trend-up"></i> Ventas e Ingresos</h3>
+                            <button class="add-btn" onclick="addRow('sales-table')"><i class="ph ph-plus"></i></button>
+                        </div>
+                        <table id="sales-table">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Tipo</th>
+                                    <th>Base (Vlr Total)</th>
+                                    <th>AIU %</th>
+                                    <th>IVA</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr data-type="general">
+                                    <td><input type="text" placeholder="Ej. Venta" value="Venta de Bienes"></td>
+                                    <td>
+                                        <select class="type-select" onchange="toggleType(this)">
+                                            <option value="general" selected>General (19%)</option>
+                                            <option value="aiu">Operación AIU (IVA 19%)</option>
+                                            <option value="no-gravada">No Gravada / Exenta</option>
+                                            <option value="dev-general">Devolución Tarifa General</option>
+                                            <option value="dev-aiu">Devolución AIU</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="number" step="0.01" class="base-input" oninput="calculateRow(this)"
+                                            placeholder="0.00"></td>
+                                    <td>
+                                        <div class="aiu-container" style="display: none;">
+                                            <div><label>A%</label><input type="number" class="a-input" value="5"
+                                                    oninput="calculateRow(this)"></div>
+                                            <div><label>I%</label><input type="number" class="i-input" value="5"
+                                                    oninput="calculateRow(this)"></div>
+                                            <div><label>U%</label><input type="number" class="u-input" value="5"
+                                                    oninput="calculateRow(this)"></div>
+                                        </div>
+                                        <input type="number" class="aiu-input" value="10" disabled hidden>
+                                    </td>
+                                    <td class="iva-cell">$ 0.00</td>
+                                    <td><button class="row-delete" onclick="removeRow(this)"><i
+                                                class="ph ph-trash"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Purchases Card -->
+                    <div id="purchases" class="glass-card">
+                        <div class="card-header">
+                            <h3><i class="ph ph-trend-down"></i> Compras y Gastos (IVA Descontable)</h3>
+                            <button class="add-btn" onclick="addRow('purchases-table')"><i
+                                    class="ph ph-plus"></i></button>
+                        </div>
+                        <table id="purchases-table">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>IVA Pagado</th>
+                                    <th>Tarifa (%)</th>
+                                    <th>Base Calculada</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="text" placeholder="Ej. Materias Primas"
+                                            value="Compras Gravadas (19%)"></td>
+                                    <td><input type="number" step="0.01" class="iva-input" oninput="calculateRow(this)"
+                                            placeholder="0.00"></td>
+                                    <td>
+                                        <select class="type-select" onchange="calculateRow(this)">
+                                            <option value="bienes-5">Bienes Gravados (5%)</option>
+                                            <option value="bienes-19" selected>Bienes Gravados (19%)</option>
+                                            <option value="servicios-5">Servicios Gravados (5%)</option>
+                                            <option value="servicios-19">Servicios Gravados (19%)</option>
+                                            <option value="excluidos">Excluidos / Exentos / No Gravados</option>
+                                            <option value="iva-recuperado-19">IVA Recuperado (Dev. Compras 19%)</option>
+                                            <option value="iva-recuperado-5">IVA Recuperado (Dev. Compras 5%)</option>
+                                        </select>
+                                    </td>
+                                    <td class="base-cell">$ 0.00</td>
+                                    <td><button class="row-delete" onclick="removeRow(this)"><i
+                                                class="ph ph-trash"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Real-time Summary Widget -->
+                <aside class="summary-section">
+                    <div id="summary" class="summary-card">
+                        <h2>Resultado del Periodo</h2>
+
+                        <div class="summary-group">
+                            <h4>Ingresos</h4>
+                            <div class="summary-line"><span>(28) Gravados Tarifa General:</span> <span id="gen-28-val">$
+                                    0.00</span></div>
+                            <div class="summary-line"><span>(29) AIU (Base Especial):</span> <span id="gen-29-val">$
+                                    0.00</span></div>
+                            <div class="summary-line"><span>(40) Operaciones No Gravadas:</span> <span id="gen-40-val">$
+                                    0.00</span></div>
+                            <div class="summary-line total highlight"><span>(41) Total Ingresos Brutos:</span> <span
+                                    id="inc-bruto">$ 0.00</span></div>
+                            <div class="summary-line"><span>(42) Devoluciones en Ventas:</span> <span
+                                    id="inc-dev-total">$ 0.00</span></div>
+                            <div class="summary-line highlight"><span>(43) Total Ingresos Netos:</span> <span
+                                    id="inc-neto">$ 0.00</span></div>
+                        </div>
+
+                        <div class="summary-group">
+                            <h4>Compras (Bases)</h4>
+                            <div class="summary-line"><span>(50) Bienes Gravados 5%:</span> <span id="base-50-val">$
+                                    0.00</span></div>
+                            <div class="summary-line"><span>(51) Bienes Gravados 19%:</span> <span id="base-51-val">$
+                                    0.00</span></div>
+                            <div class="summary-line"><span>(52) Servicios Gravados 5%:</span> <span id="base-52-val">$
+                                    0.00</span></div>
+                            <div class="summary-line"><span>(53) Servicios Gravados 19%:</span> <span id="base-53-val">$
+                                    0.00</span></div>
+                            <div class="summary-line"><span>(54) Bienes y Serv. Excluidos:</span> <span
+                                    id="base-54-val">$ 0.00</span></div>
+                            <div class="summary-line total"><span>(55) Total Compras Brutas:</span> <span
+                                    id="base-55-val">$ 0.00</span></div>
+                            <div class="summary-line"><span>(56) Dev. en Compras (Base):</span> <span id="base-56-val">$
+                                    0.00</span></div>
+                        </div>
+
+                        <div class="summary-group">
+                            <h4>Impuesto Generado</h4>
+                            <div class="summary-line"><span>(58) A la tarifa 5%:</span> <span id="gen-58-val">$
+                                    0.00</span></div>
+                            <div class="summary-line"><span>(59) A la tarifa general:</span> <span id="gen-59-val">$
+                                    0.00</span></div>
+                            <div class="summary-line"><span>(60) Sobre A.I.U:</span> <span id="gen-60-val">$ 0.00</span>
+                            </div>
+                            <div class="summary-line"><span>(66) IVA Recup. en Devolución:</span> <span
+                                    id="gen-66-val">$ 0.00</span></div>
+                            <div class="summary-line total"><span>Total Generado:</span> <span id="total-generated">$
+                                    0.00</span></div>
+                        </div>
+
+                        <div class="summary-group">
+                            <h4>Impuesto Descontable</h4>
+                            <div class="summary-line highlight"><span>Factor Prorrateo:</span> <span
+                                    id="prorate-factor">100.00%</span></div>
+                            <div class="summary-line"><span>(71) Bienes Gravados 5%:</span> <span id="desc-71-val">$
+                                    0.00</span></div>
+                            <div class="summary-line"><span>(72) Bienes Gravados 19%:</span> <span id="desc-72-val">$
+                                    0.00</span></div>
+                            <div class="summary-line"><span>(74) Servicios Gravados 5%:</span> <span id="desc-74-val">$
+                                    0.00</span></div>
+                            <div class="summary-line"><span>(75) Servicios Gravados 19%:</span> <span id="desc-75-val">$
+                                    0.00</span></div>
+                            <div class="summary-line"><span>Devoluciones Ventas:</span> <span id="desc-dev-v">$
+                                    0.00</span></div>
+                            <div class="summary-line total highlight"><span>(77) Total IVA Descontable:</span> <span
+                                    id="total-deductible">$ 0.00</span></div>
+                        </div>
+
+                        <div class="item-divider"></div>
+
+                        <div class="summary-item highlight">
+                            <span id="label-balance">Saldo a Pagar:</span>
+                            <span id="net-balance" class="val negative">$ 0.00</span>
+                        </div>
+
+                        <div class="reteiva-box">
+                            <label>Retenciones de IVA:</label>
+                            <div class="input-with-icon">
+                                <i class="ph ph-currency-dollar"></i>
+                                <input type="number" id="reteiva-input" oninput="updateMasterSummary()"
+                                    placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <div class="final-result">
+                            <p>Total a Pagar en Bancos:</p>
+                            <h2 id="final-to-pay">$ 0.00</h2>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification system -->
+    <div id="toast" class="toast">Calculando...</div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

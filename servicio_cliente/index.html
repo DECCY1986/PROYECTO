@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicio al Cliente | DIMALCCO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: rgba(24, 24, 27, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #f43f5e;
+            --accent-soft: rgba(244, 63, 94, 0.12);
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; overflow: hidden; }
+
+        .sidebar { width: 280px; background: rgba(15, 15, 18, 0.95); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 2rem 1.5rem; backdrop-filter: blur(20px); }
+        .brand { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 3rem; }
+        .brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent), #e11d48); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; box-shadow: 0 0 20px rgba(244, 63, 94, 0.3); }
+        .brand h2 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+
+        .nav-menu { flex-grow: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border-radius: 12px; color: var(--text-muted); text-decoration: none; transition: all 0.2s; font-weight: 500; font-size: 0.95rem; }
+        .nav-item:hover, .nav-item.active { background: var(--accent-soft); color: var(--accent); }
+        .nav-item i { font-size: 1.25rem; }
+
+        .sidebar-footer { margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border); }
+        .back-link { display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+        .back-link:hover { color: white; }
+
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 2.5rem 3rem; }
+        .top-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.5rem; }
+        .top-header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.25rem; }
+        .top-header p { color: var(--text-muted); font-size: 1rem; }
+
+        .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; border: none; }
+        .btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25); }
+        .btn-primary:hover { background: #e11d48; transform: translateY(-2px); }
+
+        .tickets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .ticket-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; padding: 1.5rem; display: flex; flex-direction: column; }
+        .ticket-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .ticket-id { font-size: 0.85rem; font-weight: 700; color: var(--accent); text-transform: uppercase; }
+        .ticket-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .ticket-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.25rem; }
+        .ticket-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .user-tag { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 500; }
+        .user-tag img { width: 24px; height: 24px; border-radius: 50%; }
+
+        .status-badge { padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .sb-open { background: rgba(244, 63, 94, 0.15); color: var(--accent); }
+        .sb-progress { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .sb-closed { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="ph-bold ph-headset"></i></div>
+            <h2>Soporte</h2>
+        </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active"><i class="ph ph-ticket"></i> Tickets y Garantías</a>
+            <a href="#" class="nav-item"><i class="ph ph-scroll"></i> Contratos de Servicio</a>
+            <a href="#" class="nav-item"><i class="ph ph-map-pin"></i> Servicios de Campo</a>
+            <a href="#" class="nav-item"><i class="ph ph-heart-straight"></i> Fidelización</a>
+            <a href="#" class="nav-item"><i class="ph ph-chart-bar"></i> NPS / Satisfacción</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="../index.html" class="back-link"><i class="ph ph-arrow-left"></i> Volver al Hub</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div>
+                <h1>Servicio al Cliente</h1>
+                <p>Gestión de garantías, soporte técnico y experiencia del cliente.</p>
+            </div>
+            <div style="display:flex; gap:12px">
+                <button class="btn btn-primary" onclick="alert('Tickets de Soporte guardados')"><i class="ph ph-floppy-disk"></i> Guardar</button>
+                <button class="btn btn-primary"><i class="ph ph-plus-circle"></i> Nuevo Ticket</button>
+            </div>
+        </header>
+
+        <section class="tickets-grid">
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <span class="ticket-id">TK-00842</span>
+                    <span class="status-badge sb-open">Abierto</span>
+                </div>
+                <h3 class="ticket-title">Ajuste de Bisagras — Oficina Principal</h3>
+                <p class="ticket-desc">El cliente reporta que las bisagras de la puerta principal están cediendo. Requiere visita técnica urgente para ajuste preventivo.</p>
+                <div class="ticket-footer">
+                    <div class="user-tag"><img src="https://i.pravatar.cc/100?u=1" alt=""> <span>Juan David Valderrama</span></div>
+                    <span style="font-size:0.8rem; color:var(--text-muted)">H ace 2h</span>
+                </div>
+            </div>
+
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <span class="ticket-id">TK-00841</span>
+                    <span class="status-badge sb-progress">En Proceso</span>
+                </div>
+                <h3 class="ticket-title">Garantía Filtro Barniz</h3>
+                <p class="ticket-desc">Falla en la adherencia del barniz en la mesa de conferencias. Evaluación técnica programada para mañana 8:00 AM.</p>
+                <div class="ticket-footer">
+                    <div class="user-tag"><img src="https://i.pravatar.cc/100?u=2" alt=""> <span>Andrés Felipe Mora</span></div>
+                    <span style="font-size:0.8rem; color:var(--text-muted)">Hoy 9:30 AM</span>
+                </div>
+            </div>
+
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <span class="ticket-id">TK-00839</span>
+                    <span class="status-badge sb-closed">Cerrado</span>
+                </div>
+                <h3 class="ticket-title">Presupuesto Mantenimiento Anual</h3>
+                <p class="ticket-desc">Solicitud de renovación de contrato de mantenimiento preventivo para el Casino Industrial.</p>
+                <div class="ticket-footer">
+                    <div class="user-tag"><img src="https://i.pravatar.cc/100?u=3" alt=""> <span>Beatriz Salazar</span></div>
+                    <span style="font-size:0.8rem; color:var(--text-muted)">Ayer 4:00 PM</span>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

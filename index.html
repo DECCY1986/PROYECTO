@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORKSPACE MAESTRO · DIMALCCO SAS</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="workspace.css">
+</head>
+<body>
+
+<div class="ws-layout">
+    <!-- SIDEBAR -->
+    <aside class="ws-sidebar">
+        <div class="ws-logo">
+            <div class="ws-logo-icon"><i class="ph ph-buildings" style="color:#fff"></i></div>
+            <span style="font-weight:700;letter-spacing:0.05em;font-size:16px">DIMALCCO <span style="font-weight:300;opacity:0.6">SAS</span></span>
+        </div>
+
+        <nav class="ws-nav">
+            <div class="nav-group">
+                <span class="nav-label">Monitoreo</span>
+                <a href="#" class="nav-item active" onclick="loadModule('tablero.html', this)">
+                    <i class="ph ph-chart-bar"></i> <span>Dashboard Global</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-label">Finanzas</span>
+                <a href="#" class="nav-item" onclick="loadModule('tesoreria_dimalcco.html', this)">
+                    <i class="ph ph-bank"></i> <span>Tesorería</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('cxcxp.html', this)">
+                    <i class="ph ph-hand-coins"></i> <span>CxC / CxP</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('presupuesto.html', this)">
+                    <i class="ph ph-calculator"></i> <span>Presupuesto</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('costos.html', this)">
+                    <i class="ph ph-trend-up"></i> <span>Costos</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-label">Contabilidad</span>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/industria_comercio/index.html', this)">
+                    <i class="ph ph-receipt"></i> <span>Industria y Comercio</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/retencion_fuente/index.html', this)">
+                    <i class="ph ph-scales"></i> <span>Retención Fuente</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/retencion_ica/index.html', this)">
+                    <i class="ph ph-file-text"></i> <span>ReteICA</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/renta_juridica/index.html', this)">
+                    <i class="ph ph-buildings"></i> <span>Renta Jurídica (F110)</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/cierre_contable/index.html', this)">
+                    <i class="ph ph-lock-key"></i> <span>Cierre Contable</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/calculadora_iva/index.html', this)">
+                    <i class="ph ph-calculator"></i> <span>Calculadora de IVA</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/flujo_caja.html', this)">
+                    <i class="ph ph-hand-coins"></i> <span>Legalización Flujo de Caja</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/dashboard_fiscal.html', this)">
+                    <i class="ph ph-chart-line-up"></i> <span>Resumen Fiscal</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/estados_financieros/index.html', this)">
+                    <i class="ph ph-presentation-chart"></i> <span>Estados Financieros</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-label">Bancos</span>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/control_diario_pagos.html', this)">
+                    <i class="ph ph-calendar-check"></i> <span>Control Diario Pagos</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/conciliacion_bancaria/index.html', this)">
+                    <i class="ph ph-bank"></i> <span>Conciliación Bancaria</span>
+                </a>
+                <a href="#" class="nav-item" style="opacity:0.5;pointer-events:none">
+                    <i class="ph ph-piggy-bank"></i> <span>Préstamos Bancarios (Próximamente)</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-label">Talento Humano</span>
+                <a href="#" class="nav-item" onclick="loadModule('talento_humano/nomina.html', this)">
+                    <i class="ph ph-users-three"></i> <span>Nómina</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('talento_humano/personal/index.html', this)">
+                    <i class="ph ph-identification-card"></i> <span>Gestión Personal</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('talento_humano/control_horarios/index.html', this)">
+                    <i class="ph ph-timer"></i> <span>Control Horarios</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('talento_humano/sst/index.html', this)">
+                    <i class="ph ph-shield-check"></i> <span>Módulo SST</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-label">Agenda & Tareas</span>
+                <a href="#" class="nav-item" onclick="loadModule('agenda/index.html', this)">
+                    <i class="ph ph-calendar-check"></i> <span>Agenda 2026</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-label">Producción & Calidad</span>
+                <a href="#" class="nav-item" onclick="loadModule('carpinteria/index.html', this)">
+                    <i class="ph ph-hammer"></i> <span>Carpintería (Gestión)</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('calidad/index.html', this)">
+                    <i class="ph ph-shield-check"></i> <span>Gestión de Calidad</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('proyectos/index.html', this)">
+                    <i class="ph ph-strategy"></i> <span>Gestión de Proyectos</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-label">Operación & Clientes</span>
+                <a href="#" class="nav-item" onclick="loadModule('compras/index.html', this)">
+                    <i class="ph ph-shopping-cart"></i> <span>Compras</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('servicio_cliente/index.html', this)">
+                    <i class="ph ph-headset"></i> <span>Servicio al Cliente</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('bi/index.html', this)">
+                    <i class="ph ph-chart-line-up"></i> <span>Business Intelligence</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Claude AI Card in Sidebar -->
+        <div class="ws-ai-card">
+            <div style="display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;margin-bottom:10px;color:rgba(255,255,255,0.7)">
+                <i class="ph ph-sparkle"></i> ASISTENTE CLAUDE
+            </div>
+            <button class="ws-ai-btn" onclick="toggleAIChat()">
+                <i class="ph ph-chat-circle-dots"></i> <span>Abrir Asistente</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- CONTENT AREA -->
+    <main class="ws-content">
+        <header class="ws-header">
+            <div id="module-title" class="ws-header-title">Dashboard Global</div>
+            <div style="display:flex;align-items:center;gap:16px">
+                <span id="ws-clock" style="font-family:'DM Mono'; font-size:12px; color:#64748b"></span>
+                <button onclick="openAIConfig()" style="background:none; border:1px solid #e2e8f0; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; display:flex; align-items:center; gap:6px">
+                    <i class="ph ph-gear"></i> Ajustes IA
+                </button>
+            </div>
+        </header>
+
+        <div class="ws-iframe-container" id="ws-container">
+            <iframe id="ws-viewport" src="tablero.html"></iframe>
+        </div>
+    </main>
+</div>
+
+<!-- COMMON AI UI (From assistant.js) -->
+<div id="ai-ui-root"></div>
+
+<!-- Replace original chat-window from individual pages with a global one -->
+<div class="ai-window" id="aiWindow" style="position:fixed; bottom:30px; right:30px; width:400px; height:600px; z-index:9999; display:none; background:#fff; border-radius:16px; box-shadow:0 12px 64px rgba(0,0,0,0.2); flex-direction:column; overflow:hidden; border:1px solid #e2e8f0;">
+    <div style="background:#0f172a; color:#fff; padding:16px; display:flex; align-items:center; justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:8px;font-weight:600"><i class="ph ph-sparkle"></i> Claude AI</div>
+        <button onclick="toggleAIChat()" style="background:none;border:none;color:#fff;cursor:pointer"><i class="ph ph-x"></i></button>
+    </div>
+    <div id="aiChatArea" style="flex:1; padding:20px; overflow-y:auto; background:#f8fafc; font-size:13px; line-height:1.6"></div>
+    <div id="aiLoading" style="display:none; padding:10px 20px; font-size:12px; color:#64748b; font-style:italic">Claude está pensando...</div>
+    <div style="padding:16px; border-top:1px solid #e2e8f0; display:flex; gap:8px; background:#fff">
+        <input type="text" id="aiInput" style="flex:1; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; outline:none" placeholder="Pregunta sobre Dimalcco..." onkeypress="if(event.key==='Enter')sendAIMessage()">
+        <button onclick="sendAIMessage()" style="background:#4338ca; color:#fff; border:none; border-radius:8px; width:40px; height:40px; cursor:pointer"><i class="ph ph-paper-plane-right"></i></button>
+    </div>
+</div>
+
+<!-- MODAL: AI Config (Global) -->
+<div class="modal-backdrop" id="aiModalBk" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(2px)">
+    <div style="background:#fff; padding:32px; border-radius:16px; width:400px; box-shadow:0 20px 40px rgba(0,0,0,0.2)">
+        <h3 style="margin-bottom:20px; font-size:18px">Configuración Claude AI</h3>
+        <div style="margin-bottom:16px">
+            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px">API KEY</label>
+            <input type="password" id="aiKeyInput" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px" placeholder="sk-ant-...">
+        </div>
+        <div style="margin-bottom:24px">
+            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px">PROXY URL (OPCIONAL)</label>
+            <input type="text" id="aiProxyInput" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px" placeholder="https://...">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:12px">
+            <button onclick="closeAIConfig()" style="padding:10px 16px; border:1px solid #e2e8f0; border-radius:8px; background:none; cursor:pointer">Cancelar</button>
+            <button onclick="saveAIConfig()" style="padding:10px 16px; background:#4338ca; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:600">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="ai_assistant.js"></script>
+<script>
+// Logic to load modules into the iframe
+function loadModule(url, el) {
+    document.getElementById('ws-viewport').src = url;
+    document.getElementById('module-title').textContent = el.querySelector('span').textContent;
+    
+    // UI Update
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    el.classList.add('active');
+}
+
+// Clock
+setInterval(() => {
+    const now = new Date();
+    document.getElementById('ws-clock').textContent = now.toLocaleDateString('es-CO', { 
+        weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' 
+    });
+}, 1000);
+
+// Global AI Chat UI Logic
+function toggleAIChat() {
+    const win = document.getElementById('aiWindow');
+    win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function openAIConfig() {
+    document.getElementById('aiKeyInput').value = localStorage.getItem('ANTHROPIC_API_KEY') || '';
+    document.getElementById('aiProxyInput').value = localStorage.getItem('AI_PROXY_URL') || '';
+    document.getElementById('aiModalBk').style.display = 'flex';
+}
+
+function closeAIConfig() {
+    document.getElementById('aiModalBk').style.display = 'none';
+}
+
+function saveAIConfig() {
+    localStorage.setItem('ANTHROPIC_API_KEY', document.getElementById('aiKeyInput').value.trim());
+    localStorage.setItem('AI_PROXY_URL', document.getElementById('aiProxyInput').value.trim());
+    window.DimalccoAI.apiKey = localStorage.getItem('ANTHROPIC_API_KEY');
+    window.DimalccoAI.proxyUrl = localStorage.getItem('AI_PROXY_URL');
+    closeAIConfig();
+}
+
+async function sendAIMessage() {
+    const input = document.getElementById('aiInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    const chatArea = document.getElementById('aiChatArea');
+    chatArea.innerHTML += `<div style="margin-bottom:12px; padding:10px 14px; background:#4338ca; color:#fff; border-radius:12px; max-width:85%; margin-left:auto; border-bottom-right-radius:2px">${text}</div>`;
+    chatArea.scrollTop = chatArea.scrollHeight;
+
+    document.getElementById('aiLoading').style.display = 'block';
+
+    try {
+        const response = await window.DimalccoAI.sendMessage(text);
+        const html = marked.parse(response);
+        chatArea.innerHTML += `<div style="margin-bottom:12px; padding:10px 14px; background:#fff; color:#0f172a; border:1px solid #e2e8f0; border-radius:12px; max-width:85%; border-bottom-left-radius:2px">${html}</div>`;
+    } catch (e) {
+        chatArea.innerHTML += `<div style="color:red; font-size:12px">${e.message}</div>`;
+    } finally {
+        document.getElementById('aiLoading').style.display = 'none';
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+}
+</script>
+</body>
+</html>

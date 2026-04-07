@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nómina Quincenal</title>
+    <meta name="description"
+        content="Gestión de novedades de nómina quincenal con cálculo automático de seguridad social y exportación a PDF y Excel." />
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- jsPDF + AutoTable (PDF) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- SheetJS (Excel) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- ── Header ─────────────────────────────────────────────────────────── -->
+        <header>
+            <div class="header-brand">
+                <span class="logo">📋</span>
+                <h1>Nómina Quincenal<span>Colombia · SMMLV 2026</span></h1>
+            </div>
+
+            <div class="header-periodo">
+                <label for="sel-anio">Año</label>
+                <select id="sel-anio">
+                    <option value="2025">2025</option>
+                    <option value="2026" selected>2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                </select>
+
+                <label for="sel-mes">Mes</label>
+                <select id="sel-mes">
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+
+                <label for="sel-quincena">Quincena</label>
+                <select id="sel-quincena">
+                    <option value="1">1ª (días 1–15)</option>
+                    <option value="2">2ª (días 16–30)</option>
+                </select>
+
+                <span id="titulo-periodo">—</span>
+            </div>
+
+            <div class="header-actions">
+                <a href="../index.html" class="btn btn-outline" style="text-decoration: none; padding: 0.5rem;"
+                    title="Volver al Hub Espacio de Trabajo">🏠 Hub</a>
+                <button class="btn btn-primary" id="btn-guardar-global" style="background: #10b981; border-color: #10b981;" title="Guardar cambios actuales">💾 Guardar</button>
+                <button class="btn btn-primary" id="btn-archivar" style="background: var(--success, #10b981); border-color: var(--success, #10b981);" title="Cerrar y guardar esta nómina en el histórico">📁 Archivar</button>
+                <button class="btn btn-outline" id="btn-export-pdf">⬇️ PDF</button>
+                <button class="btn btn-outline" id="btn-export-excel">⬇️ Excel</button>
+                <button class="btn btn-outline btn-para" id="btn-export-para">📊 Parafiscales</button>
+                <button class="btn btn-outline btn-prest" id="btn-export-prest">📄 Prestaciones</button>
+                <button class="btn btn-danger" id="btn-limpiar">🗑️ Limpiar</button>
+            </div>
+        </header>
+
+        <!-- ── Main ───────────────────────────────────────────────────────────── -->
+        <div class="main">
+
+            <!-- Sidebar de empleados -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h3>Empleados</h3>
+                    <button class="btn btn-primary" id="btn-nuevo-empleado">+ Nuevo</button>
+                </div>
+                <div class="lista-empleados" id="lista-empleados"></div>
+            </aside>
+
+            <!-- Panel principal -->
+            <div class="panel-wrap">
+                <div class="panel-novedades" id="panel-novedades"></div>
+                <div class="panel-resumen" id="panel-resumen"></div>
+                
+                <!-- Historial de Nóminas -->
+                <div class="panel-history" id="panel-history" style="display:none; margin-top: 2rem; border-top: 2px solid #eee; padding-top: 1.5rem;">
+                    <h2 style="margin-bottom: 1rem;">📜 Nóminas Vencidas (Histórico)</h2>
+                    <div id="history-list" class="resumen-grid">
+                        <!-- Items de historial -->
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /.main -->
+
+    </div><!-- /.app -->
+
+    <!-- ── Modal: Nuevo/Editar Empleado ────────────────────────────────────── -->
+    <div class="modal-overlay" id="modal-empleado" role="dialog" aria-modal="true" aria-labelledby="modal-emp-titulo">
+        <div class="modal">
+            <h3 id="modal-emp-titulo">Nuevo Empleado</h3>
+
+            <div class="form-group">
+                <label for="inp-nombre">Nombre completo</label>
+                <input type="text" id="inp-nombre" placeholder="Ej. Juan Pérez" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label for="inp-cedula">Cédula / Documento</label>
+                <input type="text" id="inp-cedula" placeholder="Ej. 1234567890" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label for="inp-cargo">Cargo</label>
+                <input type="text" id="inp-cargo" placeholder="Ej. Auxiliar Administrativo" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label for="inp-salario">Salario mensual ($)</label>
+                <input type="number" id="inp-salario" placeholder="Ej. 1750905" min="0" step="1000" />
+            </div>
+            <div class="form-group">
+                <label for="sel-nivel-arl">Nivel de riesgo ARL</label>
+                <select id="sel-nivel-arl">
+                    <option value="I">Nivel I — 0.522% (Oficina / Administrativo)</option>
+                    <option value="II">Nivel II — 1.044% (Almacenes / Transporte liviano)</option>
+                    <option value="III">Nivel III — 2.436% (Construcción leve / Mecánica)</option>
+                    <option value="IV">Nivel IV — 4.350% (Construcción pesada / Minería)</option>
+                    <option value="V">Nivel V — 6.960% (Alto riesgo / Explosivos)</option>
+                </select>
+            </div>
+            <div class="form-group" id="grp-fecha-ingreso">
+                <label for="inp-fecha-ingreso">Fecha de ingreso</label>
+                <input type="date" id="inp-fecha-ingreso" />
+                <small class="field-hint" id="hint-fecha-ingreso" style="display:none; color: var(--text-muted, #888); font-size: 0.78rem; margin-top: 0.25rem;">Solo se registra al crear el empleado.</small>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-ghost" id="btn-cancelar-emp">Cancelar</button>
+                <button class="btn btn-primary" id="btn-guardar-emp">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Modal: Nueva Novedad ─────────────────────────────────────────────── -->
+    <div class="modal-overlay" id="modal-novedad" role="dialog" aria-modal="true">
+        <div class="modal">
+            <h3>Registrar Novedad</h3>
+
+            <input type="hidden" id="modal-nov-emp-id" />
+
+            <div class="form-group">
+                <label for="sel-tipo-novedad">Tipo de novedad</label>
+                <select id="sel-tipo-novedad"></select>
+            </div>
+
+            <div class="form-group">
+                <label for="inp-valor-novedad">Cantidad / Valor</label>
+                <div class="input-with-unit">
+                    <input type="number" id="inp-valor-novedad" placeholder="0" min="0" step="any" />
+                    <span class="unit-label" id="label-unidad-novedad">días</span>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-ghost" id="btn-cancelar-nov">Cancelar</button>
+                <button class="btn btn-primary" id="btn-guardar-nov">Registrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Scripts ──────────────────────────────────────────────────────────── -->
+    <script src="novedades.js"></script>
+    <script src="exporter.js"></script>
+    <script src="app.js"></script>
+
+</body>
+
+</html>

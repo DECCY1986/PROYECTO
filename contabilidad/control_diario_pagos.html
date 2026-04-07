@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Diario de Pagos · DIMALCCO SAS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-alt: #334155;
+            --accent: #f97316; /* Naranja como el Excel */
+            --accent-soft: rgba(249, 115, 22, 0.15);
+            --border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+            --r: 10px;
+            --font: 'Sora', sans-serif;
+            --mono: 'DM Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            font-family: var(--font); 
+            font-size: 13px; 
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        header { 
+            background: var(--accent);
+            color: #fff;
+            padding: 16px 24px;
+            border-radius: var(--r) var(--r) 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 { font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .setup-bar {
+            background: #c2410c; /* Naranja más oscuro */
+            padding: 12px 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1.5fr 1.5fr;
+            gap: 20px;
+            align-items: center;
+        }
+        .field label { color: rgba(255,255,255,0.8); font-size: 10px; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; display: block; }
+        .field input, .field select { 
+            background: rgba(0,0,0,0.2); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            color: #fff; 
+            padding: 6px 10px; 
+            border-radius: 4px; 
+            width: 100%;
+            font-family: var(--mono);
+        }
+
+        .table-container {
+            background: #fff;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            margin-bottom: 0;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th { 
+            background: #ea580c; /* Naranja Excel */
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 10px;
+            border: 1px solid #c2410c;
+            text-align: center;
+        }
+        td { 
+            padding: 0;
+            border: 1px solid #cbd5e1;
+        }
+        td input, td select {
+            width: 100%;
+            height: 36px;
+            padding: 8px;
+            border: none;
+            font-family: inherit;
+            font-size: 12px;
+            background: transparent;
+            color: inherit;
+            outline: none;
+        }
+        td input:focus { background: #fffbeb; }
+        
+        .col-idx { width: 40px; text-align: center; font-weight: 700; background: #f8fafc; }
+        .col-val, .col-saldo { font-family: var(--mono); text-align: right; width: 140px; padding-right: 10px; }
+        .col-tipo { width: 130px; }
+        .col-fecha { width: 140px; }
+        .col-del { width: 40px; text-align: center; border: none !important; }
+
+        .btn-del { color: #ef4444; border: none; background: none; cursor: pointer; font-size: 16px; margin-top: 8px; }
+
+        .summary-rows {
+            background: #f8fafc;
+        }
+        .summary-label {
+            background: #94a3b8;
+            color: #fff;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 10px;
+            font-size: 11px;
+        }
+        .summary-val {
+            font-family: var(--mono);
+            font-weight: 700;
+            font-size: 14px;
+            padding: 10px;
+            text-align: right;
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-add {
+            background: #fff;
+            color: var(--accent);
+            border: 2px dashed var(--accent);
+            padding: 12px;
+            width: 100%;
+            border-radius: 0 0 10px 10px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+        .btn-add:hover { background: #fff7ed; }
+
+        .btn-save {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #ea580c;
+            color: #fff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-weight: 700;
+            box-shadow: 0 10px 25px rgba(234, 88, 12, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Stats in top setup bar */
+        .stat-box {
+            background: rgba(0,0,0,0.15);
+            padding: 8px 12px;
+            border-radius: 6px;
+            text-align: right;
+        }
+        .stat-box .val { font-family: var(--mono); font-weight: 700; font-size: 15px; }
+        .stat-box .lbl { font-size: 9px; opacity: 0.8; font-weight: 600; text-transform: uppercase; }
+
+        .diff-ok { color: #4ade80 !important; }
+        .diff-err { color: #f87171 !important; }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DIMALCCO SAS</h1>
+            <div id="clock" style="font-family: var(--mono); font-size: 12px; opacity: 0.9;"></div>
+        </header>
+
+        <div class="setup-bar">
+            <div class="field">
+                <label>Saldo Inicial (Excel)</label>
+                <input type="number" id="input-saldo-inicial" placeholder="0" oninput="calculate()">
+            </div>
+            <div class="field">
+                <label>Saldo en Banco (Real)</label>
+                <input type="number" id="input-saldo-banco" placeholder="0" oninput="calculate()">
+            </div>
+            <div class="field">
+                <label>Fecha de Control</label>
+                <input type="date" id="input-fecha" onchange="changeDate(this.value)">
+            </div>
+            <div class="stat-box">
+                <div class="lbl" id="diff-label">Diferencia</div>
+                <div class="val" id="stat-diff">$ 0</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="table-pagos">
+                <thead>
+                    <tr>
+                        <th class="col-idx">#</th>
+                        <th>Descripción del Gasto</th>
+                        <th class="col-val">Valor</th>
+                        <th class="col-tipo">Tipo</th>
+                        <th class="col-fecha">Fecha del Pago</th>
+                        <th class="col-saldo">Saldo</th>
+                        <th class="col-del"></th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-pagos">
+                </tbody>
+                <tfoot>
+                    <tr class="summary-rows">
+                        <td colspan="2" class="summary-label">Total Pagos Diarios</td>
+                        <td id="sum-egresos" class="summary-val" style="background: #e2e8f0;">$ 0</td>
+                        <td colspan="4"></td>
+                    </tr>
+                    <tr class="summary-rows">
+                        <td colspan="2" class="summary-label">Saldo en el Banco</td>
+                        <td id="sum-banco" class="summary-val">$ 0</td>
+                        <td colspan="4"></td>
+                    </tr>
+                    <tr class="summary-rows">
+                        <td colspan="2" class="summary-label">Diferencia</td>
+                        <td id="sum-diff" class="summary-val">$ 0</td>
+                        <td colspan="4"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div style="background:var(--surface-alt); padding:20px; border-radius:10px; margin-top:0; border:1px solid #cbd5e1; border-top:none;">
+            <label style="color:#fff; font-size:11px; margin-bottom:8px; display:block;">DETALLE Y EXPLICACIÓN DE LA DIFERENCIA (SOPORTE)</label>
+            <textarea id="input-nota" style="width:100%; height:80px; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:10px; border-radius:5px; resize:none; font-family:inherit;" oninput="updateNota(this.value)" placeholder="Escriba aquí la razón de la diferencia (ej. GMF, comisiones no registradas, redondeos...)"></textarea>
+        </div>
+
+        <button class="btn-add" onclick="addRow()">
+            + AGREGAR FILA DE GASTO
+        </button>
+
+        <div style="display:flex; gap:16px; margin-bottom:100px;">
+            <button onclick="exportExcel()" style="flex:1; padding:12px; background:#16a34a; color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <i class="ph ph-file-xls" style="font-size:20px;"></i> EXPORTAR A EXCEL (.XLSX)
+            </button>
+        </div>
+    </div>
+
+    <button class="btn-save" onclick="saveData()">
+        <i class="ph ph-floppy-disk"></i> GUARDAR CONTROL DIARIO
+    </button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        const STORAGE_KEY = 'dim_control_pagos_db_v3';
+        let currentDay = new Date().toISOString().split('T')[0];
+        
+        let state = {
+            saldoInicial: 0,
+            saldoBanco: 0,
+            nota: '',
+            items: [
+                { desc: '', valor: 0, tipo: 'PRODUCCION', fecha: currentDay }
+            ]
+        };
+
+        function init() {
+            document.getElementById('input-fecha').value = currentDay;
+            loadDay(currentDay);
+            setInterval(() => document.getElementById('clock').textContent = new Date().toLocaleString('es-CO'), 1000);
+        }
+
+        function loadDay(date) {
+            currentDay = date;
+            const db = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            
+            if (db[date]) {
+                state = db[date];
+            } else {
+                const allDates = Object.keys(db).sort().reverse();
+                const lastDate = allDates.find(d => d < date);
+                let saldoArrastre = 0;
+                
+                if (lastDate) {
+                    const lastData = db[lastDate];
+                    saldoArrastre = lastData.saldoBanco || 0;
+                }
+
+                state = {
+                    saldoInicial: saldoArrastre,
+                    saldoBanco: saldoArrastre,
+                    nota: '',
+                    items: [
+                        { desc: '', valor: 0, tipo: 'PRODUCCION', fecha: date }
+                    ]
+                };
+            }
+
+            document.getElementById('input-saldo-inicial').value = state.saldoInicial;
+            document.getElementById('input-saldo-banco').value = state.saldoBanco;
+            document.getElementById('input-nota').value = state.nota || '';
+            
+            renderRows();
+            calculate();
+        }
+
+        function changeDate(newDate) {
+            saveCurrentDaySilent();
+            loadDay(newDate);
+        }
+
+        function renderRows() {
+            const tbody = document.getElementById('tbody-pagos');
+            tbody.innerHTML = '';
+            
+            state.items.forEach((item, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="col-idx">${i + 1}</td>
+                    <td><input type="text" value="${item.desc}" oninput="updateItem(${i}, 'desc', this.value)"></td>
+                    <td class="col-val"><input type="number" value="${item.valor}" oninput="updateItem(${i}, 'valor', this.value)"></td>
+                    <td class="col-tipo">
+                        <select onchange="updateItem(${i}, 'tipo', this.value)">
+                            <option value="PRODUCCION" ${item.tipo === 'PRODUCCION' ? 'selected' : ''}>Producción</option>
+                            <option value="NOMINA" ${item.tipo === 'NOMINA' ? 'selected' : ''}>Nómina</option>
+                            <option value="PAPELERIA" ${item.tipo === 'PAPELERIA' ? 'selected' : ''}>Papelería</option>
+                            <option value="TRANSPORTE" ${item.tipo === 'TRANSPORTE' ? 'selected' : ''}>Transporte</option>
+                            <option value="INSUMOS" ${item.tipo === 'INSUMOS' ? 'selected' : ''}>Insumos</option>
+                            <option value="MANTENIMIENTO" ${item.tipo === 'MANTENIMIENTO' ? 'selected' : ''}>Mantenimiento</option>
+                            <option value="LOCATIVO" ${item.tipo === 'LOCATIVO' ? 'selected' : ''}>Locativo</option>
+                            <option value="ACTIVO" ${item.tipo === 'ACTIVO' ? 'selected' : ''}>Activo</option>
+                            <option value="ADMINISTRATIVO" ${item.tipo === 'ADMINISTRATIVO' ? 'selected' : ''}>Administrativo</option>
+                            <option value="FINANCIERO" ${item.tipo === 'FINANCIERO' ? 'selected' : ''}>Financiero</option>
+                            <option value="IMPUESTOS" ${item.tipo === 'IMPUESTOS' ? 'selected' : ''}>Impuestos</option>
+                            <option value="DIVIDENDOS" ${item.tipo === 'DIVIDENDOS' ? 'selected' : ''}>Dividendos</option>
+                        </select>
+                    </td>
+                    <td class="col-fecha"><input type="date" value="${item.fecha}" oninput="updateItem(${i}, 'fecha', this.value)"></td>
+                    <td class="col-saldo" id="row-saldo-${i}">$ 0</td>
+                    <td class="col-del"><button class="btn-del" onclick="removeRow(${i})">×</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function addRow() {
+            state.items.push({ desc: '', valor: 0, tipo: 'PRODUCCION', fecha: currentDay });
+            renderRows();
+            calculate();
+        }
+
+        function removeRow(i) {
+            state.items.splice(i, 1);
+            renderRows();
+            calculate();
+        }
+
+        function updateItem(i, key, val) {
+            state.items[i][key] = key === 'valor' ? parseFloat(val) || 0 : val;
+            calculate();
+        }
+
+        function updateNota(val) {
+            state.nota = val;
+        }
+
+        function calculate() {
+            state.saldoInicial = parseFloat(document.getElementById('input-saldo-inicial').value) || 0;
+            state.saldoBanco = parseFloat(document.getElementById('input-saldo-banco').value) || 0;
+
+            let runningSaldo = state.saldoInicial;
+            let totalPagos = 0;
+
+            state.items.forEach((item, i) => {
+                runningSaldo -= item.valor;
+                totalPagos += item.valor;
+                const saldoEl = document.getElementById(`row-saldo-${i}`);
+                if (saldoEl) saldoEl.textContent = fmt(runningSaldo);
+            });
+
+            const diff = state.saldoBanco - runningSaldo;
+
+            document.getElementById('sum-egresos').textContent = fmt(totalPagos);
+            document.getElementById('sum-banco').textContent = fmt(state.saldoBanco);
+            document.getElementById('sum-diff').textContent = fmt(diff);
+            document.getElementById('stat-diff').textContent = fmt(diff);
+
+            const isOk = Math.abs(diff) < 1;
+            document.getElementById('sum-diff').className = 'summary-val ' + (isOk ? 'diff-ok' : 'diff-err');
+            document.getElementById('stat-diff').className = 'val ' + (isOk ? 'diff-ok' : 'diff-err');
+        }
+
+        function fmt(v) {
+            return '$ ' + v.toLocaleString('es-CO');
+        }
+
+        function saveCurrentDaySilent() {
+            const db = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            db[currentDay] = state;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+        }
+
+        function saveData() {
+            saveCurrentDaySilent();
+            alert('Control del día ' + currentDay + ' guardado.');
+        }
+
+        function exportExcel() {
+            const data = state.items.map((it, idx) => ({
+                '#': idx + 1,
+                'Descripción': it.desc,
+                'Valor': it.valor,
+                'Tipo': it.tipo,
+                'Fecha': it.fecha
+            }));
+
+            const totalPagos = state.items.reduce((s, it) => s + it.valor, 0);
+            const saldoCalculado = state.saldoInicial - totalPagos;
+            
+            data.push({});
+            data.push({ 'Descripción': 'SALDO INICIAL', 'Valor': state.saldoInicial });
+            data.push({ 'Descripción': 'TOTAL PAGOS DIARIOS', 'Valor': totalPagos });
+            data.push({ 'Descripción': 'SALDO EN BANCO (REAL)', 'Valor': state.saldoBanco });
+            data.push({ 'Descripción': 'DIFERENCIA', 'Valor': state.saldoBanco - saldoCalculado });
+            data.push({});
+            data.push({ 'Descripción': 'OBSERVACIONES / SOPORTE:', 'Valor': state.nota });
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Control Diario");
+            XLSX.writeFile(wb, `Control_Diario_${currentDay}.xlsx`);
+        }
+
+        init();
+    </script>
+</body>
+</html>

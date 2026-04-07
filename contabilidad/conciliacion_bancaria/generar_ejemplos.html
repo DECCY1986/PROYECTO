@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Generador de Ejemplos — Conciliación Bancaria</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            gap: 20px;
+            padding: 24px;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(90deg, #10b981, #6ee7b7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        p {
+            color: #8b949e;
+            font-size: 14px;
+            text-align: center;
+            max-width: 480px;
+        }
+
+        .cards {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 22px 28px;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .card .icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .card small {
+            color: #8b949e;
+            font-size: 12px;
+        }
+
+        button {
+            margin-top: 12px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            color: #fff;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px #10b98150;
+        }
+
+        #btn-all {
+            background: linear-gradient(135deg, #1f6feb, #3b82f6);
+            font-size: 15px;
+            padding: 14px 36px;
+            border-radius: 50px;
+            box-shadow: 0 4px 20px #1f6feb40;
+        }
+
+        #btn-all:hover {
+            box-shadow: 0 8px 28px #1f6feb60;
+        }
+
+        #status {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #10b981;
+            min-height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>📊 Generador de Archivos de Ejemplo</h1>
+    <p>Genera los tres archivos Excel de prueba para la herramienta de conciliación bancaria. Se descargarán
+        automáticamente.</p>
+
+    <div class="cards">
+        <div class="card">
+            <div class="icon">🏦</div>
+            <h3>Bancolombia</h3>
+            <small>15 movimientos · Feb 2026</small><br />
+            <button onclick="generarBancolombia()">Descargar</button>
+        </div>
+        <div class="card">
+            <div class="icon">🏛️</div>
+            <h3>BBVA</h3>
+            <small>10 movimientos · Feb 2026</small><br />
+            <button onclick="generarBBVA()">Descargar</button>
+        </div>
+        <div class="card">
+            <div class="icon">📋</div>
+            <h3>Helisa</h3>
+            <small>15 + 3 extras · Feb 2026</small><br />
+            <button onclick="generarHelisa()">Descargar</button>
+        </div>
+    </div>
+
+    <button id="btn-all" onclick="generarTodos()">⬇️ Descargar los 3 archivos</button>
+    <div id="status"></div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script>
+        // ── Datos de muestra ────────────────────────────────────────
+        const START = new Date(2026, 1, 1); // 1 Feb 2026
+
+        function addDays(d, n) {
+            const r = new Date(d);
+            r.setDate(r.getDate() + n);
+            return r;
+        }
+
+        function fmtDate(d) {
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            return `${dd}/${mm}/${d.getFullYear()}`;
+        }
+
+        const conceptos = [
+            ['TRANSFERENCIA ELECTRONICA PROVEEDOR', 1500000, false],
+            ['PAGO NOMINA EMPLEADOS', 3200000, false],
+            ['ABONO CLIENTE FACTURA 1023', 800000, true],
+            ['RETIRO CAJERO AUTOMATICO', 250000, false],
+            ['PAGO SERVICIOS PUBLICOS EPM', 450000, false],
+            ['TRANSFERENCIA RECIBIDA CLIENTE', 5600000, true],
+            ['PAGO ARRIENDO OFICINA', 1200000, false],
+            ['COMISION BANCARIA MES FEBRERO', 35000, false],
+            ['ABONO VENTA CONTADO FACTURA 1031', 2800000, true],
+            ['PAGO IMPUESTO ICA BIMESTRE', 670000, false],
+            ['TRANSFERENCIA A CUENTA PROPIA', 4500000, true],
+            ['RECAUDO CARTERA CLIENTE MAYORISTA', 1800000, true],
+            ['PAGO PROVEEDOR SUMINISTROS LTDA', 920000, false],
+            ['DEPOSITO EN EFECTIVO RECAUDOS', 650000, true],
+            ['NOTA DEBITO GASTOS FINANCIEROS', 85000, false],
+        ];
+
+        function buildMovimientos() {
+            let saldo = 15000000;
+            return conceptos.map(([desc, monto, esCredito], i) => {
+                const fecha = addDays(START, i * 2);
+                const debito = esCredito ? 0 : monto;
+                const credito = esCredito ? monto : 0;
+                saldo += credito - debito;
+                return { fecha, desc, ref: `REF${(100 + i).toString().padStart(4, '0')}`, debito, credito, saldo };
+            });
+        }
+
+        // ── BANCOLOMBIA ─────────────────────────────────────────────
+        function generarBancolombia() {
+            const movs = buildMovimientos();
+            const rows = [['Fecha', 'Descripción', 'Oficina', 'Referencia', 'Débito', 'Crédito', 'Saldo']];
+            movs.forEach(m => rows.push([
+                fmtDate(m.fecha), m.desc, 'OFICINA CENTRO', m.ref,
+                m.debito || '', m.credito || '', m.saldo
+            ]));
+            descargar(rows, 'ejemplo_bancolombia.xlsx', 'Movimientos');
+            setStatus('✅ ejemplo_bancolombia.xlsx descargado');
+        }
+
+        // ── BBVA ────────────────────────────────────────────────────
+        function generarBBVA() {
+            const movs = buildMovimientos().slice(0, 10);
+            const rows = [['Fecha Operación', 'Fecha Valor', 'Concepto', 'Importe', 'Saldo']];
+            movs.forEach(m => {
+                const importe = m.credito > 0 ? m.credito : -m.debito;
+                rows.push([fmtDate(m.fecha), fmtDate(m.fecha), m.desc, importe, m.saldo]);
+            });
+            descargar(rows, 'ejemplo_bbva.xlsx', 'Movimientos');
+            setStatus('✅ ejemplo_bbva.xlsx descargado');
+        }
+
+        // ── HELISA ──────────────────────────────────────────────────
+        function generarHelisa() {
+            const movs = buildMovimientos();
+            const rows = [['Fecha', 'Comprobante', 'Descripción', 'Débito', 'Crédito']];
+            movs.forEach((m, i) => rows.push([
+                fmtDate(m.fecha),
+                `CB${(2600 + i).toString().padStart(4, '0')}`,
+                m.desc,
+                m.debito || '', m.credito || ''
+            ]));
+            // 3 registros extra solo en Helisa (cheques pendientes de pago)
+            const extras = [
+                [addDays(START, 29), 'CB9901', 'CHEQUE EMITIDO PROVEEDOR XYZ', 850000, 0],
+                [addDays(START, 27), 'CB9902', 'CHEQUE EMITIDO CONTRATISTA ABC', 1200000, 0],
+                [addDays(START, 25), 'CB9903', 'PAGO REGISTRADO PDTE COMPENSACION', 375000, 0],
+            ];
+            extras.forEach(([f, comp, desc, deb, cred]) =>
+                rows.push([fmtDate(f), comp, desc, deb || '', cred || '']));
+            descargar(rows, 'ejemplo_helisa.xlsx', 'Movimiento Bancos');
+            setStatus('✅ ejemplo_helisa.xlsx descargado');
+        }
+
+        // ── Utilidad: crear y descargar workbook ────────────────────
+        function descargar(rows, filename, sheetName) {
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+            // Ancho de columnas automático
+            const maxLens = rows[0].map((_, ci) =>
+                Math.min(rows.reduce((m, r) => Math.max(m, String(r[ci] ?? '').length), 8), 45));
+            ws['!cols'] = maxLens.map(w => ({ wch: w + 2 }));
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            XLSX.writeFile(wb, filename);
+        }
+
+        async function generarTodos() {
+            setStatus('Generando...');
+            generarBancolombia();
+            await new Promise(r => setTimeout(r, 500));
+            generarBBVA();
+            await new Promise(r => setTimeout(r, 500));
+            generarHelisa();
+            setStatus('🎉 ¡Los 3 archivos descargados! Guárdelos en la carpeta "ejemplos".');
+        }
+
+        function setStatus(msg) {
+            document.getElementById('status').textContent = msg;
+        }
+    </script>
+</body>
+
+</html>

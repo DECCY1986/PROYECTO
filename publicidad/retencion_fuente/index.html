@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquidador de Retención en la Fuente</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Iconos Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar/Hdr -->
+        <header class="main-header">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <a href="../index.html" title="Volver al Hub Espacio de Trabajo"
+                    style="text-decoration: none; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 8px; color: white;">
+                    <i class="ph ph-house" style="font-size: 1.5rem;"></i>
+                </a>
+                <div class="logo">
+                    <i class="ph ph-hand-coins"></i>
+                    <span>RetenControl</span>
+                </div>
+            </div>
+            <div class="header-meta" style="display: flex; align-items: center; gap: 12px;">
+                <div class="period-selector"
+                    style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                    <select id="monthSelect"
+                        style="background: transparent; border: none; color: white; font-weight: 600; cursor: pointer; outline: none;">
+                        <option value="0">Enero</option>
+                        <option value="1">Febrero</option>
+                        <option value="2">Marzo</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Mayo</option>
+                        <option value="5">Junio</option>
+                        <option value="6">Julio</option>
+                        <option value="7">Agosto</option>
+                        <option value="8">Septiembre</option>
+                        <option value="9">Octubre</option>
+                        <option value="10">Noviembre</option>
+                        <option value="11">Diciembre</option>
+                    </select>
+                    <select id="yearSelect"
+                        style="background: transparent; border: none; color: white; font-weight: 600; cursor: pointer; outline: none;">
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                    </select>
+                </div>
+                <div class="actions" style="display: flex; align-items: center; gap: 8px;">
+                    <button class="icon-btn" id="manageProvidersBtn" title="Gestionar Terceros">
+                        <i class="ph ph-users-three"></i>
+                    </button>
+                    <button class="icon-btn" id="configBtn" aria-label="Configuración">
+                        <i class="ph ph-gear"></i>
+                    </button>
+                    <button class="primary-btn excel-btn" id="exportPdfHeaderBtn" title="Exportar PDF">
+                        <i class="ph ph-file-pdf"></i> PDF
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            <!-- Summary Area -->
+            <section class="summary-section">
+                <div class="card total-card">
+                    <div class="card-label">Total Retención Mensual</div>
+                    <div class="card-value" id="totalRetener">$ 0.00</div>
+                    <div class="card-footer">Calculado a partir de <span id="invoiceCount">0</span> facturas registradas
+                    </div>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="card sub-card blue">
+                        <i class="ph ph-bank"></i>
+                        <div>
+                            <span class="label">Base Gravable Total</span>
+                            <span class="value" id="totalBase">$ 0</span>
+                        </div>
+                    </div>
+
+                    <div class="card sub-card red"
+                        style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);">
+                        <i class="ph ph-minus-circle" style="color: var(--error);"></i>
+                        <div style="flex: 1;">
+                            <span class="label" style="font-size: 0.75rem; line-height: 1.1;">Exceso / Anuladas</span>
+                            <div style="display: flex; align-items: center; margin-top: 4px;">
+                                <span style="font-weight: 600; font-size: 1.1rem; color: var(--error);">$ </span>
+                                <input type="number" id="excessRetentionInput" placeholder="0"
+                                    style="background: transparent; border: none; color: var(--error); font-weight: 700; font-size: 1.1rem; width: 100%; outline: none;"
+                                    value="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Input Area (GRID PRINCIPAL) -->
+            <section class="input-section">
+                <div class="section-header">
+                    <h3>Liquidación por Concepto</h3>
+                    <div class="header-actions">
+                        <button class="btn-excel" id="importExcelBtn">
+                            <i class="ph ph-file-xls"></i> Importar Excel
+                        </button>
+                        <input type="file" id="excelFile" accept=".xlsx, .xls" style="display: none;">
+                        <button class="primary-btn" id="openInvoiceModal">
+                            <i class="ph ph-plus-circle"></i> Nueva Factura
+                        </button>
+                        <button class="icon-btn" id="viewHistoryBtn" title="Ver Historial de Facturas">
+                            <i class="ph ph-clock-counter-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container card">
+                    <table id="liquidationTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">CONCEPTO</th>
+                                <th>BASE PN</th>
+                                <th>BASE PJ</th>
+                                <th>RETENCIÓN</th>
+                                <th>VAL. PN</th>
+                                <th>VAL. PJ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="liquidationBody">
+                            <!-- Rows defined in script.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Persistence & Actions -->
+            <section class="footer-actions">
+                <button class="btn-secondary" id="clearBtn">
+                    <i class="ph ph-trash"></i> Reiniciar Mes
+                </button>
+                <div class="right-btns">
+                    <button class="btn-excel" id="exportExcelBtn">
+                        <i class="ph ph-file-xls"></i> Exportar Excel
+                    </button>
+                    <button class="btn-pdf" id="exportPdfBtn">
+                        <i class="ph ph-file-pdf"></i> Exportar PDF
+                    </button>
+                    <button class="btn-save" id="saveBtn">
+                        <i class="ph ph-floppy-disk"></i> Guardar Todo
+                    </button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal: Configuración UVT -->
+    <div id="modalConfig" class="modal-overlay">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <h2>Configuración</h2>
+                <button class="close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Valor UVT 2026</label>
+                    <input type="number" id="uvtValue" value="52374" step="1">
+                </div>
+                <div class="form-actions">
+                    <button class="primary-btn" id="saveConfig">Guardar Cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Registrar Factura -->
+    <div id="modalInvoice" class="modal-overlay">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <h2>Registrar Nueva Factura</h2>
+                <button class="close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <form id="invoiceForm" class="modal-body">
+                <input type="hidden" id="editingIndex" value="-1">
+                <div class="form-group">
+                    <label>Descripción / Tercero</label>
+                    <input type="text" id="invDesc" list="providerList" placeholder="Ej: Factura 456 - Soporte IT"
+                        required>
+                    <datalist id="providerList"></datalist>
+                </div>
+                <div class="form-group">
+                    <label>Concepto Fiscal</label>
+                    <select id="invConcept" required>
+                        <!-- Options generated from CONCEPTS in script.js -->
+                    </select>
+                </div>
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>Base Gravable ($)</label>
+                        <input type="number" id="invBase" placeholder="0.00" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Persona</label>
+                        <select id="invPersonType" required>
+                            <option value="PN">Persona Natural</option>
+                            <option value="PJ">Persona Jurídica</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group"
+                    style="margin-top: 1rem; padding: 1rem; background: rgba(59, 130, 246, 0.05); border-radius: 8px; border: 1px solid rgba(59, 130, 246, 0.1);">
+                    <label
+                        style="color: var(--primary); font-weight: 600; margin-bottom: 0.75rem; display: block;">Responsabilidades
+                        Especiales (DIAN)</label>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem;">
+                        <label
+                            style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                            <input type="checkbox" id="invO13" style="width: 16px; height: 16px;"> O-13 Gran
+                            Contribuyente (Sin Retención)
+                        </label>
+                        <label
+                            style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                            <input type="checkbox" id="invO15" style="width: 16px; height: 16px;"> O-15 Autoretenedor
+                            (Sin Retención)
+                        </label>
+                        <label
+                            style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
+                            <input type="checkbox" id="invArt383" style="width: 16px; height: 16px;"> Aplicar Art.
+                            383-ET (Exención en Servicios)
+                        </label>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="primary-btn" style="width: 100%; justify-content: center;">
+                        Contabilizar Factura
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Historial de Facturas -->
+    <div id="modalHistory" class="modal-overlay">
+        <div class="modal-content card" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Historial de Facturas (Este Mes)</h2>
+                <button class="close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body" style="max-height: 60vh; overflow-y: auto;">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Descripción</th>
+                            <th>Concepto</th>
+                            <th>Tipo</th>
+                            <th style="text-align: right;">Base</th>
+                            <th style="text-align: right;">Retención</th>
+                            <th style="text-align: right; width: 100px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        <!-- Items dynamic -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Previsualización de Importación Excel -->
+    <div id="modalImportPreview" class="modal-overlay">
+        <div class="modal-content card" style="max-width: 900px; width: 95%;">
+            <div class="modal-header">
+                <h2>Revisar Facturas a Importar</h2>
+                <button class="close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem;">
+                    Revisa los conceptos detectados. Puedes cambiarlos individualmente antes de confirmar.
+                </p>
+                <div
+                    style="max-height: 50vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;">
+                    <table class="history-table" id="importPreviewTable">
+                        <thead>
+                            <tr>
+                                <th>Emisor / NIT</th>
+                                <th>Base</th>
+                                <th style="width: 250px;">Concepto sugerido</th>
+                                <th style="text-align: center; width: 60px;">Incluir</th>
+                            </tr>
+                        </thead>
+                        <tbody id="importPreviewBody">
+                            <!-- Filas dinámicas -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer"
+                style="padding: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                <button class="btn-secondary close-modal">Cancelar</button>
+                <button class="primary-btn" id="confirmBulkImport">
+                    <i class="ph ph-check-circle"></i> Confirmar e Importar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Modal: Gestión de Terceros -->
+    <div id="modalProviders" class="modal-overlay">
+        <div class="modal-content card" style="max-width: 900px; width: 95%;">
+            <div class="modal-header">
+                <h2>Directorio de Terceros (Maestro)</h2>
+                <button class="close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                    Aquí puedes gestionar la configuración predeterminada de tus proveedores.
+                    El sistema aplica estos valores automáticamente al registrar nuevas facturas o importar desde Excel.
+                </p>
+                <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Proveedor</th>
+                                <th>Concepto Predeterminado</th>
+                                <th style="text-align: center;">Resp. DIAN</th>
+                                <th style="text-align: right;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="providersRegistryBody">
+                            <!-- Provider list generated by script.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

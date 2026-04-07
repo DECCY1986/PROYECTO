@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nómina · DIMALCCO SAS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--s:#fff;--b:#e2e8f0;--bs:#f8fafc;--t:#0f172a;--t2:#475569;--t3:#94a3b8;--ac:#4338ca;--as:#eef2ff;--in:#059669;--ib:#ecfdf5;--ex:#dc2626;--eb:#fef2f2;--w:#d97706;--wb:#fffbeb;--hd:#0f172a;--fn:'Sora',sans-serif;--mo:'DM Mono',monospace;--r:10px;--rsm:6px}
+body{font-family:var(--fn);background:var(--bg);color:var(--t);font-size:14px;min-height:100vh}
+.hdr{background:var(--hd);color:#f8fafc;padding:18px 28px 20px}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.hdr-ey{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#64748b;margin-bottom:3px}
+.hdr-ti{font-size:20px;font-weight:600}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1e293b;border-radius:8px;overflow:hidden}
+.metric{background:var(--hd);padding:13px 16px}
+.metric-lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#64748b;margin-bottom:5px}
+.metric-val{font-family:var(--mo);font-size:16px;font-weight:500;color:#f8fafc}
+.metric-val.g{color:#34d399}.metric-val.r{color:#f87171}.metric-val.y{color:#fbbf24}
+.metric-sub{font-size:10px;color:#475569;margin-top:2px}
+.layout{display:grid;grid-template-columns:248px 1fr;min-height:calc(100vh - 168px)}
+.sidebar{background:var(--s);border-right:1px solid var(--b);padding:18px 14px;overflow-y:auto}
+.sec-ti{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+.emp-card{padding:10px 12px;border:1px solid var(--b);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.emp-card:hover{border-color:var(--ac)}
+.emp-name{font-size:12px;font-weight:500;color:var(--t);margin-bottom:4px}
+.emp-cargo{font-size:10px;color:var(--t3);margin-bottom:4px}
+.emp-sal{font-family:var(--mo);font-size:11px;color:var(--t2)}
+.emp-cc{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.main{padding:20px 22px}
+.tab-bar{display:flex;gap:4px;background:var(--s);border:1px solid var(--b);border-radius:8px;padding:4px;margin-bottom:18px;width:fit-content}
+.tab{padding:7px 18px;border-radius:5px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;border:none;background:none;font-family:var(--fn);transition:all .15s}
+.tab.active{background:var(--ac);color:#fff;box-shadow:0 1px 4px rgba(67,56,202,.3)}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.spacer{flex:1}
+.btn-pri{display:flex;align-items:center;gap:5px;padding:8px 15px;background:var(--ac);color:#fff;border:none;border-radius:7px;font-family:var(--fn);font-size:12px;font-weight:500;cursor:pointer;transition:background .15s}
+.btn-pri:hover{background:#3730a3}
+.btn-sec{padding:7px 14px;background:none;border:1px solid var(--b);border-radius:var(--rsm);font-family:var(--fn);font-size:12px;cursor:pointer;color:var(--t2)}
+.btn-sec:hover{border-color:var(--t3)}
+select,input[type=date],input[type=text],input[type=number]{font-family:var(--fn);font-size:12px;color:var(--t);background:var(--s);border:1px solid var(--b);border-radius:var(--rsm);padding:6px 9px;outline:none}
+select:focus,input:focus{border-color:var(--ac)}
+.tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:#f8fafc;border-bottom:1px solid var(--b)}
+th{padding:9px 12px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3)}
+th.num{text-align:right}
+td{padding:10px 12px;font-size:12px;color:var(--t);border-bottom:1px solid var(--bs);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+td.num{text-align:right;font-family:var(--mo);font-size:11px}
+.btn-sm{padding:3px 8px;border:1px solid var(--b);border-radius:4px;background:none;font-family:var(--fn);font-size:10px;cursor:pointer;color:var(--t2);transition:all .15s;margin-right:3px}
+.btn-sm:hover{border-color:var(--ac);color:var(--ac)}
+/* Liquidación detail */
+.liq-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.liq-card-hdr{background:#f8fafc;border-bottom:1px solid var(--b);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.liq-card-ti{font-size:12px;font-weight:600;color:var(--t);text-transform:uppercase;letter-spacing:.05em}
+.liq-row{display:flex;justify-content:space-between;align-items:center;padding:9px 16px;border-bottom:1px solid var(--bs);font-size:12px}
+.liq-row:last-child{border-bottom:none}
+.liq-row.total{background:#f8fafc;font-weight:600;border-top:1px solid var(--b)}
+.liq-lbl{color:var(--t2)}
+.liq-val{font-family:var(--mo);font-size:11px;font-weight:500}
+.liq-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.stat-mini{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:12px 14px}
+.stat-mini-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:4px}
+.stat-mini-val{font-family:var(--mo);font-size:15px;font-weight:500}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--s);border-radius:14px;padding:26px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.2);animation:mi .2s ease}
+@keyframes mi{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{width:28px;height:28px;border:none;background:var(--bg);border-radius:5px;cursor:pointer;font-size:15px;color:var(--t2);display:flex;align-items:center;justify-content:center}
+.form-row{margin-bottom:14px}
+.form-lbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t2);margin-bottom:5px}
+.form-row input,.form-row select{width:100%;padding:9px 11px;font-family:var(--fn);font-size:13px;background:var(--bg);border:1px solid var(--b);border-radius:8px;color:var(--t);outline:none}
+.form-row input:focus,.form-row select:focus{border-color:var(--ac);background:#fff}
+.form-g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.modal-ftr{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--b)}
+.divider{height:1px;background:var(--b);margin:16px 0}
+.info-box{background:var(--bg);border-radius:8px;padding:12px;font-size:12px;line-height:1.8;margin-bottom:14px;color:var(--t2)}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);text-decoration:none;margin-bottom:16px;transition:color .15s}
+.back-link:hover{color:var(--ac)}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-ey">DIMALCCO SAS · Módulo Finanzas</div>
+      <div class="hdr-ti">Nómina & Carga Laboral</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px">
+      <button class="btn-pri" onclick="save(); alert('Nómina guardada correctamente')">Guardar Todo</button>
+    </div>
+  </div>
+  <div class="metrics" id="metrics"></div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sec-ti">Empleados activos</div>
+    <div id="emp-list"></div>
+    <button style="width:100%;padding:9px;border:1px dashed var(--b);border-radius:8px;background:none;font-family:var(--fn);font-size:11px;color:var(--t3);cursor:pointer;margin-top:4px" onclick="openModalEmp()">+ Nuevo empleado</button>
+  </aside>
+
+  <main class="main">
+    <a class="back-link" href="../index.html">← Volver al workspace</a>
+    <div class="tab-bar">
+      <button class="tab active" onclick="setTab('liquidar',this)">Liquidar período</button>
+      <button class="tab" onclick="setTab('historial',this)">Historial</button>
+    </div>
+
+    <div id="tab-liquidar">
+      <div class="toolbar">
+        <span style="font-size:12px;color:var(--t2)">Período:</span>
+        <select id="liq-mes">
+          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+        <select id="liq-anio"><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option></select>
+        <div class="spacer"></div>
+        <button class="btn-pri" onclick="calcLiquidacion()">Calcular nómina</button>
+      </div>
+      <div id="liq-content">
+        <div style="text-align:center;padding:60px;color:var(--t3);font-size:13px">Selecciona el período y presiona <strong>Calcular nómina</strong></div>
+      </div>
+    </div>
+
+    <div id="tab-historial" style="display:none">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Período</th><th>Empleados</th>
+            <th class="num">Total devengado</th><th class="num">Deducciones</th><th class="num">Neto pagado</th>
+            <th class="num">Costo empleador</th><th class="num">Provisiones</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-hist"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: Nuevo empleado -->
+<div class="modal-backdrop" id="modal-emp-bk">
+  <div class="modal">
+    <input type="hidden" id="e-id-hidden" value="-1">
+    <div class="modal-hdr"><div class="modal-title">Nuevo empleado</div><button class="modal-close" onclick="closeModalEmp()">✕</button></div>
+    <div class="form-g2">
+      <div class="form-row"><label class="form-lbl">Nombre completo *</label><input type="text" id="e-nombre" placeholder="Apellidos y nombres"></div>
+      <div class="form-row"><label class="form-lbl">Cédula *</label><input type="text" id="e-cc" placeholder="1.234.567.890"></div>
+    </div>
+    <div class="form-g2">
+      <div class="form-row"><label class="form-lbl">Cargo *</label><input type="text" id="e-cargo" placeholder="Ebanista, Contador, etc."></div>
+      <div class="form-row"><label class="form-lbl">Centro de costo</label>
+        <select id="e-cc-sel"><option value="Producción">Producción</option><option value="Administración">Administración</option><option value="Comercial">Comercial</option></select>
+      </div>
+    </div>
+    <div class="form-g3">
+      <div class="form-row"><label class="form-lbl">Salario básico *</label><input type="number" id="e-sal" placeholder="1423500"></div>
+      <div class="form-row"><label class="form-lbl">Bonificación</label><input type="number" id="e-bono" placeholder="0"></div>
+      <div class="form-row"><label class="form-lbl">Tipo contrato</label>
+        <select id="e-tipo"><option value="indefinido">Término indefinido</option><option value="fijo">Término fijo</option><option value="obra">Obra o labor</option></select>
+      </div>
+    </div>
+    <div class="form-g2">
+      <div class="form-row"><label class="form-lbl">Fecha ingreso *</label><input type="date" id="e-inicio"></div>
+      <div class="form-row"><label class="form-lbl">ARL (riesgo)</label>
+        <select id="e-arl"><option value="0.522">I — 0.522%</option><option value="1.044">II — 1.044%</option><option value="2.436">III — 2.436%</option><option value="4.350">IV — 4.350%</option><option value="6.960">V — 6.960%</option></select>
+      </div>
+    </div>
+    <div class="modal-ftr"><button class="btn-sec" onclick="closeModalEmp()">Cancelar</button><button class="btn-pri" onclick="saveEmp()">Guardar empleado</button></div>
+  </div>
+</div>
+
+<script>
+const DB='dim_nomina_v1';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
+const fmt=v=>'$ '+Math.abs(v).toLocaleString('es-CO');
+const todayISO=()=>new Date().toISOString().split('T')[0];
+const MESES_NOM=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+// 2026 constants (Update per user request)
+const SMMLV=1750905, AUX_TRANS=249095;
+
+function defaultState(){
+  return{
+    empleados:[
+      {id:'e1',nombre:'Martínez Ruiz, Carlos Alberto',cedula:'1.023.456.789',cargo:'Maestro Ebanista',cc:'Producción',salario:2200000,tipo:'indefinido',inicio:'2021-03-15',arl:'1.044',activo:true},
+      {id:'e2',nombre:'González Pérez, Luis Fernando',cedula:'1.035.678.901',cargo:'Ebanista',cc:'Producción',salario:1800000,tipo:'indefinido',inicio:'2022-06-01',arl:'1.044',activo:true},
+      {id:'e3',nombre:'Vargas Torres, Andrés Felipe',cedula:'1.018.234.567',cargo:'Auxiliar de producción',cc:'Producción',salario:1423500,tipo:'indefinido',inicio:'2023-01-10',arl:'1.044',activo:true},
+      {id:'e4',nombre:'Rodríguez Soto, María Alejandra',cedula:'52.345.678',cargo:'Auxiliar contable',cc:'Administración',salario:1600000,tipo:'indefinido',inicio:'2022-08-01',arl:'0.522',activo:true},
+      {id:'e5',nombre:'Ospina Leal, Juan Pablo',cedula:'1.012.345.678',cargo:'Vendedor',cc:'Comercial',salario:1423500,tipo:'indefinido',inicio:'2023-05-15',arl:'0.522',activo:true}
+    ],
+    liquidaciones:[]
+  };
+}
+
+let S;
+function load(){
+  let state = defaultState();
+  try{
+    const s = localStorage.getItem(DB);
+    if(s) state = JSON.parse(s);
+    
+    // SINCRONIZACIÓN CON MAESTRO DE PERSONAL (19 EMPLEADOS)
+    const rawP = localStorage.getItem('dimalcco_emp_v2');
+    if(rawP) {
+      const pEmps = JSON.parse(rawP);
+      if(pEmps && pEmps.length > 0) {
+        // Mapear al formato del módulo Nómina
+        state.empleados = pEmps.map(e => {
+          // Normalizar Riesgo ARL (Texto a Tasa)
+          let rate = '0.522';
+          if(e.arl === 'II') rate = '1.044';
+          else if(e.arl === 'III') rate = '2.436';
+          else if(e.arl === 'IV') rate = '4.350';
+          else if(e.arl === 'V') rate = '6.960';
+          else if(e.arl && e.arl.includes('.')) rate = e.arl; // Si ya es tasa
+
+          return {
+            id: e.cedula || uid(),
+            nombre: e.nombre || 'Sin nombre',
+            cedula: e.cedula || '',
+            cargo: e.cargo || '',
+            cc: e.centro || 'Producción',
+            salario: Number(e.salario || 0),
+            bono: Number(e.bono || 0),
+            tipo: 'indefinido',
+            inicio: e.fechaIngreso || '2026-01-01',
+            arl: rate,
+            activo: true
+          };
+        });
+      }
+    }
+  }catch(e){ console.error("Sync Error:", e); }
+  return state;
+}
+function save(){localStorage.setItem(DB,JSON.stringify(S));}
+
+function calculo(emp){
+  const sal=emp.salario, arl_pct=parseFloat(emp.arl)/100;
+  const bono_total = Number(emp.bono || 0);
+  const limite_40_smmlv = SMMLV * 0.4;
+  
+  let bono_nomina = bono_total;
+  let bono_servicio = 0;
+  let alerta_bono = false;
+
+  if (bono_total > limite_40_smmlv) {
+      bono_nomina = limite_40_smmlv;
+      bono_servicio = bono_total - limite_40_smmlv;
+      alerta_bono = true;
+  }
+
+  // Auxilio transporte: solo si salario ≤ 2 SMMLV
+  const aux=sal<=2*SMMLV?AUX_TRANS:0;
+  // Devengado base (Incluye la parte salarial/nomina del bono)
+  const devengado=sal+aux+bono_nomina;
+  // Deducciones empleado
+  const ded_salud=Math.round(sal*0.04);
+  const ded_pension=Math.round(sal*0.04);
+  const total_ded=ded_salud+ded_pension;
+  const neto=devengado-total_ded;
+  // Aportes empleador (sobre salario, sin aux transporte)
+  const isExempt = sal < (10 * SMMLV);
+  const ap_salud = isExempt ? 0 : Math.round(sal * 0.085);
+  const ap_pension = Math.round(sal * 0.12);
+  const ap_arl = Math.round(sal * arl_pct);
+  const sena = isExempt ? 0 : Math.round(sal * 0.02);
+  const icbf = isExempt ? 0 : Math.round(sal * 0.03);
+  const caja = Math.round(sal * 0.04);
+  const total_emp = ap_salud + ap_pension + ap_arl + sena + icbf + caja;
+  // Provisiones (sobre salario + aux, sin incluir auxilio en vacaciones)
+  const base_prov=sal+aux;
+  const prov_ces=Math.round(base_prov/12);
+  const prov_int=Math.round(prov_ces*0.12/12);
+  const prov_prima=Math.round(base_prov/12);
+  const prov_vac=Math.round(sal/24);
+  const total_prov=prov_ces+prov_int+prov_prima+prov_vac;
+  const costo_total=devengado+total_emp+total_prov;
+  return{sal,aux,devengado,ded_salud,ded_pension,total_ded,neto,ap_salud,ap_pension,ap_arl,sena,icbf,caja,total_emp,prov_ces,prov_int,prov_prima,prov_vac,total_prov,costo_total,bono_nomina,bono_servicio,alerta_bono};
+}
+
+function renderHeader(){
+  const activos=S.empleados.filter(e=>e.activo);
+  let totalSal=0,totalCosto=0;
+  activos.forEach(e=>{const c=calculo(e);totalSal+=e.salario;totalCosto+=c.costo_total;});
+  const prov=activos.reduce((s,e)=>{const c=calculo(e);return s+c.total_prov;},0);
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric"><div class="metric-lbl">Empleados activos</div><div class="metric-val">${activos.length}</div><div class="metric-sub">Planta de personal</div></div>
+    <div class="metric"><div class="metric-lbl">Nómina base / mes</div><div class="metric-val y">${fmt(totalSal)}</div><div class="metric-sub">Suma salarios básicos</div></div>
+    <div class="metric"><div class="metric-lbl">Costo total empleador</div><div class="metric-val r">${fmt(totalCosto)}</div><div class="metric-sub">Incluye aportes y provisiones</div></div>
+    <div class="metric"><div class="metric-lbl">Provisiones mensuales</div><div class="metric-val">${fmt(prov)}</div><div class="metric-sub">Ces.+Int.+Prima+Vac.</div></div>`;
+}
+
+function renderEmployees(){
+  const CC_CLR={'Producción':'#4338ca','Administración':'#d97706','Comercial':'#059669'};
+  document.getElementById('emp-list').innerHTML=S.empleados.filter(e=>e.activo).map(e=>`
+    <div class="emp-card">
+      <div class="emp-name">${e.nombre}</div>
+      <div class="emp-cargo">${e.cargo}</div>
+      <div class="emp-sal">${fmt(e.salario)}</div>
+      <div class="emp-cc" style="color:${CC_CLR[e.cc]||'var(--t3)'}">${e.cc}</div>
+    </div>`).join('');
+}
+
+function calcLiquidacion(){
+  const mes=parseInt(document.getElementById('liq-mes').value);
+  const anio=parseInt(document.getElementById('liq-anio').value);
+  const periodo=`${MESES_NOM[mes]} ${anio}`;
+  const activos=S.empleados.filter(e=>e.activo);
+  if(!activos.length){document.getElementById('liq-content').innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">No hay empleados activos.</div>';return;}
+
+  let html='';
+  // Grid totales
+  let totDev=0,totDed=0,totNeto=0,totEmp=0,totProv=0,totCosto=0;
+  activos.forEach(e=>{const c=calculo(e);totDev+=c.devengado;totDed+=c.total_ded;totNeto+=c.neto;totEmp+=c.total_emp;totProv+=c.total_prov;totCosto+=c.costo_total;});
+
+  html+=`<div class="liq-grid">
+    <div class="stat-mini"><div class="stat-mini-lbl">Total neto a pagar</div><div class="stat-mini-val" style="color:var(--in)">${fmt(totNeto)}</div></div>
+    <div class="stat-mini"><div class="stat-mini-lbl">Aportes empleador</div><div class="stat-mini-val" style="color:var(--ex)">${fmt(totEmp)}</div></div>
+    <div class="stat-mini"><div class="stat-mini-lbl">Provisiones del mes</div><div class="stat-mini-val" style="color:var(--w)">${fmt(totProv)}</div></div>
+  </div>`;
+
+  activos.forEach(e=>{
+    const c = calculo(e);
+    const hasSvc = c.bono_servicio > 0;
+    html+=`<div class="liq-card" ${c.alerta_bono ? 'style="border:1px solid var(--ex)"' : ''}>
+      <div class="liq-card-hdr">
+        <div>
+            <span class="liq-card-ti" ${c.alerta_bono ? 'style="color:var(--ex)"' : ''}>${e.nombre}</span> 
+            ${c.alerta_bono ? '<span style="font-size:10px; color:var(--ex); font-weight:700; margin-left:8px">⚠️ BONO > 40% SMMLV</span>' : ''}
+            <span style="font-size:11px;color:var(--t3);font-weight:400">· ${e.cargo} · ${e.cc}</span>
+        </div>
+        <span style="font-family:var(--mo);font-size:12px;color:var(--in);font-weight:600">Neto Nómina: ${fmt(c.neto)}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0">
+        <div style="border-right:1px solid var(--b)">
+          <div style="padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);border-bottom:1px solid var(--bs)">Devengados Nómina</div>
+          <div class="liq-row"><span class="liq-lbl">Salario básico</span><span class="liq-val">${fmt(c.sal)}</span></div>
+          ${c.aux>0?`<div class="liq-row"><span class="liq-lbl">Auxilio transporte</span><span class="liq-val">${fmt(c.aux)}</span></div>`:''}
+          ${c.bono_nomina>0?`<div class="liq-row"><span class="liq-lbl">Bonificación (Límite)</span><span class="liq-val">${fmt(c.bono_nomina)}</span></div>`:''}
+          <div class="liq-row total"><span class="liq-lbl">Total devengado</span><span class="liq-val">${fmt(c.devengado)}</span></div>
+          <div class="liq-row"><span class="liq-lbl">— Salud (4%)</span><span class="liq-val" style="color:var(--ex)">- ${fmt(c.ded_salud)}</span></div>
+          <div class="liq-row"><span class="liq-lbl">— Pensión (4%)</span><span class="liq-val" style="color:var(--ex)">- ${fmt(c.ded_pension)}</span></div>
+          <div class="liq-row total" style="background:var(--as)"><span class="liq-lbl" style="color:var(--ac)">Neto a pagar</span><span class="liq-val" style="color:var(--ac)">${fmt(c.neto)}</span></div>
+          ${hasSvc?`<div class="liq-row" style="background:var(--eb);border-top:1px dashed var(--b)"><span class="liq-lbl" style="color:var(--ex)">+ Servicio (Exceso)</span><span class="liq-val" style="color:var(--ex)">${fmt(c.bono_servicio)}</span></div>`:''}
+        </div>
+        <div style="border-right:1px solid var(--b)">
+          <div style="padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);border-bottom:1px solid var(--bs)">Aportes Empleador</div>
+          <div class="liq-row"><span class="liq-lbl">Salud (Exent.?)</span><span class="liq-val">${fmt(c.ap_salud)}</span></div>
+          <div class="liq-row"><span class="liq-lbl">Pensión (12%)</span><span class="liq-val">${fmt(c.ap_pension)}</span></div>
+          <div class="liq-row"><span class="liq-lbl">ARL (${e.arl}%)</span><span class="liq-val">${fmt(c.ap_arl)}</span></div>
+          <div class="liq-row"><span class="liq-lbl">Caja (4%)</span><span class="liq-val">${fmt(c.caja)}</span></div>
+          <div class="liq-row"><span class="liq-lbl">SENA / ICBF</span><span class="liq-val">${fmt(c.sena + c.icbf)}</span></div>
+          <div class="liq-row total"><span class="liq-lbl">Total Aportes</span><span class="liq-val" style="color:var(--ex)">${fmt(c.total_emp)}</span></div>
+        </div>
+        <div>
+          <div style="padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);border-bottom:1px solid var(--bs)">Provisiones Prestac.</div>
+          <div class="liq-row"><span class="liq-lbl">Cesantías (8.33%)</span><span class="liq-val">${fmt(c.prov_ces)}</span></div>
+          <div class="liq-row"><span class="liq-lbl">Int. Cesantías (1%)</span><span class="liq-val">${fmt(c.prov_int)}</span></div>
+          <div class="liq-row"><span class="liq-lbl">Prima (8.33%)</span><span class="liq-val">${fmt(c.prov_prima)}</span></div>
+          <div class="liq-row"><span class="liq-lbl">Vacaciones (4.17%)</span><span class="liq-val">${fmt(c.prov_vac)}</span></div>
+          <div class="liq-row total"><span class="liq-lbl">Total Provision.</span><span class="liq-val" style="color:var(--w)">${fmt(c.total_prov)}</span></div>
+          <div class="liq-row" style="background:#f8fafc"><span class="liq-lbl" style="font-weight:600">Costo Empresa</span><span class="liq-val" style="color:var(--ex);font-weight:600">${fmt(c.costo_total)}</span></div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  html+=`<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px">
+    <button class="btn-sec" onclick="guardarLiquidacion(${mes},${anio})">Guardar liquidación en historial</button>
+  </div>`;
+
+  document.getElementById('liq-content').innerHTML=html;
+
+  // Sync to Tesorería
+  try{
+    const ts=JSON.parse(localStorage.getItem('dim_tesoreria_v1')||'null');
+    if(ts&&ts.movimientos&&ts.cuentas&&ts.cuentas.length>0){
+      // Check if nómina for this period already in tesorería
+    }
+  }catch(e){}
+}
+
+function guardarLiquidacion(mes, anio){
+  const activos=S.empleados.filter(e=>e.activo);
+  let totDev=0,totDed=0,totNeto=0,totEmp=0,totProv=0;
+  activos.forEach(e=>{const c=calculo(e);totDev+=c.devengado;totDed+=c.total_ded;totNeto+=c.neto;totEmp+=c.total_emp;totProv+=c.total_prov;});
+  S.liquidaciones.push({id:uid(),mes,anio,periodo:`${MESES_NOM[mes]} ${anio}`,empleados:activos.length,total_devengado:totDev,total_ded:totDed,neto:totNeto,costo_empleador:totEmp,provisiones:totProv});
+  save();
+  // Sync egreso to Tesorería
+  try{
+    const ts=JSON.parse(localStorage.getItem('dim_tesoreria_v1')||'null');
+    if(ts&&ts.movimientos&&ts.cuentas&&ts.cuentas.length>0){
+      const fecha=`${anio}-${String(mes).padStart(2,'0')}-30`;
+      ts.movimientos.push({id:uid(),fecha,desc:`Nómina ${MESES_NOM[mes]} ${anio} · ${activos.length} empleados`,cat:'Nómina',tipo:'egreso',valor:totNeto,cuenta:ts.cuentas[0].id,ref:`NOM-${String(mes).padStart(2,'0')}${anio}`});
+      localStorage.setItem('dim_tesoreria_v1',JSON.stringify(ts));
+    }
+  }catch(e){}
+  alert(`Liquidación ${MESES_NOM[mes]} ${anio} guardada en historial.`);
+  renderHistorial();
+}
+
+function renderHistorial(){
+  const tbody=document.getElementById('tbody-hist');
+  const sorted=[...S.liquidaciones].sort((a,b)=>b.anio-a.anio||b.mes-a.mes);
+  if(!sorted.length){tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--t3)">No hay liquidaciones guardadas</td></tr>`;return;}
+  tbody.innerHTML=sorted.map(l=>`<tr>
+    <td style="font-weight:500">${l.periodo}</td>
+    <td style="color:var(--t2)">${l.empleados}</td>
+    <td class="num">${fmt(l.total_devengado)}</td>
+    <td class="num" style="color:var(--ex)">- ${fmt(l.total_ded)}</td>
+    <td class="num" style="color:var(--in);font-weight:600">${fmt(l.neto)}</td>
+    <td class="num" style="color:var(--ex)">${fmt(l.costo_empleador)}</td>
+    <td class="num" style="color:var(--w)">${fmt(l.provisiones)}</td>
+    <td><button class="btn-sm" onclick="deleteLiq('${l.id}')">×</button></td>
+  </tr>`).join('');
+}
+
+function deleteLiq(id){if(!confirm('¿Eliminar?'))return;S.liquidaciones=S.liquidaciones.filter(l=>l.id!==id);save();renderHistorial();}
+
+function setTab(tab,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('tab-liquidar').style.display=tab==='liquidar'?'block':'none';
+  document.getElementById('tab-historial').style.display=tab==='historial'?'block':'none';
+  if(tab==='historial')renderHistorial();
+}
+
+function renderEmployees(){
+  const CC_CLR={'Producción':'#4338ca','Administración':'#d97706','Comercial':'#059669'};
+  document.getElementById('emp-list').innerHTML=S.empleados.filter(e=>e.activo).map((e,idx)=>`
+    <div class="emp-card" onclick="openModalEmp(${idx})">
+      <div style="display:flex; justify-content:space-between">
+        <div class="emp-name">${e.nombre}</div>
+        <div style="font-size:10px; color:var(--ac)">✏️</div>
+      </div>
+      <div class="emp-cargo">${e.cargo}</div>
+      <div class="emp-sal">${fmt(e.salario)} ${e.bono?` (+${fmt(e.bono)})`:''}</div>
+      <div class="emp-cc" style="color:${CC_CLR[e.cc]||'var(--t3)'}">${e.cc}</div>
+    </div>`).join('');
+}
+
+function openModalEmp(idx){
+  document.getElementById('e-inicio').value=todayISO();
+  if(idx !== undefined) {
+    const e = S.empleados[idx];
+    document.getElementById('e-id-hidden').value = idx;
+    document.getElementById('e-nombre').value = e.nombre;
+    document.getElementById('e-cc').value = e.cedula;
+    document.getElementById('e-cargo').value = e.cargo;
+    document.getElementById('e-cc-sel').value = e.cc;
+    document.getElementById('e-sal').value = e.salario;
+    document.getElementById('e-bono').value = e.bono || 0;
+    document.getElementById('e-tipo').value = e.tipo || 'indefinido';
+    document.getElementById('e-inicio').value = e.inicio;
+    document.getElementById('e-arl').value = e.arl || '0.522';
+    document.querySelector('.modal-title').textContent = 'Editar empleado';
+  } else {
+    document.getElementById('e-id-hidden').value = -1;
+    document.getElementById('e-nombre').value = '';
+    document.getElementById('e-cc').value = '';
+    document.getElementById('e-cargo').value = '';
+    document.getElementById('e-sal').value = '';
+    document.getElementById('e-bono').value = '';
+    document.querySelector('.modal-title').textContent = 'Nuevo empleado';
+  }
+  document.getElementById('modal-emp-bk').classList.add('open');
+}
+function closeModalEmp(){document.getElementById('modal-emp-bk').classList.remove('open');}
+function saveEmp(){
+  const idx = parseInt(document.getElementById('e-id-hidden').value);
+  const nombre=document.getElementById('e-nombre').value.trim();
+  const sal=parseFloat(document.getElementById('e-sal').value);
+  const bono=parseFloat(document.getElementById('e-bono').value) || 0;
+  if(!nombre||!sal){alert('Completa los campos obligatorios.');return;}
+  
+  const data = {
+    nombre,
+    cedula:document.getElementById('e-cc').value.trim(),
+    cargo:document.getElementById('e-cargo').value.trim(),
+    cc:document.getElementById('e-cc-sel').value,
+    salario:sal,
+    bono:bono,
+    tipo:document.getElementById('e-tipo').value,
+    inicio:document.getElementById('e-inicio').value,
+    arl:document.getElementById('e-arl').value,
+    activo:true
+  };
+
+  if(idx === -1) {
+    data.id = uid();
+    S.empleados.push(data);
+  } else {
+    S.empleados[idx] = {...S.empleados[idx], ...data};
+  }
+  
+  save();closeModalEmp();renderAll();
+}
+
+function renderAll(){renderHeader();renderEmployees();}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalEmp();});
+document.getElementById('modal-emp-bk').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModalEmp();});
+
+S=load();
+document.getElementById('liq-mes').value=new Date().getMonth()+1;
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,494 @@
+    :root {
+        --primary: #0ea5e9;
+        --primary-dark: #0284c7;
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --surface-light: #334155;
+        --text: #f8fafc;
+        --text-muted: #94a3b8;
+        --border: rgba(255,255,255,0.1);
+        --success: #10b981;
+        --warning: #f59e0b;
+        --error: #ef4444;
+        --radius: 12px;
+        --font: 'Sora', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+        background: var(--bg); 
+        color: var(--text); 
+        font-family: var(--font);
+        line-height: 1.6;
+        min-height: 100vh;
+    }
+
+    header {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .header-title { display: flex; align-items: center; gap: 12px; }
+    .header-title i { font-size: 24px; color: var(--primary); }
+    .header-title h1 { font-size: 1.25rem; font-weight: 600; }
+
+    .main-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 2rem;
+    }
+
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .animate { animation: fadeIn 0.5s ease-out forwards; opacity: 0; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .input-group { margin-bottom: 1.25rem; }
+    .input-group label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .input-group input, .input-group select {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-family: inherit;
+        transition: all 0.2s;
+    }
+    .input-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2); }
+
+    .balance-box {
+        background: linear-gradient(135deg, var(--surface-light), var(--surface));
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        text-align: center;
+        margin-top: 1rem;
+        border: 1px solid var(--border);
+    }
+    .balance-label { font-size: 0.875rem; color: var(--text-muted); }
+    .balance-value { font-size: 2rem; font-weight: 700; margin: 0.5rem 0; font-family: 'DM Mono', monospace; }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+    .status-complete { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+    .status-exceed { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+        font-family: inherit;
+        font-size: 0.875rem;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: var(--surface-light); }
+    .btn-danger { color: var(--error); border-color: rgba(239, 68, 68, 0.2); }
+    .btn-danger:hover { background: rgba(239, 68, 68, 0.1); }
+
+    .payments-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+    .payments-table tr { background: var(--surface); transition: transform 0.2s; }
+    .payments-table tr:hover { transform: scale(1.005); }
+    .payments-table td { 
+        padding: 1rem;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+    .payments-table td:first-child { border-left: 1px solid var(--border); border-radius: 12px 0 0 12px; }
+    .payments-table td:last-child { border-right: 1px solid var(--border); border-radius: 0 12px 12px 0; }
+
+    .history-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s;
+    }
+    .history-card:hover { border-color: var(--primary); background: var(--surface-light); }
+    .history-info h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+    .history-info p { font-size: 0.75rem; color: var(--text-muted); }
+    .history-val { font-family: 'DM Mono', monospace; font-weight: 600; color: var(--success); }
+
+    .save-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(12px);
+        padding: 1rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: center;
+        z-index: 100;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--surface-light); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="header-title">
+        <i class="ph-fill ph-hand-coins"></i>
+        <h1>Legalización de Caja</h1>
+    </div>
+    <div style="display:flex; gap:12px;">
+        <input type="file" id="import-input" style="display:none" accept=".xlsx, .xls" onchange="importFromExcel(event)">
+        <button class="btn btn-outline" onclick="document.getElementById('import-input').click()">
+            <i class="ph ph-file-arrow-up"></i> Excel
+        </button>
+        <button class="btn btn-outline" onclick="importFromTesoreria()">
+            <i class="ph ph-bank"></i> Tesorería
+        </button>
+        <a href="../tablero.html" class="btn btn-outline">
+            <i class="ph ph-house"></i>
+        </a>
+    </div>
+</header>
+
+<div class="main-container">
+    <aside>
+        <div class="card animate">
+            <div class="input-group">
+                <label>Recibo de Caja</label>
+                <input type="number" id="receipt-val" value="0" step="1000" oninput="calculate()">
+            </div>
+            <div class="input-group">
+                <label>Descripción</label>
+                <input type="text" id="receipt-desc" placeholder="Ej. Reembolso Caja Menor">
+            </div>
+            <div class="input-group">
+                <label>Fecha</label>
+                <input type="date" id="receipt-date">
+            </div>
+
+            <div class="balance-box">
+                <div class="balance-label">Saldo Pendiente</div>
+                <div class="balance-value" id="balance-val">$ 0</div>
+                <div id="status-badge" class="status-badge status-pending">
+                    <i class="ph-fill ph-clock"></i> Pendiente
+                </div>
+            </div>
+        </div>
+
+        <div class="card animate" style="margin-top: 2rem; padding: 1rem;">
+            <p style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">
+                Registros históricos de legalizaciones 2026
+            </p>
+            <div id="history-list" style="margin-top: 1rem; max-height: 300px; overflow-y: auto;">
+                <!-- History -->
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <div class="card animate" style="min-height: 60vh;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1rem;">Detalle de Pagos</h2>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-outline btn-danger" onclick="clearPayments()" style="padding: 0.4rem 0.8rem;">
+                        <i class="ph ph-trash"></i>
+                    </button>
+                    <button class="btn btn-primary" onclick="addPayment()">
+                        <i class="ph ph-plus"></i> Agregar Pago
+                    </button>
+                </div>
+            </div>
+
+            <table class="payments-table">
+                <tbody id="payments-body">
+                    <!-- Rows -->
+                </tbody>
+            </table>
+
+            <div id="empty-state" style="text-align:center; padding: 4rem 0; color: var(--text-muted);">
+                <i class="ph ph-receipt" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.2;"></i>
+                <p>No hay pagos registrados</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div class="save-bar">
+    <button class="btn btn-primary" id="btn-save" onclick="saveLegalization()" style="padding: 0.8rem 3rem; font-size: 1rem; border-radius: 30px;">
+        <i class="ph ph-check-circle"></i> Finalizar Legalización
+    </button>
+</div>
+
+<script>
+    let payments = [];
+    const DB_KEY = 'dim_flujo_caja_legalizaciones';
+
+    function init() {
+        document.getElementById('receipt-date').value = new Date().toISOString().split('T')[0];
+        addPayment();
+        calculate();
+        renderHistory();
+    }
+
+    function addPayment() {
+        payments.push({ id: Date.now() + Math.random(), desc: '', cat: 'Operativos', val: 0 });
+        renderPayments();
+    }
+
+    function clearPayments() {
+        if(confirm("¿Limpiar todos los campos?")) {
+            payments = [];
+            addPayment();
+            calculate();
+        }
+    }
+
+    function renderPayments() {
+        const tbody = document.getElementById('payments-body');
+        const empty = document.getElementById('empty-state');
+        empty.style.display = payments.length ? 'none' : 'block';
+        
+        tbody.innerHTML = payments.map(p => `
+            <tr>
+                <td style="width: 50%;">
+                    <input type="text" placeholder="Concepto del pago..." value="${p.desc}" 
+                        style="background:transparent; border:none; color:white; width:100%;"
+                        oninput="updatePayment(${p.id}, 'desc', this.value)">
+                </td>
+                <td>
+                    <select onchange="updatePayment(${p.id}, 'cat', this.value)" 
+                        style="background:transparent; border:none; color:var(--text-muted); font-size:0.8rem; width:100%;">
+                        <option value="Operativos" ${p.cat === 'Operativos' ? 'selected' : ''}>Operativos</option>
+                        <option value="Nómina" ${p.cat === 'Nómina' ? 'selected' : ''}>Nómina</option>
+                        <option value="Servicios" ${p.cat === 'Servicios' ? 'selected' : ''}>Servicios</option>
+                        <option value="Otros" ${p.cat === 'Otros' ? 'selected' : ''}>Otros</option>
+                    </select>
+                </td>
+                <td style="width: 20%;">
+                    <input type="number" value="${p.val}" step="100"
+                        style="background:transparent; border:none; color:var(--primary); font-weight:700; width:100%; text-align:right;"
+                        oninput="updatePayment(${p.id}, 'val', this.value)">
+                </td>
+                <td style="width: 40px; text-align:right;">
+                    <button onclick="removePayment(${p.id})" style="background:none; border:none; color:var(--error); cursor:pointer;">
+                        <i class="ph ph-x"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function updatePayment(id, field, value) {
+        const p = payments.find(x => x.id === id);
+        if (p) {
+            p[field] = field === 'val' ? parseFloat(value) || 0 : value;
+            calculate();
+        }
+    }
+
+    function removePayment(id) {
+        payments = payments.filter(p => p.id !== id);
+        renderPayments();
+        calculate();
+    }
+
+    function calculate() {
+        const receiptVal = parseFloat(document.getElementById('receipt-val').value) || 0;
+        const totalPayments = payments.reduce((sum, p) => sum + p.val, 0);
+        const diff = receiptVal - totalPayments;
+
+        const valEl = document.getElementById('balance-val');
+        const badge = document.getElementById('status-badge');
+        const saveBtn = document.getElementById('btn-save');
+
+        valEl.textContent = fmt(diff);
+        
+        if (Math.abs(diff) < 1 && receiptVal > 0) {
+            valEl.style.color = 'var(--success)';
+            badge.className = 'status-badge status-complete';
+            badge.innerHTML = '<i class="ph-fill ph-check-circle"></i> Cuadrado';
+            saveBtn.disabled = false;
+            saveBtn.style.opacity = "1";
+        } else if (diff < 0) {
+            valEl.style.color = 'var(--error)';
+            badge.className = 'status-badge status-exceed';
+            badge.innerHTML = '<i class="ph-fill ph-warning"></i> Excedido';
+            saveBtn.disabled = true;
+            saveBtn.style.opacity = "0.5";
+        } else {
+            valEl.style.color = 'var(--warning)';
+            badge.className = 'status-badge status-pending';
+            badge.innerHTML = '<i class="ph-fill ph-clock"></i> Pendiente';
+            saveBtn.disabled = true;
+            saveBtn.style.opacity = "0.5";
+        }
+    }
+
+    function fmt(v) { return '$ ' + Math.abs(v).toLocaleString('es-CO'); }
+
+    function saveLegalization() {
+        const receiptVal = parseFloat(document.getElementById('receipt-val').value) || 0;
+        const data = {
+            id: Date.now(),
+            date: document.getElementById('receipt-date').value,
+            desc: document.getElementById('receipt-desc').value || 'Legalización',
+            val: receiptVal,
+            details: payments.filter(p => p.val > 0)
+        };
+
+        const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        db.push(data);
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+
+        alert("¡Legalización guardada!");
+        payments = [];
+        addPayment();
+        document.getElementById('receipt-val').value = 0;
+        document.getElementById('receipt-desc').value = '';
+        renderHistory();
+        calculate();
+    }
+
+    function renderHistory() {
+        const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        const list = document.getElementById('history-list');
+        if (!db.length) {
+            list.innerHTML = '<p style="font-size:0.7rem; color:var(--text-muted); text-align:center;">Sin registros</p>';
+            return;
+        }
+        list.innerHTML = db.reverse().map(h => `
+            <div class="history-card">
+                <div class="history-info">
+                    <h4>${h.desc}</h4>
+                    <p>${h.date} • ${h.details.length} items</p>
+                </div>
+                <div class="history-val">${fmt(h.val)}</div>
+            </div>
+        `).join('');
+    }
+
+    // --- IMPORT LOGIC ---
+    async function importFromExcel(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+            const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: "" });
+
+            if (json.length === 0) return alert("Archivo vacío");
+
+            const flows = {};
+            json.forEach(row => {
+                // Determine keys dynamically to handle duplicate names like VALOR, VALOR_1
+                const keys = Object.keys(row);
+                const valKeys = keys.filter(k => k.toUpperCase().includes('VALOR'));
+                
+                // Receipt Val usually first, Payment Val usually second
+                const receiptValRaw = row[valKeys[0]] || 0;
+                const paymentValRaw = row[valKeys[1]] || row[valKeys[0]] || 0;
+
+                const id = row['NUMERO DEL FLUJO DE CAJA'] || 'REC-' + row['FECHA DE INGRESO'];
+                if (!flows[id]) {
+                    flows[id] = {
+                        desc: 'Importado #' + id,
+                        date: formatDateExcel(row['FECHA DE INGRESO']),
+                        val: parseFloat(receiptValRaw) || 0,
+                        payments: []
+                    };
+                }
+                
+                if (parseFloat(paymentValRaw) > 0 || row['DESCRIPCION DEL PAGO']) {
+                    flows[id].payments.push({
+                        id: Math.random(),
+                        desc: row['DESCRIPCION DEL PAGO'] || 'Gasto s/d',
+                        val: parseFloat(paymentValRaw) || 0,
+                        cat: row['TIPO DE GASTO'] || 'Operativos'
+                    });
+                }
+            });
+
+            const flowIds = Object.keys(flows);
+            if (confirm(`Se detectaron ${flowIds.length} flujos. ¿Importar al historial?`)) {
+                const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+                flowIds.forEach(id => {
+                    const f = flows[id];
+                    if (f.payments.length > 0) {
+                        db.push({ id: Date.now() + Math.random(), date: f.date, desc: f.desc, val: f.val, details: f.payments });
+                    }
+                });
+                localStorage.setItem(DB_KEY, JSON.stringify(db));
+                renderHistory();
+                alert("Importación exitosa");
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function formatDateExcel(val) {
+        if (!val) return new Date().toISOString().split('T')[0];
+        if (typeof val === 'number') {
+            const date = new Date((val - 25569) * 86400 * 1000);
+            return date.toISOString().split('T')[0];
+        }
+        return val.toString();
+    }
+
+    async function importFromTesoreria() {
+        const data = JSON.parse(localStorage.getItem('dim_tesoreria_v1') || '{"movimientos":[]}');
+        const movs = data.movimientos.filter(m => m.tipo === 'egreso' && m.fecha.startsWith('2026'));
+        if (!movs.length) return alert("Sin datos 2026 en Tesorería");
+
+        if (confirm(`¿Cargar ${movs.length} egresos?`)) {
+            payments = movs.map(m => ({ id: Math.random(), desc: m.desc, val: m.valor, cat: m.cat || 'Operativos' }));
+            renderPayments();
+            calculate();
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>

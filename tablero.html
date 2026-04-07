@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tablero de Control · DIMALCCO SAS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--s:#fff;--b:#e2e8f0;--bs:#f8fafc;--t:#0f172a;--t2:#475569;--t3:#94a3b8;--ac:#4338ca;--as:#eef2ff;--in:#059669;--ib:#ecfdf5;--ex:#dc2626;--eb:#fef2f2;--w:#d97706;--wb:#fffbeb;--hd:#0f172a;--fn:'Sora',sans-serif;--mo:'DM Mono',monospace;--r:10px}
+body{font-family:var(--fn);background:var(--bg);color:var(--t);font-size:14px;min-height:100vh}
+.hdr{background:var(--hd);color:#f8fafc;padding:20px 28px 24px}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.hdr-ey{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#64748b;margin-bottom:3px}
+.hdr-ti{font-size:22px;font-weight:600}
+.hdr-dt{font-family:var(--mo);font-size:11px;color:#64748b;text-align:right;line-height:1.8}
+.sub-ti{font-size:11px;color:#475569;margin-top:4px}
+.main{padding:24px 28px;max-width:1400px}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);text-decoration:none;margin-bottom:20px;transition:color .15s}
+.back-link:hover{color:var(--ac)}
+.section-label{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:12px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.kpi-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden;transition:box-shadow .15s}
+.kpi-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.07)}
+.kpi-accent{position:absolute;top:0;left:0;width:3px;height:100%;border-radius:4px 0 0 4px}
+.kpi-mod{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);margin-bottom:8px}
+.kpi-val{font-family:var(--mo);font-size:20px;font-weight:500;color:var(--t);margin-bottom:4px}
+.kpi-lbl{font-size:12px;color:var(--t2);margin-bottom:8px}
+.kpi-delta{display:flex;align-items:center;gap:4px;font-size:11px}
+.kpi-bar{height:4px;background:var(--b);border-radius:2px;overflow:hidden;margin-top:8px}
+.kpi-bar-fill{height:100%;border-radius:2px;transition:width .5s}
+.content-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden}
+.card-hdr{padding:14px 16px;border-bottom:1px solid var(--b);display:flex;justify-content:space-between;align-items:center}
+.card-title{font-size:12px;font-weight:600;color:var(--t)}
+.card-link{font-size:11px;color:var(--ac);text-decoration:none;transition:opacity .15s}
+.card-link:hover{opacity:.75}
+.card-body{padding:16px}
+/* Alerts */
+.alert-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--bs)}
+.alert-item:last-child{border-bottom:none}
+.alert-dot{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.alert-text{font-size:12px;color:var(--t2);line-height:1.5}
+.alert-mod{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+/* Recent movements */
+.mov-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bs)}
+.mov-row:last-child{border-bottom:none}
+.mov-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.mov-desc{flex:1;font-size:12px;color:var(--t)}
+.mov-val{font-family:var(--mo);font-size:11px;font-weight:500}
+.mov-date{font-size:10px;color:var(--t3);font-family:var(--mo)}
+/* Mini chart area */
+.mini-bars{display:flex;align-items:flex-end;gap:3px;height:48px;padding-bottom:2px}
+.bar-col{flex:1;border-radius:3px 3px 0 0;min-height:3px;transition:height .4s}
+.bar-labels{display:flex;gap:3px;margin-top:4px}
+.bar-lbl{flex:1;font-size:8px;color:var(--t3);text-align:center;font-family:var(--mo)}
+/* Summary table */
+table{width:100%;border-collapse:collapse}
+th{padding:8px 12px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3)}
+th.num{text-align:right}
+td{padding:9px 12px;font-size:12px;color:var(--t);border-bottom:1px solid var(--bs)}
+tr:last-child td{border-bottom:none}
+td.num{text-align:right;font-family:var(--mo);font-size:11px}
+.pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.pill-ok{background:var(--ib);color:var(--in)}.pill-warn{background:var(--wb);color:var(--w)}.pill-bad{background:var(--eb);color:var(--ex)}
+.btn-refresh{padding:5px 12px;background:none;border:1px solid var(--b);border-radius:5px;font-family:var(--fn);font-size:11px;color:var(--t3);cursor:pointer;transition:all .15s}
+.btn-refresh:hover{border-color:var(--ac);color:var(--ac)}
+.full-width{grid-column:1/-1}
+.nav-pills{display:flex;gap:8px;flex-wrap:wrap}
+.nav-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:var(--as);border:1px solid var(--ac);border-radius:20px;font-size:12px;color:var(--ac);font-weight:500;text-decoration:none;transition:all .15s}
+.nav-pill:hover{background:var(--ac);color:#fff}
+.empty-note{color:var(--t3);font-size:12px;padding:16px 0;text-align:center}
+/* --- AI Assistant Styles --- */
+.ai-fab { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; 
+    background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%); 
+    color: #fff; border: none; border-radius: 50%; cursor: pointer; 
+    box-shadow: 0 8px 32px rgba(67, 56, 202, 0.4); z-index: 1000; 
+    display: flex; align-items: center; justify-content: center; font-size: 24px; 
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.ai-fab:hover { transform: scale(1.1); }
+.ai-window { position: fixed; bottom: 100px; right: 30px; width: 380px; height: 500px; 
+    background: #fff; border-radius: 16px; box-shadow: 0 12px 48px rgba(15, 23, 42, 0.15); 
+    z-index: 1000; flex-direction: column; display: none; overflow: hidden; 
+    animation: slideIn 0.3s ease; border: 1px solid #e2e8f0; }
+@keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.ai-hdr { background: #0f172a; color: #fff; padding: 16px; display: flex; align-items: center; justify-content: space-between; }
+.ai-chat { flex: 1; padding: 16px; overflow-y: auto; background: #f8fafc; font-size: 13px; line-height: 1.6; }
+.ai-msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px; max-width: 85%; word-wrap: break-word; }
+.user-msg { background: #4338ca; color: #fff; margin-left: auto; border-bottom-right-radius: 2px; }
+.bot-msg { background: #fff; color: #0f172a; border: 1px solid #e2e8f0; border-bottom-left-radius: 2px; }
+.ai-ftr { padding: 12px; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; background: #fff; }
+.ai-input { flex: 1; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; font-family: inherit; font-size: 13px; outline: none; }
+.btn-ai-send { background: #4338ca; color: #fff; border: none; border-radius: 8px; width: 36px; height: 36px; cursor: pointer; }
+.ai-loading { font-size: 12px; color: #64748b; font-style: italic; margin-top: 4px; display: none; }
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--s);border-radius:14px;padding:26px;width:500px;max-width:95vw;box-shadow:0 20px 40px rgba(0,0,0,.2);animation:mi .2s ease}
+@keyframes mi{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{width:28px;height:28px;border:none;background:var(--bg);border-radius:5px;cursor:pointer;font-size:15px;color:var(--t2);display:flex;align-items:center;justify-content:center}
+.form-row{margin-bottom:14px}
+.form-lbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t2);margin-bottom:5px}
+.form-row input{width:100%;padding:9px 11px;font-family:var(--fn);font-size:13px;background:var(--bg);border:1px solid var(--b);border-radius:8px;color:var(--t);outline:none}
+.modal-ftr{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--b)}
+.btn-pri{background:var(--ac);color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:500}
+.btn-sec{background:var(--bg);color:var(--t2);border:1px solid var(--b);padding:8px 16px;border-radius:6px;cursor:pointer}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-ey">DIMALCCO SAS · Módulo Finanzas</div>
+      <div class="hdr-ti">Tablero de Control</div>
+      <div class="sub-ti">Consolidado de todos los módulos financieros</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+      <div class="hdr-dt" id="hdr-dt"></div>
+      <button class="btn-refresh" style="border-color:#334155;color:#94a3b8" onclick="openAIConfig()"><i class="ph ph-gear"></i> Ajustes IA</button>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+  <a class="back-link" href="index.html" target="_top">← Volver al workspace</a>
+
+  <div class="section-label">Indicadores clave de gestión financiera</div>
+  <div class="kpi-grid" id="kpi-grid"></div>
+
+  <div class="content-grid">
+    <!-- Alertas -->
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Alertas activas</span>
+        <button class="btn-refresh" onclick="renderAll()">Actualizar</button>
+      </div>
+      <div class="card-body" id="alerts-body" style="padding:0 16px"></div>
+    </div>
+
+    <!-- Actividad reciente: Tesorería -->
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Últimos movimientos · Tesorería</span>
+        <a href="tesoreria_dimalcco.html" class="card-link">Ver módulo →</a>
+      </div>
+      <div class="card-body" id="mov-body" style="padding:0 16px"></div>
+    </div>
+
+    <!-- CxC resumen -->
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Cartera por cobrar · Antigüedad</span>
+        <a href="cxcxp.html" class="card-link">Ver módulo →</a>
+      </div>
+      <div class="card-body" id="cxc-body"></div>
+    </div>
+
+    <!-- Presupuesto resumen -->
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Ejecución presupuestal · Mes actual</span>
+        <a href="presupuesto.html" class="card-link">Ver módulo →</a>
+      </div>
+      <div class="card-body" id="ppto-body"></div>
+    </div>
+
+    <!-- Costos por área -->
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Costos acumulados · Por centro</span>
+        <a href="costos.html" class="card-link">Ver módulo →</a>
+      </div>
+      <div class="card-body" id="costos-body"></div>
+    </div>
+
+    <!-- Nómina -->
+    <div class="card">
+      <div class="card-hdr">
+        <span class="card-title">Nómina · Carga laboral mensual</span>
+        <a href="talento_humano/nomina.html" class="card-link">Ver módulo →</a>
+      </div>
+      <div class="card-body" id="nomina-body"></div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="card full-width">
+      <div class="card-hdr"><span class="card-title">Acceso rápido a módulos</span></div>
+      <div class="card-body">
+        <div class="nav-pills">
+          <a href="tesoreria_dimalcco.html" class="nav-pill">Tesorería & Flujo de Caja</a>
+          <a href="cxcxp.html" class="nav-pill">CxC / CxP</a>
+          <a href="presupuesto.html" class="nav-pill">Presupuesto vs. Ejecución</a>
+          <a href="costos.html" class="nav-pill">Costos por Área</a>
+          <a href="talento_humano/nomina.html" class="nav-pill">Nómina</a>
+          <a href="compras/index.html" class="nav-pill">Compras</a>
+          <a href="proyectos/index.html" class="nav-pill">Proyectos</a>
+          <a href="servicio_cliente/index.html" class="nav-pill">Servicio Cliente</a>
+          <a href="bi/index.html" class="nav-pill">BI & Análisis</a>
+          <a href="contabilidad/estados_financieros/index.html" class="nav-pill">Estados Financieros</a>
+          <a href="contabilidad/renta_juridica/index.html" class="nav-pill">F110 - Renta Jurídica</a>
+          <a href="contabilidad/control_diario_pagos.html" class="nav-pill">Control Diario Pagos</a>
+          <a href="contabilidad/flujo_caja.html" class="nav-pill">Legalización Flujo de Caja</a>
+          <a href="calidad/index.html" class="nav-pill">Calidad</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const fmt=v=>'$ '+Math.abs(v).toLocaleString('es-CO');
+const fmtDate=iso=>{if(!iso)return'';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`};
+const MONTHS=['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const SMMLV=1423500, AUX_TRANS=200000;
+
+function readLS(key){try{const s=localStorage.getItem(key);if(s)return JSON.parse(s);}catch(e){}return null;}
+
+// Header
+function renderHeader(){
+  const now=new Date();
+  const opts={weekday:'long',year:'numeric',month:'long',day:'numeric'};
+  document.getElementById('hdr-dt').innerHTML=`<div>${now.toLocaleDateString('es-CO',opts)}</div>`;
+}
+
+// KPIs
+function renderKPIs(){
+  const ts=readLS('dim_tesoreria_v1');
+  const cx=readLS('dim_cxcxp_v1');
+  const pp=readLS('dim_presupuesto_v1');
+  const co=readLS('dim_costos_v1');
+  const no=readLS('dim_nomina_v1');
+
+  const kpis=[];
+
+  // 1. Saldo consolidado (Tesorería)
+  if(ts){
+    let total=0;
+    ts.cuentas.filter(c=>c.activa).forEach(c=>{
+      let b=c.saldo_inicial;
+      ts.movimientos.forEach(m=>{if(m.cuenta!==c.id)return;b+=m.tipo==='ingreso'?m.valor:-m.valor;});
+      total+=b;
+    });
+    const min=ts.config?.saldo_minimo||3000000;
+    const pct=Math.min(Math.round(total/max(min*3,total)*100),100);
+    kpis.push({mod:'Tesorería',lbl:'Saldo consolidado',val:fmt(total),color:total<min?'#ef4444':total<min*2?'#f59e0b':'#059669',accentColor:total<min?'#ef4444':'#4338ca',pct,sub:total<min?'⚠ Por debajo del mínimo':'Saldo operativo normal'});
+  } else kpis.push({mod:'Tesorería',lbl:'Saldo consolidado',val:'Sin datos',color:'#94a3b8',accentColor:'#94a3b8',pct:0,sub:'Módulo no inicializado'});
+
+  // 2. CxC pendiente
+  if(cx){
+    let totPend=0,venc=0;
+    const today=new Date();
+    cx.cobrar.forEach(d=>{const p=d.valor_total-d.valor_aplicado;if(p>0){totPend+=p;const dias=Math.ceil((new Date(d.fecha_vencimiento+' 12:00')-today)/(864e5));if(dias<0)venc+=p;}});
+    kpis.push({mod:'CxC/CxP',lbl:'Cartera por cobrar',val:fmt(totPend),color:venc>0?'#ef4444':'#059669',accentColor:'#059669',pct:totPend>0?Math.round((totPend-venc)/totPend*100):100,sub:venc>0?`⚠ Vencida: ${fmt(venc)}`:'Sin cartera vencida'});
+  } else kpis.push({mod:'CxC/CxP',lbl:'Cartera por cobrar',val:'Sin datos',color:'#94a3b8',accentColor:'#94a3b8',pct:0,sub:'Módulo no inicializado'});
+
+  // 3. Ejecución presupuestal
+  if(pp){
+    const mes=new Date().getMonth()+1;
+    let totPpto=0,totEjec=0;
+    pp.rubros.forEach(r=>{
+      const p=Math.round(r.anual/12);
+      const e=r.ejecucion?.[mes]||0;
+      if(r.tipo==='gasto'){totPpto+=p;totEjec+=e;}
+    });
+    const pct=totPpto>0?Math.round(totEjec/totPpto*100):0;
+    kpis.push({mod:'Presupuesto',lbl:'Ejecución gastos',val:pct+'%',color:pct>115?'#ef4444':pct>100?'#f59e0b':'#4338ca',accentColor:'#d97706',pct:Math.min(pct,100),sub:`Presup: ${fmt(totPpto)} · Real: ${fmt(totEjec)}`});
+  } else kpis.push({mod:'Presupuesto',lbl:'Ejecución gastos',val:'Sin datos',color:'#94a3b8',accentColor:'#94a3b8',pct:0,sub:'Módulo no inicializado'});
+
+  // 4. Costo nómina mensual
+  if(no){
+    const activos=no.empleados.filter(e=>e.activo);
+    let totCosto=0;
+    activos.forEach(e=>{
+      const sal=e.salario,aux=sal<=2*SMMLV?AUX_TRANS:0,arl=parseFloat(e.arl)/100;
+      const emp=Math.round(sal*(0.085+0.12+arl+0.02+0.03+0.04));
+      const prov=Math.round((sal+aux)*(1/12+0.12/12/12+1/12)+sal/24);
+      totCosto+=sal+aux+emp+prov;
+    });
+    kpis.push({mod:'Nómina',lbl:'Costo nómina mensual',val:fmt(totCosto),color:'#dc2626',accentColor:'#dc2626',pct:0,sub:`${activos.length} empleados activos`});
+  } else kpis.push({mod:'Nómina',lbl:'Costo nómina mensual',val:'Sin datos',color:'#94a3b8',accentColor:'#94a3b8',pct:0,sub:'Módulo no inicializado'});
+
+  document.getElementById('kpi-grid').innerHTML=kpis.map(k=>`
+    <div class="kpi-card">
+      <div class="kpi-accent" style="background:${k.accentColor}"></div>
+      <div class="kpi-mod">${k.mod}</div>
+      <div class="kpi-val" style="color:${k.color}">${k.val}</div>
+      <div class="kpi-lbl">${k.lbl}</div>
+      <div class="kpi-delta" style="color:${k.color}"><span>${k.sub}</span></div>
+      ${k.pct>0?`<div class="kpi-bar"><div class="kpi-bar-fill" style="width:${k.pct}%;background:${k.accentColor}"></div></div>`:''}
+    </div>`).join('');
+}
+
+// Alerts from all modules
+function renderAlerts(){
+  const alerts=[];
+  const ts=readLS('dim_tesoreria_v1');
+  const cx=readLS('dim_cxcxp_v1');
+  const today=new Date();
+
+  if(ts){
+    let total=0;
+    ts.cuentas.filter(c=>c.activa).forEach(c=>{
+      let b=c.saldo_inicial;
+      ts.movimientos.forEach(m=>{if(m.cuenta!==c.id)return;b+=m.tipo==='ingreso'?m.valor:-m.valor;});
+      total+=b;
+    });
+    const min=ts.config?.saldo_minimo||3000000;
+    if(total<min) alerts.push({mod:'Tesorería',color:'#ef4444',msg:`Saldo total ${fmt(total)} por debajo del mínimo operativo (${fmt(min)})`});
+  }
+
+  if(cx){
+    cx.cobrar.forEach(d=>{
+      const p=d.valor_total-d.valor_aplicado;if(p<=0)return;
+      const dias=Math.ceil((new Date(d.fecha_vencimiento+' 12:00')-today)/(864e5));
+      if(dias<0) alerts.push({mod:'CxC',color:'#ef4444',msg:`Factura ${d.factura||'S/N'} de ${d.contraparte} vencida hace ${Math.abs(dias)} día(s) — ${fmt(p)} pendiente`});
+      else if(dias<=5) alerts.push({mod:'CxC',color:'#f59e0b',msg:`Factura ${d.factura||'S/N'} de ${d.contraparte} vence en ${dias} día(s) — ${fmt(p)}`});
+    });
+    cx.pagar.forEach(d=>{
+      const p=d.valor_total-d.valor_aplicado;if(p<=0)return;
+      const dias=Math.ceil((new Date(d.fecha_vencimiento+' 12:00')-today)/(864e5));
+      if(dias<0) alerts.push({mod:'CxP',color:'#ef4444',msg:`Obligación con ${d.contraparte} vencida hace ${Math.abs(dias)} día(s) — ${fmt(p)}`});
+    });
+  }
+
+  const el=document.getElementById('alerts-body');
+  if(!alerts.length){el.innerHTML='<div class="empty-note" style="padding:16px 0">Sin alertas activas</div>';return;}
+  el.innerHTML=alerts.slice(0,6).map(a=>`
+    <div class="alert-item">
+      <div class="alert-dot" style="background:${a.color}"></div>
+      <div><div class="alert-text">${a.msg}</div><div class="alert-mod" style="color:${a.color}">${a.mod}</div></div>
+    </div>`).join('');
+}
+
+// Recent movements
+function renderMovimientos(){
+  const ts=readLS('dim_tesoreria_v1');
+  const el=document.getElementById('mov-body');
+  if(!ts){el.innerHTML='<div class="empty-note">Módulo Tesorería no inicializado</div>';return;}
+  const recents=[...ts.movimientos].sort((a,b)=>b.fecha.localeCompare(a.fecha)).slice(0,6);
+  if(!recents.length){el.innerHTML='<div class="empty-note">Sin movimientos</div>';return;}
+  el.innerHTML=recents.map(m=>`
+    <div class="mov-row">
+      <div class="mov-dot" style="background:${m.tipo==='ingreso'?'#059669':'#ef4444'}"></div>
+      <div style="flex:1;min-width:0"><div class="mov-desc" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.desc}</div><div class="mov-date">${fmtDate(m.fecha)}</div></div>
+      <div class="mov-val" style="color:${m.tipo==='ingreso'?'var(--in)':'var(--ex)'}">${m.tipo==='ingreso'?'+':'−'}${fmt(m.valor)}</div>
+    </div>`).join('');
+}
+
+// CxC aging
+function renderCxC(){
+  const cx=readLS('dim_cxcxp_v1');
+  const el=document.getElementById('cxc-body');
+  if(!cx){el.innerHTML='<div class="empty-note">Módulo CxC/CxP no inicializado</div>';return;}
+  const today=new Date();
+  const buckets={'Al día':0,'1-30d':0,'31-60d':0,'>60d':0};
+  cx.cobrar.forEach(d=>{
+    const p=d.valor_total-d.valor_aplicado;if(p<=0)return;
+    const dias=Math.ceil((new Date(d.fecha_vencimiento+' 12:00')-today)/(864e5));
+    if(dias>=0)buckets['Al día']+=p;
+    else if(dias>=-30)buckets['1-30d']+=p;
+    else if(dias>=-60)buckets['31-60d']+=p;
+    else buckets['>60d']+=p;
+  });
+  const total=Object.values(buckets).reduce((a,b)=>a+b,0)||1;
+  const colors={'Al día':'#059669','1-30d':'#f59e0b','31-60d':'#fb923c','>60d':'#ef4444'};
+  el.innerHTML=`<table><thead><tr><th>Tramo</th><th class="num">Monto</th><th class="num">%</th><th>Distribución</th></tr></thead><tbody>`+
+    Object.entries(buckets).map(([k,v])=>`<tr>
+      <td style="color:${colors[k]};font-weight:500;font-size:11px">${k}</td>
+      <td class="num">${v>0?fmt(v):'—'}</td>
+      <td class="num" style="color:var(--t3)">${v>0?Math.round(v/total*100)+'%':'—'}</td>
+      <td><div style="height:6px;background:var(--b);border-radius:3px;overflow:hidden;width:100px"><div style="height:100%;background:${colors[k]};width:${Math.round(v/total*100)}%"></div></div></td>
+    </tr>`).join('')+'</tbody></table>';
+}
+
+// Presupuesto
+function renderPpto(){
+  const pp=readLS('dim_presupuesto_v1');
+  const el=document.getElementById('ppto-body');
+  if(!pp){el.innerHTML='<div class="empty-note">Módulo Presupuesto no inicializado</div>';return;}
+  const mes=new Date().getMonth()+1;
+  const topRubros=pp.rubros.filter(r=>r.tipo==='gasto').map(r=>{
+    const p=Math.round(r.anual/12),e=r.ejecucion?.[mes]||0;
+    return{nombre:r.nombre,ppto:p,ejec:e,pct:p>0?Math.round(e/p*100):0};
+  }).sort((a,b)=>b.pct-a.pct).slice(0,5);
+  el.innerHTML=`<table><thead><tr><th>Rubro</th><th class="num">Presup.</th><th class="num">Ejec.</th><th class="num">%</th></tr></thead><tbody>`+
+    topRubros.map(r=>`<tr>
+      <td style="font-size:11px">${r.nombre}</td>
+      <td class="num">${fmt(r.ppto)}</td>
+      <td class="num">${r.ejec>0?fmt(r.ejec):'—'}</td>
+      <td class="num"><span class="pill ${r.pct>115?'pill-bad':r.pct>100?'pill-warn':'pill-ok'}">${r.pct}%</span></td>
+    </tr>`).join('')+'</tbody></table>';
+}
+
+// Costos
+function renderCostos(){
+  const co=readLS('dim_costos_v1');
+  const el=document.getElementById('costos-body');
+  if(!co){el.innerHTML='<div class="empty-note">Módulo Costos no inicializado</div>';return;}
+  const ccs=['Producción','Administración','Comercial'];
+  const total=co.costos.reduce((s,c)=>s+c.valor,0)||1;
+  const colors={'Producción':'#4338ca','Administración':'#d97706','Comercial':'#059669'};
+  const maxVal=Math.max(...ccs.map(cc=>co.costos.filter(c=>c.cc===cc).reduce((s,c)=>s+c.valor,0)))||1;
+  const barData=ccs.map(cc=>co.costos.filter(c=>c.cc===cc).reduce((s,c)=>s+c.valor,0));
+  el.innerHTML=`<div class="mini-bars">${barData.map((v,i)=>`<div class="bar-col" style="height:${Math.round(v/maxVal*44)+4}px;background:${colors[ccs[i]]}"></div>`).join('')}</div>
+    <div class="bar-labels">${ccs.map(cc=>`<div class="bar-lbl">${cc.slice(0,4)}.</div>`).join('')}</div>
+    <table style="margin-top:12px"><tbody>`+
+    ccs.map(cc=>{const v=co.costos.filter(c=>c.cc===cc).reduce((s,c)=>s+c.valor,0);return`<tr>
+      <td style="font-size:11px;font-weight:500;color:${colors[cc]}">${cc}</td>
+      <td class="num">${fmt(v)}</td>
+      <td class="num" style="color:var(--t3)">${Math.round(v/total*100)}%</td></tr>`;}).join('')+
+    `</tbody></table>`;
+}
+
+// Nómina
+function renderNomina(){
+  const no=readLS('dim_nomina_v1');
+  const el=document.getElementById('nomina-body');
+  if(!no){el.innerHTML='<div class="empty-note">Módulo Nómina no inicializado</div>';return;}
+  const activos=no.empleados.filter(e=>e.activo);
+  let totNeto=0,totCosto=0;
+  activos.forEach(e=>{
+    const sal=e.salario,aux=sal<=2*SMMLV?AUX_TRANS:0,arl=parseFloat(e.arl)/100;
+    const ded=Math.round(sal*0.08);
+    const emp=Math.round(sal*(0.085+0.12+arl+0.09));
+    const prov=Math.round((sal+aux)/12*2+sal/24+(sal+aux)/12*(1.12/12));
+    totNeto+=sal+aux-ded;
+    totCosto+=sal+aux+emp+prov;
+  });
+  const ccs=[...new Set(activos.map(e=>e.cc))];
+  el.innerHTML=`<table><thead><tr><th>Centro</th><th class="num">Empleados</th><th class="num">Costo est.</th></tr></thead><tbody>`+
+    ccs.map(cc=>{
+      const emps=activos.filter(e=>e.cc===cc);
+      const costo=emps.reduce((s,e)=>{
+        const sal=e.salario,aux=sal<=2*SMMLV?AUX_TRANS:0,arl=parseFloat(e.arl)/100;
+        return s+sal+aux+Math.round(sal*(0.085+0.12+arl+0.09))+Math.round((sal+aux)/12*2+sal/24);
+      },0);
+      return`<tr><td style="font-size:11px">${cc}</td><td class="num">${emps.length}</td><td class="num">${fmt(costo)}</td></tr>`;
+    }).join('')+
+    `<tr style="background:#f8fafc;font-weight:600"><td>Total</td><td class="num">${activos.length}</td><td class="num" style="color:var(--ex)">${fmt(totCosto)}</td></tr>`+
+    `</tbody></table>`;
+}
+
+function max(a,b){return a>b?a:b;}
+
+function renderAll(){
+  renderHeader();
+  renderKPIs();
+  renderAlerts();
+  renderMovimientos();
+  renderCxC();
+  renderPpto();
+  renderCostos();
+  renderNomina();
+}
+
+renderAll();
+</script>
+<!-- AI ASSISTANT UI -->
+<button class="ai-fab" onclick="toggleAIChat()"><i class="ph ph-sparkle"></i></button>
+
+<div class="ai-window" id="aiWindow">
+    <div class="ai-hdr">
+        <div style="display:flex;align-items:center;gap:8px">
+            <i class="ph ph-sparkle"></i>
+            <span style="font-weight:600;font-size:14px">Asistente DIMALCCO</span>
+        </div>
+        <div style="display:flex;gap:10px">
+            <button onclick="openAIConfig()" style="background:none;border:none;color:#fff;cursor:pointer"><i class="ph ph-gear"></i></button>
+            <button onclick="toggleAIChat()" style="background:none;border:none;color:#fff;cursor:pointer"><i class="ph ph-x"></i></button>
+        </div>
+    </div>
+    <div class="ai-chat" id="aiChatArea">
+        <div class="ai-msg bot-msg">¡Hola! Soy tu asistente financiero de Dimalcco. ¿En qué puedo ayudarte hoy?</div>
+    </div>
+    <div id="aiLoading" class="ai-loading" style="padding:0 16px 8px">Claude está pensando...</div>
+    <div class="ai-ftr">
+        <input type="text" id="aiInput" class="ai-input" placeholder="Pregunta sobre tus finanzas..." onkeypress="if(event.key==='Enter')sendAIMessage()">
+        <button class="btn-ai-send" onclick="sendAIMessage()"><i class="ph ph-paper-plane-right"></i></button>
+    </div>
+</div>
+
+<!-- MODAL: AI Config -->
+<div class="modal-backdrop" id="aiModalBk">
+    <div class="modal" style="width:400px">
+        <div class="modal-hdr">
+            <div class="modal-title">Configuración Claude AI</div>
+            <button class="modal-close" onclick="closeAIConfig()">✕</button>
+        </div>
+        <div class="form-row">
+            <label class="form-lbl">Anthropic API Key</label>
+            <input type="password" id="aiKeyInput" placeholder="sk-ant-...">
+            <span style="font-size:10px;color:var(--t3);margin-top:4px;display:block">Tu clave se guarda localmente en el navegador.</span>
+        </div>
+        <div class="form-row">
+            <label class="form-lbl">Proxy URL (Opcional)</label>
+            <input type="text" id="aiProxyInput" placeholder="https://tu-proxy.com/v1/messages">
+            <span style="font-size:10px;color:var(--t3);margin-top:4px;display:block">Necesario si tienes problemas de CORS.</span>
+        </div>
+        <div class="modal-ftr">
+            <button class="btn-sec" onclick="closeAIConfig()">Cerrar</button>
+            <button class="btn-pri" onclick="saveAIConfig()">Guardar ajustes</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="ai_assistant.js"></script>
+<script>
+// --- AI UI Logic ---
+function toggleAIChat(){
+    const win = document.getElementById('aiWindow');
+    win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function openAIConfig(){
+    document.getElementById('aiKeyInput').value = localStorage.getItem('ANTHROPIC_API_KEY') || '';
+    document.getElementById('aiProxyInput').value = localStorage.getItem('AI_PROXY_URL') || '';
+    document.getElementById('aiModalBk').classList.add('open');
+}
+
+function closeAIConfig(){
+    document.getElementById('aiModalBk').classList.remove('open');
+}
+
+function saveAIConfig(){
+    localStorage.setItem('ANTHROPIC_API_KEY', document.getElementById('aiKeyInput').value.trim());
+    localStorage.setItem('AI_PROXY_URL', document.getElementById('aiProxyInput').value.trim());
+    window.DimalccoAI.apiKey = localStorage.getItem('ANTHROPIC_API_KEY');
+    window.DimalccoAI.proxyUrl = localStorage.getItem('AI_PROXY_URL');
+    closeAIConfig();
+    alert("Configuración IA guardada.");
+}
+
+async function sendAIMessage(){
+    const input = document.getElementById('aiInput');
+    const text = input.value.trim();
+    if(!text) return;
+
+    input.value = '';
+    const chatArea = document.getElementById('aiChatArea');
+    
+    // User bubble
+    chatArea.innerHTML += `<div class="ai-msg user-msg">${text}</div>`;
+    chatArea.scrollTop = chatArea.scrollHeight;
+
+    document.getElementById('aiLoading').style.display = 'block';
+
+    try {
+        const response = await window.DimalccoAI.sendMessage(text);
+        const html = marked.parse(response);
+        chatArea.innerHTML += `<div class="ai-msg bot-msg">${html}</div>`;
+    } catch (e) {
+        chatArea.innerHTML += `<div class="ai-msg bot-msg" style="color:var(--ex)">Error: ${e.message}</div>`;
+    } finally {
+        document.getElementById('aiLoading').style.display = 'none';
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+}
+</script>
+</body>
+</html>

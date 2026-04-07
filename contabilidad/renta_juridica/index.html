@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario 110 - Renta Jurídica · DIMALCCO SAS</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- React & Babel Standalone (Para ejecutar JSX en el navegador) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; background-color: #0a0f1e; }
+        .back-nav {
+            position: fixed; top: 18px; left: 24px; z-index: 1000;
+            display: flex; align-items: center; gap: 8px;
+            color: #64748b; text-decoration: none; font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 13px; font-weight: 600; transition: color 0.2s;
+        }
+        .back-nav:hover { color: #C9A227; }
+    </style>
+</head>
+<body>
+    <a href="../dashboard_fiscal.html" class="back-nav">
+        <i class="ph ph-arrow-left"></i> Volver al Dashboard
+    </a>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- POLYFILL STORAGE ---
+        window.storage = {
+            get: async (key) => ({ value: localStorage.getItem(key) }),
+            set: async (key, val) => { localStorage.setItem(key, val); return true; },
+            delete: async (key) => { localStorage.removeItem(key); return true; }
+        };
+
+        const { useState, useCallback, useEffect } = React;
+
+        const STORAGE_KEY = "formulario110_progreso";
+
+        const formatCOP = (v) => {
+          if (!v && v !== 0) return "";
+          return new Intl.NumberFormat("es-CO", { minimumFractionDigits: 0 }).format(Math.round(Number(v)));
+        };
+
+        const parseCOP = (v) => {
+          if (!v) return 0;
+          return Number(String(v).replace(/[^\d-]/g, "")) || 0;
+        };
+
+        const SECTIONS = [
+          { id: "declarante", label: "Declarante", icon: "🏢" },
+          { id: "patrimonio", label: "Patrimonio", icon: "🏦" },
+          { id: "ingresos", label: "Ingresos", icon: "📈" },
+          { id: "costos", label: "Costos y Deducciones", icon: "📉" },
+          { id: "renta", label: "Renta", icon: "📋" },
+          { id: "ganancias", label: "Ganancias Ocasionales", icon: "💰" },
+          { id: "liquidacion", label: "Liquidación Privada", icon: "⚖️" },
+          { id: "resumen", label: "Resumen Final", icon: "✅" },
+        ];
+
+        const TARIFAS = [
+          { value: 0.35, label: "35% - Tarifa General (Art. 240 E.T.)" },
+          { value: 0.20, label: "20% - Régimen Tributario Especial (Art. 356 E.T.)" },
+          { value: 0.20, label: "20% - Cooperativas (Art. 19-4 E.T.)" },
+          { value: 0.09, label: "9% - Empresas Editoriales" },
+          { value: 0.35, label: "35% - Persona Natural No Residente (Art. 247 E.T.)" },
+          { value: 0.40, label: "40% - Inst. Financieras + 5 puntos adicionales" },
+        ];
+
+        const initialValues = () => {
+          const f = {};
+          for (let i = 33; i <= 117; i++) f[`c${i}`] = "";
+          f.c85_manual = "";
+          return f;
+        };
+
+        function Toast({ msg, type }) {
+          if (!msg) return null;
+          const colors = {
+            success: { bg: "rgba(34,197,94,0.18)", border: "rgba(34,197,94,0.5)", text: "#86efac", icon: "✅" },
+            error:   { bg: "rgba(239,68,68,0.18)",  border: "rgba(239,68,68,0.5)",  text: "#fca5a5", icon: "❌" },
+            info:    { bg: "rgba(201,162,39,0.18)", border: "rgba(201,162,39,0.5)", text: "#C9A227", icon: "💾" },
+          };
+          const c = colors[type] || colors.info;
+          return (
+            <div style={{
+              position: "fixed", top: 70, right: 24, zIndex: 9999,
+              background: c.bg, border: `1px solid ${c.border}`,
+              borderRadius: 10, padding: "12px 20px",
+              display: "flex", alignItems: "center", gap: 10,
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+              animation: "fadeSlide 0.3s ease",
+            }}>
+              <style>{`@keyframes fadeSlide { from { opacity:0; transform:translateY(-8px) } to { opacity:1; transform:translateY(0) } }`}</style>
+              <span style={{ fontSize: 16 }}>{c.icon}</span>
+              <span style={{ fontSize: 13, color: c.text, fontWeight: 600 }}>{msg}</span>
+            </div>
+          );
+        }
+
+        function SaveButton({ onSave, onLoad, onClear, lastSaved }) {
+          const [open, setOpen] = React.useState(false);
+          return (
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => setOpen(o => !o)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 7,
+                  padding: "7px 16px", borderRadius: 8, border: "1px solid rgba(201,162,39,0.5)",
+                  background: "rgba(201,162,39,0.15)", color: "#C9A227",
+                  cursor: "pointer", fontWeight: 700, fontSize: 12,
+                }}>
+                <span>💾</span><span>Guardar</span><span style={{ fontSize: 9, opacity: 0.7 }}>{open ? "▲" : "▼"}</span>
+              </button>
+              {open && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 8px)", right: 0,
+                  background: "#0d1627", border: "1px solid rgba(201,162,39,0.3)",
+                  borderRadius: 10, padding: 8, minWidth: 230,
+                  boxShadow: "0 16px 48px rgba(0,0,0,0.6)", zIndex: 999
+                }}>
+                  {lastSaved && (
+                    <div style={{ fontSize: 10, color: "#475569", padding: "4px 10px 8px", borderBottom: "1px solid rgba(255,255,255,0.06)", marginBottom: 4 }}>
+                      Último guardado: {lastSaved}
+                    </div>
+                  )}
+                  {[
+                    ["💾", "Guardar progreso", onSave, "#C9A227"],
+                    ["📂", "Cargar último guardado", onLoad, "#60a5fa"],
+                    ["🗑️", "Limpiar formulario", onClear, "#f87171"],
+                  ].map(([ico, lbl, fn, col]) => (
+                    <button key={lbl}
+                      onClick={() => { fn(); setOpen(false); }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 10, width: "100%",
+                        padding: "9px 12px", borderRadius: 7, border: "none",
+                        background: "none", cursor: "pointer", color: col,
+                        fontSize: 12, fontWeight: 600, textAlign: "left",
+                      }}
+                      onMouseOver={e => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
+                      onMouseOut={e => e.currentTarget.style.background = "none"}
+                    >
+                      <span>{ico}</span><span>{lbl}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        function NumField({ label, casilla, value, onChange, readOnly, hint, highlight }) {
+          const [raw, setRaw] = React.useState("");
+          const [focused, setFocused] = React.useState(false);
+
+          const handleFocus = () => {
+            setFocused(true);
+            setRaw(value ? String(parseCOP(value)) : "");
+          };
+          const handleBlur = () => {
+            setFocused(false);
+            onChange(raw);
+          };
+          const handleChange = (e) => {
+            const v = e.target.value.replace(/[^\d-]/g, "");
+            setRaw(v);
+          };
+
+          const displayVal = focused ? raw : (value !== "" && value !== undefined ? formatCOP(value) : "");
+
+          return (
+            <div style={{
+              display: "flex", alignItems: "center", gap: 8, padding: "6px 0",
+              borderBottom: "1px solid rgba(255,255,255,0.06)"
+            }}>
+              <div style={{
+                background: highlight ? "linear-gradient(135deg,#C9A227,#e8c04a)" : "rgba(201,162,39,0.15)",
+                color: highlight ? "#1a1200" : "#C9A227",
+                fontWeight: 700, fontSize: 11, borderRadius: 4,
+                padding: "2px 6px", minWidth: 36, textAlign: "center",
+                fontFamily: "monospace"
+              }}>
+                {casilla}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 2 }}>{label}</div>
+                {hint && <div style={{ fontSize: 10, color: "#64748b", fontStyle: "italic" }}>{hint}</div>}
+              </div>
+              <div style={{ position: "relative" }}>
+                <input
+                  readOnly={readOnly}
+                  value={displayVal}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  style={{
+                    width: 140, textAlign: "right", fontFamily: "monospace",
+                    padding: "5px 10px", borderRadius: 6, fontSize: 13,
+                    background: readOnly
+                      ? "rgba(201,162,39,0.08)"
+                      : highlight
+                        ? "rgba(201,162,39,0.15)"
+                        : "rgba(255,255,255,0.06)",
+                    border: readOnly
+                      ? "1px solid rgba(201,162,39,0.3)"
+                      : focused ? "1px solid #C9A227" : "1px solid rgba(255,255,255,0.12)",
+                    color: readOnly ? "#C9A227" : "#f1f5f9",
+                    cursor: readOnly ? "default" : "text",
+                    outline: "none",
+                    transition: "border 0.2s"
+                  }}
+                  placeholder="0"
+                />
+                {readOnly && (
+                  <div style={{
+                    position: "absolute", right: -18, top: "50%", transform: "translateY(-50%)",
+                    fontSize: 9, color: "#C9A227"
+                  }}>◀</div>
+                )}
+              </div>
+            </div>
+          );
+        }
+
+        function SectionCard({ title, icon, children }) {
+          return (
+            <div style={{
+              background: "rgba(15,23,42,0.8)", border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 12, overflow: "hidden", marginBottom: 20
+            }}>
+              <div style={{
+                background: "linear-gradient(90deg, rgba(201,162,39,0.2), rgba(201,162,39,0.05))",
+                borderBottom: "1px solid rgba(201,162,39,0.25)",
+                padding: "12px 20px", display: "flex", alignItems: "center", gap: 10
+              }}>
+                <span style={{ fontSize: 18 }}>{icon}</span>
+                <span style={{ fontWeight: 700, color: "#C9A227", fontSize: 14, letterSpacing: 0.5, textTransform: "uppercase" }}>{title}</span>
+              </div>
+              <div style={{ padding: "12px 20px" }}>{children}</div>
+            </div>
+          );
+        }
+
+        function TotalRow({ label, casilla, value }) {
+          return (
+            <div style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              background: "rgba(201,162,39,0.1)", border: "1px solid rgba(201,162,39,0.3)",
+              borderRadius: 8, padding: "10px 16px", margin: "12px 0"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{
+                  background: "#C9A227", color: "#1a1200", fontWeight: 800,
+                  fontSize: 11, padding: "2px 7px", borderRadius: 4, fontFamily: "monospace"
+                }}>{casilla}</span>
+                <span style={{ fontWeight: 700, color: "#e2e8f0", fontSize: 13 }}>{label}</span>
+              </div>
+              <span style={{ fontFamily: "monospace", fontWeight: 800, color: "#C9A227", fontSize: 15 }}>
+                $ {formatCOP(value) || "0"}
+              </span>
+            </div>
+          );
+        }
+
+        function Formulario110() {
+          const [section, setSection] = useState("declarante");
+          const [tarifa, setTarifa] = useState(0.35);
+          const [info, setInfo] = useState({
+            anio: "2024", nit: "", dv: "", razonSocial: "", primerApellido: "",
+            segundoApellido: "", primerNombre: "", otrosNombres: "", actividadEconomica: "",
+            tipoDeclarante: "juridica"
+          });
+          const [v, setV] = useState(initialValues());
+          const [toast, setToast] = useState({ msg: "", type: "info" });
+          const [lastSaved, setLastSaved] = useState("");
+
+          const showToast = (msg, type = "info") => {
+            setToast({ msg, type });
+            setTimeout(() => setToast({ msg: "", type: "info" }), 3000);
+          };
+
+          // Auto-load on mount
+          useEffect(() => {
+            (async () => {
+              try {
+                const result = await window.storage.get(STORAGE_KEY);
+                if (result?.value) {
+                  const saved = JSON.parse(result.value);
+                  if (saved.v) setV(saved.v);
+                  if (saved.info) setInfo(saved.info);
+                  if (saved.tarifa) setTarifa(saved.tarifa);
+                  if (saved.savedAt) setLastSaved(saved.savedAt);
+                  showToast("Progreso cargado automáticamente", "success");
+                }
+              } catch (_) {}
+            })();
+          }, []);
+
+          const handleSave = async () => {
+            const savedAt = new Date().toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" });
+            try {
+              await window.storage.set(STORAGE_KEY, JSON.stringify({ v, info, tarifa, savedAt }));
+              setLastSaved(savedAt);
+              showToast(`Guardado el ${savedAt}`, "info");
+            } catch (e) {
+              showToast("Error al guardar. Intente de nuevo.", "error");
+            }
+          };
+
+          const handleLoad = async () => {
+            try {
+              const result = await window.storage.get(STORAGE_KEY);
+              if (result?.value) {
+                const saved = JSON.parse(result.value);
+                if (saved.v) setV(saved.v);
+                if (saved.info) setInfo(saved.info);
+                if (saved.tarifa) setTarifa(saved.tarifa);
+                if (saved.savedAt) setLastSaved(saved.savedAt);
+                showToast("Formulario restaurado correctamente", "success");
+              } else {
+                showToast("No hay datos guardados aún", "error");
+              }
+            } catch (_) {
+              showToast("No se encontró un guardado previo", "error");
+            }
+          };
+
+          const handleClear = async () => {
+            if (!window.confirm("¿Seguro que desea limpiar todo el formulario? Esta acción no se puede deshacer.")) return;
+            setV(initialValues());
+            setInfo({ anio: "2024", nit: "", dv: "", razonSocial: "", primerApellido: "", segundoApellido: "", primerNombre: "", otrosNombres: "", actividadEconomica: "", tipoDeclarante: "juridica" });
+            setTarifa(0.35);
+            setLastSaved("");
+            try { await window.storage.delete(STORAGE_KEY); } catch (_) {}
+            showToast("Formulario limpiado", "error");
+          };
+
+          const set = useCallback((k, val) => {
+            setV(prev => ({ ...prev, [k]: val }));
+          }, []);
+
+          const n = (k) => parseCOP(v[k]) || 0;
+
+          // ===== PATRIMONIO =====
+          const c44 = n("c36") + n("c37") + n("c38") + n("c39") + n("c40") + n("c41") + n("c42") + n("c43");
+          const c46 = c44 - n("c45");
+
+          // ===== INGRESOS =====
+          const c58 = n("c47") + n("c48") + n("c49") + n("c50") + n("c51") + n("c52") +
+            n("c53") + n("c54") + n("c55") + n("c56") + n("c57");
+          const c61 = c58 - n("c59") - n("c60");
+
+          // ===== COSTOS Y DEDUCCIONES =====
+          const c67 = n("c62") + n("c63") + n("c64") + n("c65") + n("c66");
+
+          // ===== RENTA =====
+          const rentaOrdinaria = c61 + n("c69") + n("c70") + n("c71") -
+            n("c52") - n("c53") - n("c54") - n("c55") - n("c56") - c67 - n("c68");
+          const c72 = rentaOrdinaria > 0 ? rentaOrdinaria : 0;
+          const c73 = rentaOrdinaria < 0 ? Math.abs(rentaOrdinaria) : 0;
+          const c75 = Math.max(0, c72 - n("c74"));
+          const c76 = c46 * 0; // renta presuntiva = 0% para 2024
+          const baseRenta = Math.max(c75, c76);
+          const c79 = Math.max(0, baseRenta - n("c77") + n("c78"));
+
+          // ===== GANANCIAS OCASIONALES =====
+          const c83 = Math.max(0, n("c80") - n("c81") - n("c82"));
+
+          // ===== LIQUIDACIÓN =====
+          const c84 = Math.round(c79 * tarifa);
+          const c85 = n("c85_manual") || 0;
+          const c91 = c84 + c85 + n("c86") + n("c87") + n("c88") + n("c89") + n("c90");
+          const c94 = c91 + n("c92") - n("c93");
+          const c96 = c94 + n("c95");
+          const c97 = Math.round(c83 * 0.15); // ganancias ocasionales 15% para 2024
+          const c99 = c96 + c97 - n("c98");
+          const c107 = n("c105") + n("c106");
+
+          const c111 = c99 + n("c108") + n("c110")
+            - n("c100") - n("c101") - n("c102") - n("c103") - n("c104") - c107 - n("c109");
+          const c113 = c99 + n("c108") + n("c110") + n("c112")
+            - n("c100") - n("c101") - n("c102") - n("c103") - n("c104") - c107 - n("c109");
+          const c114 = n("c100") + n("c101") + n("c102") + n("c103") + n("c104") + c107 + n("c109")
+            - c99 - n("c108") - n("c110") - n("c112");
+
+          const saldoPagar = Math.max(0, c113);
+          const saldoFavor = Math.max(0, c114);
+
+          const sectionIdx = SECTIONS.findIndex(s => s.id === section);
+
+          const renderContent = () => {
+            switch (section) {
+              case "declarante":
+                return (
+                  <div>
+                    <SectionCard title="Datos del Año Gravable" icon="📅">
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        {[["Año gravable", "anio"], ["Actividad Económica Principal (CIIU)", "actividadEconomica"]].map(([lbl, key]) => (
+                          <div key={key}>
+                            <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>{lbl}</div>
+                            <input
+                              value={info[key]}
+                              onChange={e => setInfo(p => ({ ...p, [key]: e.target.value }))}
+                              style={{
+                                width: "100%", padding: "8px 12px", borderRadius: 6, fontSize: 13,
+                                background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
+                                color: "#f1f5f9", outline: "none", boxSizing: "border-box"
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ marginTop: 12 }}>
+                        <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 6 }}>Tipo de Declarante</div>
+                        <div style={{ display: "flex", gap: 10 }}>
+                          {[["juridica", "Persona Jurídica"], ["natural", "Persona Natural No Residente"], ["sucesion", "Sucesión Ilíquida"]].map(([val, lbl]) => (
+                            <label key={val} style={{
+                              display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
+                              padding: "6px 12px", borderRadius: 6, fontSize: 12,
+                              background: info.tipoDeclarante === val ? "rgba(201,162,39,0.2)" : "rgba(255,255,255,0.04)",
+                              border: `1px solid ${info.tipoDeclarante === val ? "#C9A227" : "rgba(255,255,255,0.1)"}`,
+                              color: info.tipoDeclarante === val ? "#C9A227" : "#94a3b8"
+                            }}>
+                              <input type="radio" name="tipo" value={val}
+                                checked={info.tipoDeclarante === val}
+                                onChange={e => setInfo(p => ({ ...p, tipoDeclarante: e.target.value }))}
+                                style={{ display: "none" }} />
+                              {lbl}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </SectionCard>
+
+                    <SectionCard title="Identificación" icon="🪪">
+                      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12, marginBottom: 12 }}>
+                        <div>
+                          <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>NIT (sin dígito de verificación)</div>
+                          <input value={info.nit} onChange={e => setInfo(p => ({ ...p, nit: e.target.value }))}
+                            style={{ width: "100%", padding: "8px 12px", borderRadius: 6, fontSize: 13, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#f1f5f9", outline: "none", boxSizing: "border-box" }} />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>DV</div>
+                          <input value={info.dv} onChange={e => setInfo(p => ({ ...p, dv: e.target.value }))}
+                            maxLength={1}
+                            style={{ width: "100%", padding: "8px 12px", borderRadius: 6, fontSize: 13, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#f1f5f9", outline: "none", boxSizing: "border-box" }} />
+                        </div>
+                      </div>
+
+                      {info.tipoDeclarante === "juridica" ? (
+                        <div>
+                          <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>Razón Social</div>
+                          <input value={info.razonSocial} onChange={e => setInfo(p => ({ ...p, razonSocial: e.target.value }))}
+                            style={{ width: "100%", padding: "8px 12px", borderRadius: 6, fontSize: 13, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#f1f5f9", outline: "none", boxSizing: "border-box" }} />
+                        </div>
+                      ) : (
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
+                          {[["Primer Apellido", "primerApellido"], ["Segundo Apellido", "segundoApellido"], ["Primer Nombre", "primerNombre"], ["Otros Nombres", "otrosNombres"]].map(([lbl, key]) => (
+                            <div key={key}>
+                              <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>{lbl}</div>
+                              <input value={info[key]} onChange={e => setInfo(p => ({ ...p, [key]: e.target.value }))}
+                                style={{ width: "100%", padding: "8px 12px", borderRadius: 6, fontSize: 13, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#f1f5f9", outline: "none", boxSizing: "border-box" }} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </SectionCard>
+
+                    <SectionCard title="Datos Informativos" icon="📊">
+                      <NumField label="Total costos y gastos de nómina" casilla="33" value={v.c33} onChange={val => set("c33", val)} />
+                      <NumField label="Aportes al sistema de seguridad social" casilla="34" value={v.c34} onChange={val => set("c34", val)} />
+                      <NumField label="Aportes al SENA, ICBF, cajas de compensación" casilla="35" value={v.c35} onChange={val => set("c35", val)} />
+                    </SectionCard>
+
+                    <SectionCard title="Tarifa del Impuesto" icon="📐">
+                      <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 8 }}>Seleccione la tarifa aplicable según la naturaleza del contribuyente</div>
+                      <select
+                        value={tarifa}
+                        onChange={e => setTarifa(Number(e.target.value))}
+                        style={{
+                          width: "100%", padding: "10px 14px", borderRadius: 6, fontSize: 13,
+                          background: "rgba(255,255,255,0.06)", border: "1px solid rgba(201,162,39,0.4)",
+                          color: "#C9A227", outline: "none", cursor: "pointer"
+                        }}
+                      >
+                        {TARIFAS.map((t, i) => (
+                          <option key={i} value={t.value} style={{ background: "#0f172a" }}>{t.label}</option>
+                        ))}
+                      </select>
+                      <div style={{ marginTop: 8, fontSize: 12, color: "#64748b" }}>
+                        ⚠️ Para año gravable 2024, la renta presuntiva es 0% (Art. 188 E.T. modificado).
+                      </div>
+                    </SectionCard>
+                  </div>
+                );
+
+              case "patrimonio":
+                return (
+                  <div>
+                    <SectionCard title="Activos – Patrimonio Bruto" icon="🏦">
+                      <NumField label="Efectivo y equivalentes al efectivo" casilla="36" value={v.c36} onChange={val => set("c36", val)} />
+                      <NumField label="Inversiones e instrumentos financieros derivados" casilla="37" value={v.c37} onChange={val => set("c37", val)} />
+                      <NumField label="Cuentas, documentos y arrendamientos financieros por cobrar" casilla="38" value={v.c38} onChange={val => set("c38", val)} />
+                      <NumField label="Inventarios" casilla="39" value={v.c39} onChange={val => set("c39", val)} />
+                      <NumField label="Activos intangibles" casilla="40" value={v.c40} onChange={val => set("c40", val)} />
+                      <NumField label="Activos biológicos" casilla="41" value={v.c41} onChange={val => set("c41", val)} />
+                      <NumField label="Propiedades, planta y equipo, prop. inversión y ANCMV" casilla="42" value={v.c42} onChange={val => set("c42", val)} />
+                      <NumField label="Otros activos" casilla="43" value={v.c43} onChange={val => set("c43", val)} />
+                      <TotalRow label="Total patrimonio bruto (36 a 43)" casilla="44" value={c44} />
+                    </SectionCard>
+                    <SectionCard title="Pasivos y Patrimonio Líquido" icon="⚖️">
+                      <NumField label="Pasivos" casilla="45" value={v.c45} onChange={val => set("c45", val)} />
+                      <TotalRow label="Total patrimonio líquido (44 − 45)" casilla="46" value={c46} />
+                    </SectionCard>
+                  </div>
+                );
+
+              case "ingresos":
+                return (
+                  <SectionCard title="Ingresos" icon="📈">
+                    <NumField label="Ingresos brutos de actividades ordinarias" casilla="47" value={v.c47} onChange={val => set("c47", val)} />
+                    <NumField label="Ingresos financieros" casilla="48" value={v.c48} onChange={val => set("c48", val)} />
+                    <NumField label="Dividendos y participaciones NO constitutivos de renta" casilla="49" value={v.c49} onChange={val => set("c49", val)} />
+                    <NumField label="Dividendos de entidades no residentes a CHC" casilla="50" value={v.c50} onChange={val => set("c50", val)} />
+                    <NumField label="Dividendos gravados a tarifa general" casilla="51" value={v.c51} onChange={val => set("c51", val)} />
+                    <NumField label="Dividendos recibidos por PN sin residencia (año 2016)" casilla="52" value={v.c52} onChange={val => set("c52", val)} />
+                    <NumField label="Dividendos recibidos por PN sin residencia (año 2017+)" casilla="53" value={v.c53} onChange={val => set("c53", val)} />
+                    <NumField label="Dividendos gravados a tarifas Art. 245 ó 246 E.T." casilla="54" value={v.c54} onChange={val => set("c54", val)} />
+                    <NumField label="Dividendos gravados tarifa general (EP y soc. extranjeras)" casilla="55" value={v.c55} onChange={val => set("c55", val)} />
+                    <NumField label="Dividendos megainversión gravados al 27%" casilla="56" value={v.c56} onChange={val => set("c56", val)} />
+                    <NumField label="Otros ingresos" casilla="57" value={v.c57} onChange={val => set("c57", val)} />
+                    <TotalRow label="Total ingresos brutos (47 a 57)" casilla="58" value={c58} />
+                    <NumField label="Devoluciones, rebajas y descuentos en ventas" casilla="59" value={v.c59} onChange={val => set("c59", val)} />
+                    <NumField label="Ingresos no constitutivos de renta" casilla="60" value={v.c60} onChange={val => set("c60", val)} />
+                    <TotalRow label="Total ingresos netos (58 − 59 − 60)" casilla="61" value={c61} />
+                  </SectionCard>
+                );
+
+              case "costos":
+                return (
+                  <div>
+                    <SectionCard title="Costos y Deducciones" icon="📉">
+                      <NumField label="Costos (ventas / prestación de servicios)" casilla="62" value={v.c62} onChange={val => set("c62", val)} />
+                      <NumField label="Gastos de administración" casilla="63" value={v.c63} onChange={val => set("c63", val)} />
+                      <NumField label="Gastos de distribución y ventas" casilla="64" value={v.c64} onChange={val => set("c64", val)} />
+                      <NumField label="Gastos financieros" casilla="65" value={v.c65} onChange={val => set("c65", val)} />
+                      <NumField label="Otros gastos y deducciones" casilla="66" value={v.c66} onChange={val => set("c66", val)} />
+                      <TotalRow label="Total costos y gastos deducibles (62 a 66)" casilla="67" value={c67} />
+                    </SectionCard>
+                    <SectionCard title="ESAL – Régimen Tributario Especial" icon="🤝">
+                      <NumField label="Inversiones efectuadas en el año" casilla="68" value={v.c68} onChange={val => set("c68", val)} />
+                      <NumField label="Inversiones liquidadas de períodos anteriores" casilla="69" value={v.c69} onChange={val => set("c69", val)} />
+                    </SectionCard>
+                  </div>
+                );
+
+              case "renta":
+                return (
+                  <div>
+                    <SectionCard title="Determinación de la Renta" icon="📋">
+                      <NumField label="Renta por recuperación de deducciones" casilla="70" value={v.c70} onChange={val => set("c70", val)} />
+                      <NumField label="Renta pasiva – ECE" casilla="71" value={v.c71} onChange={val => set("c71", val)} />
+
+                      <div style={{ padding: "10px 0" }}>
+                        <div style={{
+                          background: c72 > 0 ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
+                          border: `1px solid ${c72 > 0 ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`,
+                          borderRadius: 8, padding: "10px 16px", marginBottom: 8
+                        }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <div>
+                              <span style={{ fontSize: 11, background: c72 > 0 ? "#22c55e" : "#ef4444", color: "#fff", padding: "2px 7px", borderRadius: 4, fontFamily: "monospace", fontWeight: 700 }}>
+                                {c72 > 0 ? "72" : "73"}
+                              </span>
+                              <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 700, color: "#e2e8f0" }}>
+                                {c72 > 0 ? "Renta líquida ordinaria" : "Pérdida líquida"}
+                              </span>
+                            </div>
+                            <span style={{ fontFamily: "monospace", fontWeight: 800, color: c72 > 0 ? "#22c55e" : "#ef4444", fontSize: 15 }}>
+                              $ {formatCOP(c72 > 0 ? c72 : c73)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <NumField label="Compensaciones" casilla="74" value={v.c74} onChange={val => set("c74", val)} />
+                      <TotalRow label="Renta líquida (72 − 74)" casilla="75" value={c75} />
+                      <NumField label="Renta exenta" casilla="77" value={v.c77} onChange={val => set("c77", val)} />
+                      <NumField label="Rentas gravables" casilla="78" value={v.c78} onChange={val => set("c78", val)} />
+                      <TotalRow label="Renta líquida gravable" casilla="79" value={c79} />
+                    </SectionCard>
+                  </div>
+                );
+
+              case "ganancias":
+                return (
+                  <SectionCard title="Ganancias Ocasionales" icon="💰">
+                    <NumField label="Ingresos por ganancias ocasionales" casilla="80" value={v.c80} onChange={val => set("c80", val)} />
+                    <NumField label="Costos por ganancias ocasionales" casilla="81" value={v.c81} onChange={val => set("c81", val)} />
+                    <NumField label="Ganancias ocasionales exentas" casilla="82" value={v.c82} onChange={val => set("c82", val)} />
+                    <TotalRow label="Ganancias ocasionales gravables" casilla="83" value={c83} />
+                  </SectionCard>
+                );
+
+              case "liquidacion":
+                return (
+                  <div>
+                    <SectionCard title="Impuesto sobre Rentas Líquidas" icon="🧮">
+                      <div style={{ padding: "10px 14px", background: "rgba(201,162,39,0.08)", borderRadius: 8, marginBottom: 12 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontSize: 12, color: "#94a3b8" }}>Base (C79) × Tarifa ({(tarifa * 100).toFixed(0)}%)</span>
+                          <span style={{ fontFamily: "monospace", color: "#C9A227", fontWeight: 700 }}>$ {formatCOP(c84)}</span>
+                        </div>
+                      </div>
+                      <NumField label="Puntos adicionales" casilla="85" value={v.c85_manual} onChange={val => set("c85_manual", val)} />
+                      <NumField label="Imp. dividendos art. 245/246" casilla="86" value={v.c86} onChange={val => set("c86", val)} />
+                      <NumField label="Imp. dividendos art. 240 EP/soc. ext." casilla="87" value={v.c87} onChange={val => set("c87", val)} />
+                      <NumField label="Imp. dividendos megainversión 27%" casilla="88" value={v.c88} onChange={val => set("c88", val)} />
+                      <NumField label="Imp. dividendos art. 240 PN no residente" casilla="89" value={v.c89} onChange={val => set("c89", val)} />
+                      <NumField label="Imp. dividendos 33% PN no residente" casilla="90" value={v.c90} onChange={val => set("c90", val)} />
+                      <TotalRow label="Total impuesto sobre rentas (84+85+86+87+88+89+90)" casilla="91" value={c91} />
+                    </SectionCard>
+
+                    <SectionCard title="Ajustes y Descuentos" icon="🔧">
+                      <NumField label="Valor a adicionar – VAA" casilla="92" value={v.c92} onChange={val => set("c92", val)} />
+                      <NumField label="Descuentos tributarios" casilla="93" value={v.c93} onChange={val => set("c93", val)} />
+                      <TotalRow label="Impuesto neto (91 + 92 − 93)" casilla="94" value={c94} />
+                      <NumField label="Impuesto adicionado – IA" casilla="95" value={v.c95} onChange={val => set("c95", val)} />
+                      <TotalRow label="Impuesto neto + IA" casilla="96" value={c96} />
+                    </SectionCard>
+
+                    <SectionCard title="Ganancias Ocasionales" icon="⚖️">
+                      <NumField label="Descuento imp. pagados exterior" casilla="98" value={v.c98} onChange={val => set("c98", val)} />
+                      <TotalRow label="Total impuesto a cargo" casilla="99" value={c99} />
+                    </SectionCard>
+
+                    <SectionCard title="Créditos y Retenciones" icon="🔄">
+                      <NumField label="Autorretenciones practicadas" casilla="105" value={v.c105} onChange={val => set("c105", val)} />
+                      <NumField label="Otras retenciones" casilla="106" value={v.c106} onChange={val => set("c106", val)} />
+                      <TotalRow label="Total retenciones (105 + 106)" casilla="107" value={c107} />
+                    </SectionCard>
+
+                    <SectionCard title="Resultado Final" icon="🏁">
+                      <TotalRow label="Saldo a pagar por impuesto" casilla="111" value={Math.max(0, c111)} />
+                      <NumField label="Sanciones" casilla="112" value={v.c112} onChange={val => set("c112", val)} />
+                    </SectionCard>
+                  </div>
+                );
+
+              case "resumen":
+                return (
+                  <div>
+                    <div style={{
+                      background: "linear-gradient(135deg, rgba(201,162,39,0.15), rgba(201,162,39,0.05))",
+                      border: "1px solid rgba(201,162,39,0.4)", borderRadius: 12,
+                      padding: 24, marginBottom: 20, textAlign: "center"
+                    }}>
+                      <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4, textTransform: "uppercase", letterSpacing: 2 }}>
+                        DIAN — Formulario 110 · Año Gravable {info.anio}
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: "#C9A227", marginBottom: 4 }}>
+                        {info.razonSocial || [info.primerApellido, info.segundoApellido, info.primerNombre].filter(Boolean).join(" ") || "Declarante"}
+                      </div>
+                      <div style={{ fontSize: 13, color: "#64748b" }}>
+                        NIT: {info.nit}{info.dv ? `-${info.dv}` : ""}
+                      </div>
+                    </div>
+
+                    <div style={{
+                      display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20
+                    }}>
+                      <div style={{
+                        background: saldoPagar > 0 ? "rgba(239,68,68,0.15)" : "rgba(34,197,94,0.08)",
+                        border: `2px solid ${saldoPagar > 0 ? "rgba(239,68,68,0.5)" : "rgba(34,197,94,0.2)"}`,
+                        borderRadius: 12, padding: 20, textAlign: "center"
+                      }}>
+                        <div style={{ fontSize: 11, color: saldoPagar > 0 ? "#fca5a5" : "#86efac", marginBottom: 6, textTransform: "uppercase" }}>
+                          Total Saldo a Pagar (C113)
+                        </div>
+                        <div style={{ fontFamily: "monospace", fontSize: 24, fontWeight: 900, color: saldoPagar > 0 ? "#ef4444" : "#4ade80" }}>
+                          $ {formatCOP(saldoPagar) || "0"}
+                        </div>
+                      </div>
+                      <div style={{
+                        background: saldoFavor > 0 ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.04)",
+                        border: `2px solid ${saldoFavor > 0 ? "rgba(34,197,94,0.5)" : "rgba(255,255,255,0.1)"}`,
+                        borderRadius: 12, padding: 20, textAlign: "center"
+                      }}>
+                        <div style={{ fontSize: 11, color: saldoFavor > 0 ? "#86efac" : "#64748b", marginBottom: 6, textTransform: "uppercase" }}>
+                          Total Saldo a Favor (C114)
+                        </div>
+                        <div style={{ fontFamily: "monospace", fontSize: 24, fontWeight: 900, color: saldoFavor > 0 ? "#22c55e" : "#475569" }}>
+                          $ {formatCOP(saldoFavor) || "0"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+
+              default: return null;
+            }
+          };
+
+          return (
+            <div style={{
+              minHeight: "100vh", background: "#0a0f1e",
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              color: "#f1f5f9"
+            }}>
+              <Toast msg={toast.msg} type={toast.type} />
+              
+              {/* Header */}
+              <div style={{
+                background: "linear-gradient(90deg, #0d1627, #111827)",
+                borderBottom: "1px solid rgba(201,162,39,0.3)",
+                padding: "14px 24px", display: "flex", alignItems: "center", gap: 16,
+                position: "sticky", top: 0, zIndex: 100
+              }}>
+                <div style={{ marginLeft: "40px" }}> {/* Espacio para el botón Volver */}
+                  <div style={{ fontWeight: 700, fontSize: 14, color: "#f1f5f9" }}>Formulario 110 · Renta y Complementario</div>
+                  <div style={{ fontSize: 11, color: "#64748b" }}>Personas Jurídicas y Asimiladas</div>
+                </div>
+                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+                  <SaveButton onSave={handleSave} onLoad={handleLoad} onClear={handleClear} lastSaved={lastSaved} />
+                </div>
+              </div>
+
+              {/* Nav Tabs */}
+              <div style={{
+                display: "flex", gap: 0, padding: "0 24px",
+                background: "rgba(10,15,30,0.9)", borderBottom: "1px solid rgba(255,255,255,0.06)",
+                overflowX: "auto"
+              }}>
+                {SECTIONS.map((s) => (
+                  <button key={s.id}
+                    onClick={() => setSection(s.id)}
+                    style={{
+                      padding: "10px 14px", border: "none", cursor: "pointer",
+                      background: "none", whiteSpace: "nowrap",
+                      color: section === s.id ? "#C9A227" : "#64748b",
+                      borderBottom: section === s.id ? "2px solid #C9A227" : "2px solid transparent",
+                      fontSize: 11, fontWeight: section === s.id ? 700 : 400,
+                      display: "flex", alignItems: "center", gap: 5,
+                      transition: "all 0.2s"
+                    }}>
+                    <span>{s.icon}</span>
+                    <span>{s.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Content */}
+              <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px 24px 80px" }}>
+                {renderContent()}
+
+                {/* Navigation Buttons */}
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: 24 }}>
+                  <button
+                    onClick={() => setSection(SECTIONS[Math.max(0, sectionIdx - 1)].id)}
+                    disabled={sectionIdx === 0}
+                    style={{
+                      padding: "10px 24px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)",
+                      background: sectionIdx === 0 ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.08)",
+                      color: sectionIdx === 0 ? "#334155" : "#94a3b8",
+                      cursor: sectionIdx === 0 ? "not-allowed" : "pointer",
+                      fontWeight: 600, fontSize: 13
+                    }}>
+                    ← Anterior
+                  </button>
+                  <div style={{ fontSize: 11, color: "#475569", alignSelf: "center" }}>
+                    {sectionIdx + 1} / {SECTIONS.length}
+                  </div>
+                  <button
+                    onClick={() => setSection(SECTIONS[Math.min(SECTIONS.length - 1, sectionIdx + 1)].id)}
+                    disabled={sectionIdx === SECTIONS.length - 1}
+                    style={{
+                      padding: "10px 24px", borderRadius: 8, border: "none",
+                      background: sectionIdx === SECTIONS.length - 1 ? "rgba(201,162,39,0.2)" : "linear-gradient(135deg,#C9A227,#8B6914)",
+                      color: sectionIdx === SECTIONS.length - 1 ? "#64748b" : "#1a1200",
+                      cursor: sectionIdx === SECTIONS.length - 1 ? "not-allowed" : "pointer",
+                      fontWeight: 700, fontSize: 13
+                    }}>
+                    Siguiente →
+                  </button>
+                </div>
+              </div>
+              
+              {/* Mini Footer */}
+              <div style={{
+                position: "fixed", bottom: 0, left: 0, right: 0,
+                background: "rgba(10,15,30,0.97)", borderTop: "1px solid rgba(255,255,255,0.06)",
+                padding: "8px 24px", display: "flex", justifyContent: "space-between", alignItems: "center"
+              }}>
+                <div style={{ fontSize: 10, color: "#334155" }}>
+                  ⚠️ Herramienta de apoyo. Verifique en SI DIAN.
+                </div>
+                <div style={{ display: "flex", gap: 20 }}>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 9, color: "#475569" }}>IMP. RENTA</div>
+                    <div style={{ fontSize: 11, fontFamily: "monospace", color: "#C9A227", fontWeight: 700 }}>
+                      ${formatCOP(c84)}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 9, color: "#475569" }}>SALDO A PAGAR</div>
+                    <div style={{ fontSize: 11, fontFamily: "monospace", color: "#ef4444", fontWeight: 700 }}>
+                      ${formatCOP(saldoPagar)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Formulario110 />);
+    </script>
+</body>
+</html>

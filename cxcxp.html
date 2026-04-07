@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CxC / CxP · DIMALCCO SAS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--s:#fff;--b:#e2e8f0;--bs:#f8fafc;--t:#0f172a;--t2:#475569;--t3:#94a3b8;--ac:#4338ca;--as:#eef2ff;--in:#059669;--ib:#ecfdf5;--ex:#dc2626;--eb:#fef2f2;--w:#d97706;--wb:#fffbeb;--hd:#0f172a;--fn:'Sora',sans-serif;--mo:'DM Mono',monospace;--r:10px;--rsm:6px}
+body{font-family:var(--fn);background:var(--bg);color:var(--t);font-size:14px;min-height:100vh}
+.hdr{background:var(--hd);color:#f8fafc;padding:18px 28px 20px}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.hdr-ey{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#64748b;margin-bottom:3px}
+.hdr-ti{font-size:20px;font-weight:600}
+.hdr-dt{font-family:var(--mo);font-size:11px;color:#64748b;text-align:right;line-height:1.8}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1e293b;border-radius:8px;overflow:hidden}
+.metric{background:var(--hd);padding:13px 16px}
+.metric-lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#64748b;margin-bottom:5px}
+.metric-val{font-family:var(--mo);font-size:16px;font-weight:500;color:#f8fafc}
+.metric-val.g{color:#34d399}.metric-val.r{color:#f87171}.metric-val.y{color:#fbbf24}
+.metric-sub{font-size:10px;color:#475569;margin-top:2px}
+.layout{display:grid;grid-template-columns:256px 1fr;min-height:calc(100vh - 168px)}
+.sidebar{background:var(--s);border-right:1px solid var(--b);padding:18px 14px;overflow-y:auto}
+.sec-ti{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+.aging-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.aging-lbl{font-size:11px;color:var(--t2);width:60px;flex-shrink:0}
+.aging-bar-wrap{flex:1;background:var(--b);border-radius:4px;height:8px;overflow:hidden}
+.aging-bar{height:100%;border-radius:4px;transition:width .4s}
+.aging-amt{font-family:var(--mo);font-size:10px;color:var(--t3);width:70px;text-align:right;flex-shrink:0}
+.aging-0{background:#34d399}.aging-30{background:#fbbf24}.aging-60{background:#fb923c}.aging-90{background:#f87171}
+.alert-box{background:var(--wb);border:1px solid #fde68a;border-radius:var(--r);padding:11px 13px;margin-top:16px}
+.alert-ti{font-size:10px;font-weight:600;color:var(--w);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.alert-item{font-size:11px;color:#92400e;padding:4px 0;border-bottom:1px solid #fde68a;line-height:1.5}
+.alert-item:last-child{border-bottom:none}
+.main{padding:20px 22px}
+.tab-bar{display:flex;gap:4px;background:var(--s);border:1px solid var(--b);border-radius:8px;padding:4px;margin-bottom:18px;width:fit-content}
+.tab{padding:7px 18px;border-radius:5px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;border:none;background:none;font-family:var(--fn);transition:all .15s}
+.tab.active{background:var(--ac);color:#fff;box-shadow:0 1px 4px rgba(67,56,202,.3)}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+select,input[type=date],input[type=text],input[type=number]{font-family:var(--fn);font-size:12px;color:var(--t);background:var(--s);border:1px solid var(--b);border-radius:var(--rsm);padding:6px 9px;outline:none;transition:border-color .15s}
+select:focus,input:focus{border-color:var(--ac)}
+.spacer{flex:1}
+.btn-pri{display:flex;align-items:center;gap:5px;padding:8px 15px;background:var(--ac);color:#fff;border:none;border-radius:7px;font-family:var(--fn);font-size:12px;font-weight:500;cursor:pointer;transition:background .15s;white-space:nowrap}
+.btn-pri:hover{background:#3730a3}
+.btn-sec{padding:7px 14px;background:none;border:1px solid var(--b);border-radius:var(--rsm);font-family:var(--fn);font-size:12px;cursor:pointer;color:var(--t2);transition:all .15s}
+.btn-sec:hover{border-color:var(--t3);color:var(--t)}
+.tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--b) transparent}
+table{width:100%;border-collapse:collapse;min-width:2000px}
+thead{background:#f8fafc;border-bottom:1px solid var(--b)}
+th{padding:9px 12px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);white-space:nowrap}
+th.num{text-align:right}
+td{padding:10px 12px;font-size:12px;color:var(--t);border-bottom:1px solid var(--bs);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+td.num{text-align:right;font-family:var(--mo);font-size:11px}
+.pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.pill.pend{background:#fef9c3;color:#854d0e}.pill.parc{background:var(--wb);color:var(--w)}
+.pill.cobr{background:var(--ib);color:var(--in)}.pill.venc{background:var(--eb);color:var(--ex)}
+.days-badge{font-family:var(--mo);font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600}
+.days-ok{background:var(--ib);color:var(--in)}.days-warn{background:var(--wb);color:var(--w)}
+.days-bad{background:#ffedd5;color:#c2410c}.days-crit{background:var(--eb);color:var(--ex)}
+.empty-state{text-align:center;padding:40px;color:var(--t3);font-size:13px}
+.btn-sm{padding:3px 8px;border:1px solid var(--b);border-radius:4px;background:none;font-family:var(--fn);font-size:10px;cursor:pointer;color:var(--t2);transition:all .15s;margin-right:4px}
+.btn-sm:hover{border-color:var(--ac);color:var(--ac)}
+.btn-sm.pagar{border-color:#d1fae5;color:var(--in)}.btn-sm.pagar:hover{background:var(--ib)}
+.btn-sm.del{border-color:#fecaca;color:var(--ex);opacity:0}.btn-sm.del:hover{background:var(--eb)}
+tr:hover .btn-sm.del{opacity:1}
+.summary-strip{display:grid;grid-template-columns:repeat(3,1fr);background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-top:10px}
+.sum-item{padding:11px 14px;border-right:1px solid var(--b)}
+.sum-item:last-child{border-right:none}
+.sum-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:3px}
+.sum-val{font-family:var(--mo);font-size:13px;font-weight:500}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--s);border-radius:14px;padding:26px;width:500px;max-width:95vw;box-shadow:0 20px 40px rgba(0,0,0,.2);animation:mi .2s ease}
+@keyframes mi{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{width:28px;height:28px;border:none;background:var(--bg);border-radius:5px;cursor:pointer;font-size:15px;color:var(--t2);display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--b)}
+.form-row{margin-bottom:14px}
+.form-lbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t2);margin-bottom:5px}
+.form-row input,.form-row select{width:100%;padding:9px 11px;font-family:var(--fn);font-size:13px;background:var(--bg);border:1px solid var(--b);border-radius:8px;color:var(--t);outline:none;transition:border-color .15s}
+.form-row input:focus,.form-row select:focus{border-color:var(--ac);background:#fff}
+.form-g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.modal-ftr{display:flex;justify-content:flex-end;gap:8px;margin-top:22px;padding-top:18px;border-top:1px solid var(--b)}
+.tipo-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.tipo-btn{padding:10px;border-radius:8px;border:2px solid var(--b);background:none;font-family:var(--fn);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;color:var(--t2)}
+.tipo-btn.cob.active{border-color:var(--in);background:var(--ib);color:var(--in)}
+.tipo-btn.pag.active{border-color:var(--ex);background:var(--eb);color:var(--ex)}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);text-decoration:none;margin-bottom:16px;transition:color .15s}
+.back-link:hover{color:var(--ac)}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-ey">DIMALCCO SAS · Módulo Finanzas</div>
+      <div class="hdr-ti">Cuentas por Cobrar / Pagar</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px">
+      <button class="btn-pri" onclick="save(); alert('Cuentas por Cobrar/Pagar guardadas correctamente')">Guardar Todo</button>
+      <div class="hdr-dt" id="hdr-dt"></div>
+    </div>
+  </div>
+  <div class="metrics" id="metrics"></div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sec-ti">Antigüedad cartera CxC</div>
+    <div id="aging-cxc"></div>
+    <div style="margin-top:18px" class="sec-ti">Antigüedad CxP</div>
+    <div id="aging-cxp"></div>
+    <div id="alerts-sec"></div>
+  </aside>
+
+  <main class="main">
+    <a class="back-link" href="index.html">← Volver al workspace</a>
+    <div class="tab-bar">
+      <button class="tab active" onclick="setTab('cob',this)">Por Cobrar</button>
+      <button class="tab" onclick="setTab('pag',this)">Por Pagar</button>
+    </div>
+
+    <div id="tab-cob">
+      <div class="toolbar">
+        <select id="f-est-cob" onchange="render()">
+          <option value="all">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="parcial">Parcial</option>
+          <option value="vencido">Vencido</option>
+          <option value="cobrado">Cobrado</option>
+        </select>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <button class="btn-sec" onclick="document.getElementById('file-cxc').click()">
+          <svg style="width:14px;height:14px;fill:currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          Importar Facturación
+        </button>
+        <input type="file" id="file-cxc" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event, 'cobrar')">
+        <button class="btn-pri" onclick="openModal('cobrar')">+ Nueva CxC</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th style="min-width:100px"># Factura</th>
+            <th style="min-width:100px">Fecha</th>
+            <th style="min-width:180px">Cliente</th>
+            <th class="num" style="min-width:130px">Base (Pleno)</th>
+            <th class="num" style="min-width:130px">Base (AIU)</th>
+            <th class="num" style="min-width:110px">IVA Pleno</th>
+            <th class="num" style="min-width:110px">IVA Utilidad</th>
+            <th class="num" style="min-width:110px">ReteIVA</th>
+            <th class="num" style="min-width:130px">Facturación c/ IVA</th>
+            <th class="num" style="min-width:80px">% Rfte</th>
+            <th class="num" style="min-width:110px">Valor Rfte</th>
+            <th class="num" style="min-width:80px">Tarifa ICA</th>
+            <th class="num" style="min-width:110px">Valor RICA</th>
+            <th class="num" style="min-width:130px">Facturación Neto</th>
+            <th class="num" style="min-width:110px">Garantías</th>
+            <th class="num" style="min-width:110px">Anticipo</th>
+            <th class="num" style="min-width:130px">Neto a Cobrar</th>
+            <th class="num" style="min-width:130px">Pendiente</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr></thead>
+          <tbody id="tbody-cob"></tbody>
+        </table>
+      </div>
+      <div class="summary-strip" id="sum-cob"></div>
+    </div>
+
+    <div id="tab-pag" style="display:none">
+      <div class="toolbar">
+        <select id="f-est-pag" onchange="render()">
+          <option value="all">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="parcial">Parcial</option>
+          <option value="vencido">Vencido</option>
+          <option value="pagado">Pagado</option>
+        </select>
+        <div class="spacer"></div>
+        <button class="btn-pri" onclick="openModal('pagar')">+ Nueva CxP</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th style="min-width:100px"># Factura</th>
+            <th style="min-width:100px">Fecha</th>
+            <th style="min-width:180px">Proveedor</th>
+            <th class="num" style="min-width:130px">Base</th>
+            <th class="num" style="min-width:110px">IVA</th>
+            <th class="num" style="min-width:110px">Retenciones</th>
+            <th class="num" style="min-width:130px">Total Neto</th>
+            <th class="num" style="min-width:110px">Saldo Pend.</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr></thead>
+          <tbody id="tbody-pag"></tbody>
+        </table>
+      </div>
+      <div class="summary-strip" id="sum-pag"></div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: Nuevo documento -->
+<div class="modal-backdrop" id="modal-bk">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-title">Nueva cuenta por cobrar</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-g2">
+      <div class="form-row">
+        <label class="form-lbl" id="lbl-contraparte">Cliente *</label>
+        <input type="text" id="f-contraparte" placeholder="Nombre cliente / proveedor">
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">NIT / CC</label>
+        <input type="text" id="f-nit" placeholder="900.XXX.XXX-X">
+      </div>
+    </div>
+    <div class="form-g3">
+      <div class="form-row">
+        <label class="form-lbl">No. Factura</label>
+        <input type="text" id="f-factura" placeholder="FC-052">
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Fecha emisión *</label>
+        <input type="date" id="f-emision">
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Fecha vencimiento *</label>
+        <input type="date" id="f-vence">
+      </div>
+    </div>
+    
+    <div style="font-weight:600;font-size:11px;color:var(--in);text-transform:uppercase;margin:16px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px;">Valores Base y AIU</div>
+    <div class="form-g3">
+      <div class="form-row">
+        <label class="form-lbl">Costo Directo (Base) COP *</label>
+        <input type="number" id="f-subtotal" placeholder="0" min="0" step="1000" oninput="calcNeto()">
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">A. I. U. (%)</label>
+        <div style="display:flex; gap:4px;">
+            <input type="number" id="f-aiu-a" placeholder="A%" min="0" oninput="calcNeto()" style="width:33%" title="Administración %">
+            <input type="number" id="f-aiu-i" placeholder="I%" min="0" oninput="calcNeto()" style="width:33%" title="Imprevistos %">
+            <input type="number" id="f-aiu-u" placeholder="U%" min="0" oninput="calcNeto()" style="width:33%" title="Utilidad %">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Valor IVA ($)</label>
+        <input type="number" id="f-iva" placeholder="0" min="0" oninput="calcNeto(true)" title="Auto-calculado (pleno o sobre U) pero modificable">
+      </div>
+    </div>
+
+    <div style="font-weight:600;font-size:11px;color:var(--y);text-transform:uppercase;margin:16px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px;">Retenciones y Descuentos</div>
+    <div class="form-g3">
+      <div class="form-row">
+        <label class="form-lbl">Retefuente (% y $)</label>
+        <div style="display:flex; gap:4px">
+            <input type="number" id="f-retefuente-pct" placeholder="%" step="0.1" style="width:60px" oninput="calcNeto()" title="Porcentaje de retención (ej. 4, 3.5, 11)">
+            <input type="number" id="f-retefuente" placeholder="0" min="0" style="flex:1" oninput="calcNeto(true)">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-lbl" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Ciudad (ReteICA)</span>
+            <button class="btn-sm" style="padding:1px 6px; font-size:9px; border:1px solid var(--bd)" onclick="openCityModal()">+ Agregar Ciudad</button>
+        </label>
+        <select id="f-ciudad" onchange="autoIca()">
+          <option value="ninguna">No aplica ReteICA</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Valor ReteICA ($)</label>
+        <input type="number" id="f-reteica" placeholder="0" min="0" oninput="calcNeto()">
+      </div>
+    </div>
+    <div class="form-g3">
+      <div class="form-row">
+        <label class="form-lbl">ReteIVA ($)</label>
+        <input type="number" id="f-reteiva" placeholder="0" min="0" oninput="calcNeto()">
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Retegarantías ($)</label>
+        <input type="number" id="f-garantias" placeholder="0" min="0" oninput="calcNeto()">
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Amort. Anticipo ($)</label>
+        <input type="number" id="f-anticipos" placeholder="0" min="0" oninput="calcNeto()">
+      </div>
+    </div>
+
+    <div class="form-row" style="margin-top:12px">
+      <label class="form-lbl">Concepto general</label>
+      <input type="text" id="f-concepto" placeholder="Descripción del servicio">
+    </div>
+
+    <div style="margin-top:16px;padding:16px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-weight:600;color:var(--w);">NETO A PAGAR / COBRAR:</span>
+        <span id="f-neto-calc" style="font-weight:800;font-size:18px;color:var(--accent);">$ 0</span>
+        <input type="hidden" id="f-valor-neto" value="0">
+    </div>
+    <div class="modal-ftr">
+      <button class="btn-sec" onclick="closeModal()">Cancelar</button>
+      <button class="btn-pri" onclick="saveDoc()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Administrar Ciudades -->
+<div class="modal-backdrop" id="modal-city-bk" style="z-index: 2000;">
+  <div class="modal" style="width:380px">
+    <div class="modal-hdr">
+      <div class="modal-title">Configurar Municipio / Ciudad</div>
+      <button class="modal-close" onclick="closeCityModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">Nombre Municipio / Ciudad</label>
+      <input type="text" id="new-city-name" placeholder="Ej. Medellín, Cali...">
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">Tarifa ICA (‰ por mil)</label>
+      <input type="number" id="new-city-rate" step="0.01" placeholder="Ej. 11.04">
+    </div>
+    <div class="modal-ftr">
+      <button class="btn-sec" onclick="closeCityModal()">Cancelar</button>
+      <button class="btn-pri" onclick="saveNewCity()">Añadir Ciudad</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Registrar pago -->
+<div class="modal-backdrop" id="modal-pago-bk">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modal-pago-title">Registrar cobro</div>
+      <button class="modal-close" onclick="closeModalPago()">✕</button>
+    </div>
+    <div id="modal-pago-info" style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:18px;font-size:12px;line-height:1.8"></div>
+    <div class="form-g2">
+      <div class="form-row">
+        <label class="form-lbl">Valor a registrar COP *</label>
+        <input type="number" id="pago-valor" placeholder="0" min="0" step="1000">
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Fecha *</label>
+        <input type="date" id="pago-fecha">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">Referencia bancaria / nota</label>
+      <input type="text" id="pago-ref" placeholder="Ref. transferencia, cheque, etc.">
+    </div>
+    <div class="modal-ftr">
+      <button class="btn-sec" onclick="closeModalPago()">Cancelar</button>
+      <button class="btn-pri" onclick="savePago()">Registrar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script>
+const DB='dim_cxcxp_v1';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
+const todayISO=()=>new Date().toISOString().split('T')[0];
+const fmtDate=iso=>{if(!iso)return'';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`};
+const fmt=v=>'$ '+Math.abs(v).toLocaleString('es-CO');
+const ago=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().split('T')[0]};
+const fwd=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().split('T')[0]};
+
+function diasVencimiento(vence){
+  const diff=Math.ceil((new Date(vence+' 12:00')-new Date())/(1000*60*60*24));
+  return diff;
+}
+
+function calcEstado(doc){
+  const pend=doc.valor_total-doc.valor_aplicado;
+  if(pend<=0) return doc.tipo==='cobrar'?'cobrado':'pagado';
+  const dias=diasVencimiento(doc.fecha_vencimiento);
+  if(dias<0) return 'vencido';
+  if(doc.valor_aplicado>0) return 'parcial';
+  return 'pendiente';
+}
+
+function defaultState(){
+  return{
+    cobrar:[
+      {id:'cc1',contraparte:'Constructora Andina S.A.S.',nit:'900.234.567-1',factura:'FC-051',fecha_emision:ago(45),fecha_vencimiento:fwd(5),valor_total:24000000,valor_aplicado:9000000,concepto:'Proyecto closets conjunto residencial'},
+      {id:'cc2',contraparte:'García Hnos. Distribuidores',nit:'900.112.334-8',factura:'FC-052',fecha_emision:ago(30),fecha_vencimiento:fwd(15),valor_total:8500000,valor_aplicado:0,concepto:'Cocina integral y muebles baño'},
+      {id:'cc3',contraparte:'Tech Solutions Colombia S.A.S.',nit:'901.456.789-2',factura:'FC-053',fecha_emision:ago(20),fecha_vencimiento:fwd(25),valor_total:12300000,valor_aplicado:6000000,concepto:'Mobiliario oficina piso 4'},
+      {id:'cc4',contraparte:'Familia Moreno Castillo',nit:'1.020.456.789',factura:'FC-050',fecha_emision:ago(65),fecha_vencimiento:ago(5),valor_total:9000000,valor_aplicado:4500000,concepto:'Cocinas integrales residencia'},
+      {id:'cc5',contraparte:'Inversiones Cedros S.A.S.',nit:'900.789.012-5',factura:'FC-049',fecha_emision:ago(90),fecha_vencimiento:ago(30),valor_total:6800000,valor_aplicado:6800000,concepto:'Closets alcobas apartamento 402'}
+    ],
+    pagar:[
+      {id:'cp1',contraparte:'Maderas del Norte Ltda.',nit:'860.456.123-4',factura:'PV-201',fecha_emision:ago(25),fecha_vencimiento:fwd(5),valor_total:8400000,valor_aplicado:4200000,concepto:'Tablas MDF y triplex lote 45'},
+      {id:'cp2',contraparte:'Ferretería Central',nit:'900.001.234-7',factura:'PV-202',fecha_emision:ago(15),fecha_vencimiento:fwd(20),valor_total:2800000,valor_aplicado:0,concepto:'Herrajes, tornillería y accesorios'},
+      {id:'cp3',contraparte:'Pinturas y Acabados S.A.',nit:'860.789.234-6',factura:'PV-203',fecha_emision:ago(10),fecha_vencimiento:fwd(30),valor_total:1950000,valor_aplicado:0,concepto:'Lacas, barnices y solventes'},
+      {id:'cp4',contraparte:'Transportes Rápido Ltda.',nit:'900.345.678-9',factura:'PV-199',fecha_emision:ago(40),fecha_vencimiento:ago(10),valor_total:890000,valor_aplicado:0,concepto:'Fletes entrega proyectos oct'}
+    ]
+  };
+}
+
+let S, curTab='cob', curModalTipo='cobrar', curPagoId=null, curPagoTipo=null, curEditId=null;
+let CIT = JSON.parse(localStorage.getItem('dim_ica_cities') || '[{"id":"bogota","name":"Bogotá","rate":11.04},{"id":"soacha","name":"Soacha","rate":9.66}]');
+
+function load(){try{const s=localStorage.getItem(DB);if(s)return JSON.parse(s);}catch(e){}return defaultState();}
+function save(){localStorage.setItem(DB,JSON.stringify(S));}
+function saveCities(){localStorage.setItem('dim_ica_cities', JSON.stringify(CIT)); populateCitySelect();}
+
+function populateCitySelect() {
+    const sel = document.getElementById('f-ciudad');
+    if(!sel) return;
+    sel.innerHTML = '<option value="ninguna">No aplica ReteICA</option>';
+    CIT.forEach(c => {
+        sel.innerHTML += `<option value="${c.id}">${c.name} (${c.rate}‰)</option>`;
+    });
+}
+
+function openCityModal() { document.getElementById('modal-city-bk').classList.add('open'); }
+function closeCityModal() { document.getElementById('modal-city-bk').classList.remove('open'); }
+function saveNewCity() {
+    const name = document.getElementById('new-city-name').value.trim();
+    const rate = parseFloat(document.getElementById('new-city-rate').value);
+    if(!name || isNaN(rate)) return alert("Completa los datos de la ciudad.");
+    
+    const cid = name.toLowerCase().replace(/\s+/g, '_');
+    if(CIT.find(c => c.id === cid)) return alert("Esta ciudad ya está registrada.");
+    
+    CIT.push({ id: cid, name, rate });
+    saveCities();
+    document.getElementById('new-city-name').value = '';
+    document.getElementById('new-city-rate').value = '';
+    closeCityModal();
+}
+
+function init() {
+    S = load();
+    render();
+    populateCitySelect();
+}
+
+// Header
+function renderHeader(){
+  const now=new Date();
+  const opts={weekday:'long',year:'numeric',month:'long',day:'numeric'};
+  document.getElementById('hdr-dt').innerHTML=`<div>${now.toLocaleDateString('es-CO',opts)}</div><div style="font-size:10px;margin-top:2px">NIT 900.XXX.XXX-X</div>`;
+
+  let totCob=0,vencCob=0,totPag=0,vencPag=0;
+  S.cobrar.forEach(d=>{const p=d.valor_total-d.valor_aplicado;totCob+=p;if(calcEstado(d)==='vencido')vencCob+=p;});
+  S.pagar.forEach(d=>{const p=d.valor_total-d.valor_aplicado;totPag+=p;if(calcEstado(d)==='vencido')vencPag+=p;});
+
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric"><div class="metric-lbl">CxC pendiente</div><div class="metric-val g">${fmt(totCob)}</div><div class="metric-sub">${S.cobrar.filter(d=>calcEstado(d)!=='cobrado').length} facturas activas</div></div>
+    <div class="metric"><div class="metric-lbl">CxC vencida</div><div class="metric-val ${vencCob>0?'r':''}">${fmt(vencCob)}</div><div class="metric-sub">Requiere gestión de cobro</div></div>
+    <div class="metric"><div class="metric-lbl">CxP pendiente</div><div class="metric-val y">${fmt(totPag)}</div><div class="metric-sub">${S.pagar.filter(d=>calcEstado(d)!=='pagado').length} obligaciones activas</div></div>
+    <div class="metric"><div class="metric-lbl">CxP vencida</div><div class="metric-val ${vencPag>0?'r':''}">${fmt(vencPag)}</div><div class="metric-sub">Pago urgente requerido</div></div>`;
+}
+
+// Aging
+function renderAging(docs, elId){
+  const buckets={0:0,30:0,60:0,90:0};
+  docs.forEach(d=>{
+    const p=d.valor_total-d.valor_aplicado; if(p<=0)return;
+    const dias=diasVencimiento(d.fecha_vencimiento);
+    if(dias>=0) buckets[0]+=p;
+    else if(dias>=-30) buckets[30]+=p;
+    else if(dias>=-60) buckets[60]+=p;
+    else buckets[90]+=p;
+  });
+  const total=Object.values(buckets).reduce((a,b)=>a+b,0)||1;
+  const labels={'0':'Al día','30':'1-30 días','60':'31-60 días','90':'>60 días'};
+  const classes={'0':'aging-0','30':'aging-30','60':'aging-60','90':'aging-90'};
+  document.getElementById(elId).innerHTML=Object.entries(buckets).map(([k,v])=>`
+    <div class="aging-bar-row">
+      <span class="aging-lbl">${labels[k]}</span>
+      <div class="aging-bar-wrap"><div class="aging-bar ${classes[k]}" style="width:${(v/total*100).toFixed(1)}%"></div></div>
+      <span class="aging-amt">${v>0?fmt(v):'—'}</span>
+    </div>`).join('');
+}
+
+// Alerts
+function renderAlerts(){
+  const alerts=[];
+  [...S.cobrar,...S.pagar].forEach(d=>{
+    const st=calcEstado(d), dias=diasVencimiento(d.fecha_vencimiento);
+    if(st==='vencido') alerts.push(`${d.contraparte}: factura ${d.factura||'S/N'} vencida hace ${Math.abs(dias)} día(s)`);
+  });
+  const el=document.getElementById('alerts-sec');
+  el.innerHTML=alerts.length===0?'':
+    `<div class="alert-box" style="margin-top:16px"><div class="alert-ti">⚠ Documentos vencidos</div>${alerts.slice(0,5).map(a=>`<div class="alert-item">${a}</div>`).join('')}</div>`;
+}
+
+// Table render
+function renderTable(docs, tbodyId, tipo){
+  const estFilter=document.getElementById(`f-est-${tipo==='cobrar'?'cob':'pag'}`).value;
+  const filtered=docs.filter(d=>estFilter==='all'||calcEstado(d)===estFilter).sort((a,b)=>a.fecha_vencimiento.localeCompare(b.fecha_vencimiento));
+  const stLabels={pendiente:'Pendiente',parcial:'Parcial',cobrado:'Cobrado',pagado:'Pagado',vencido:'Vencido'};
+  const tbody=document.getElementById(tbodyId);
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="20" class="empty-state">No hay documentos</td></tr>`;return;}
+  
+  tbody.innerHTML=filtered.map(d=>{
+    const pend=d.valor_total-d.valor_aplicado;
+    const st=calcEstado(d);
+    const det = d.details || {};
+    const isAiuRow = (det.peA + det.peI + det.peU) > 0;
+    
+    // Cálculos específicos para la tabla extendida
+    const basePleno = !isAiuRow ? (det.subtotal || 0) : 0;
+    const baseAiu = isAiuRow ? (det.subtotal || 0) : 0;
+    const ivaPleno = !isAiuRow ? (det.iva || 0) : 0;
+    const ivaAiu = isAiuRow ? (det.iva || 0) : 0;
+    
+    const valAiuAbs = isAiuRow ? (det.subtotal * (det.peA + det.peI + det.peU) / 100) : 0;
+    const factConIva = det.subtotal + valAiuAbs + (det.iva || 0);
+    
+    // Tarifas
+    const pRfte = det.subtotal > 0 ? ((det.retefuente / det.subtotal) * 100).toFixed(1) : 0;
+    const cityObj = CIT.find(c => c.id === det.ciudad_ica);
+    const tIca = cityObj ? cityObj.rate : 0;
+    
+    const factDespImp = factConIva - (det.retefuente || 0) - (det.reteica || 0) - (det.reteiva || 0);
+
+    if (tipo === 'cobrar') {
+        return `<tr>
+          <td><div style="font-weight:600;font-size:11px;color:var(--accent)">${d.factura||'S/N'}</div></td>
+          <td style="font-family:var(--mo);font-size:11px;color:var(--t2)">${fmtDate(d.fecha_emision)}</td>
+          <td><div style="font-weight:500;font-size:12px">${d.contraparte}</div><div style="font-size:10px;color:var(--t3)">${d.nit||''}</div></td>
+          
+          <td class="num">${basePleno > 0 ? fmt(basePleno) : '—'}</td>
+          <td class="num">${baseAiu > 0 ? fmt(baseAiu) : '—'}</td>
+          <td class="num">${ivaPleno > 0 ? fmt(ivaPleno) : '—'}</td>
+          <td class="num">${ivaAiu > 0 ? fmt(ivaAiu) : '—'}</td>
+          <td class="num" style="color:var(--r)">${det.reteiva > 0 ? fmt(det.reteiva) : '—'}</td>
+          
+          <td class="num" style="font-weight:600">${fmt(factConIva || d.valor_total)}</td>
+          
+          <td class="num" style="font-size:10px;color:var(--t3)">${pRfte}%</td>
+          <td class="num" style="color:var(--r)">${det.retefuente > 0 ? fmt(det.retefuente) : '—'}</td>
+          
+          <td class="num" style="font-size:10px;color:var(--t3)">${tIca}‰</td>
+          <td class="num" style="color:var(--r)">${det.reteica > 0 ? fmt(det.reteica) : '—'}</td>
+          
+          <td class="num" style="font-weight:600">${fmt(factDespImp || d.valor_total)}</td>
+          
+          <td class="num" style="color:var(--y)">${det.garantias > 0 ? fmt(det.garantias) : '—'}</td>
+          <td class="num" style="color:var(--in)">${det.anticipos > 0 ? fmt(det.anticipos) : '—'}</td>
+          
+          <td class="num" style="font-weight:700;color:var(--w)">${fmt(d.valor_total)}</td>
+          <td class="num" style="font-weight:600;color:${pend>0?'var(--accent)':'var(--t3)'}">${pend>0?fmt(pend):'—'}</td>
+          
+          <td><span class="pill ${st}">${stLabels[st]||st}</span></td>
+          <td style="white-space:nowrap">
+            ${pend>0?`<button class="btn-sm pagar" title="Cobrar" onclick="openPago('${d.id}','${tipo}')">$</button>`:'' }
+            <button class="btn-sm" style="background:var(--bg-card); border:1px solid var(--bd); color:var(--t2);" onclick="openEditModal('${d.id}','${tipo}')">✎</button>
+            <button class="btn-sm del" onclick="deleteDoc('${d.id}','${tipo}')">×</button>
+          </td>
+        </tr>`;
+    } else {
+        // CxP Layout simple por ahora o similar
+        return `<tr>
+          <td><div style="font-weight:600;font-size:11px">${d.factura||'S/N'}</div></td>
+          <td style="font-family:var(--mo);font-size:11px;color:var(--t2)">${fmtDate(d.fecha_emision)}</td>
+          <td><div style="font-weight:500;font-size:12px">${d.contraparte}</div></td>
+          <td class="num">${fmt(det.subtotal || d.valor_total)}</td>
+          <td class="num">${fmt(det.iva || 0)}</td>
+          <td class="num" style="color:var(--r)">${fmt((det.retefuente||0)+(det.reteica||0)+(det.reteiva||0))}</td>
+          <td class="num" style="font-weight:700">${fmt(d.valor_total)}</td>
+          <td class="num" style="font-weight:600;color:var(--accent)">${fmt(pend)}</td>
+          <td><span class="pill ${st}">${stLabels[st]||st}</span></td>
+          <td style="white-space:nowrap">
+            ${pend>0?`<button class="btn-sm pagar" onclick="openPago('${d.id}','${tipo}')">$</button>`:'' }
+            <button class="btn-sm" style="background:var(--bg-card); border:1px solid var(--bd); color:var(--t2);" onclick="openEditModal('${d.id}','${tipo}')">✎</button>
+            <button class="btn-sm del" onclick="deleteDoc('${d.id}','${tipo}')">×</button>
+          </td>
+        </tr>`;
+    }
+  }).join('');
+  // Summary
+  let tot=0,aplic=0,pend=0;
+  filtered.forEach(d=>{tot+=d.valor_total;aplic+=d.valor_aplicado;pend+=(d.valor_total-d.valor_aplicado);});
+  document.getElementById(`sum-${tipo==='cobrar'?'cob':'pag'}`).innerHTML=`
+    <div class="sum-item"><div class="sum-lbl">Total documentos</div><div class="sum-val">${fmt(tot)}</div></div>
+    <div class="sum-item"><div class="sum-lbl">${tipo==='cobrar'?'Cobrado':'Pagado'}</div><div class="sum-val" style="color:var(--in)">${fmt(aplic)}</div></div>
+    <div class="sum-item"><div class="sum-lbl">Pendiente</div><div class="sum-val" style="color:${pend>0?'var(--w)':'var(--in)'}">${fmt(pend)}</div></div>`;
+}
+
+function render(){
+  renderHeader();
+  renderAging(S.cobrar,'aging-cxc');
+  renderAging(S.pagar,'aging-cxp');
+  renderAlerts();
+  renderTable(S.cobrar,'tbody-cob','cobrar');
+  renderTable(S.pagar,'tbody-pag','pagar');
+}
+
+function setTab(tab,btn){
+  curTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-cob').style.display=tab==='cob'?'block':'none';
+  document.getElementById('tab-pag').style.display=tab==='pag'?'block':'none';
+}
+
+// Modal add
+function openModal(tipo){
+  curModalTipo=tipo;
+  curEditId = null;
+  document.getElementById('modal-title').textContent=tipo==='cobrar'?'Nueva cuenta por cobrar':'Nueva cuenta por pagar';
+  document.getElementById('lbl-contraparte').textContent=tipo==='cobrar'?'Cliente *':'Proveedor *';
+  ['f-contraparte', 'f-nit', 'f-factura', 'f-concepto', 'f-subtotal', 'f-aiu-a', 'f-aiu-i', 'f-aiu-u', 'f-iva', 'f-retefuente-pct', 'f-retefuente', 'f-reteica', 'f-reteiva', 'f-garantias', 'f-anticipos'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.value = '';
+  });
+  document.getElementById('f-emision').value=todayISO();
+  document.getElementById('f-vence').value=fwd(30);
+  document.getElementById('f-ciudad').value='ninguna';
+  document.getElementById('f-neto-calc').textContent='$ 0';
+  document.getElementById('f-valor-neto').value='0';
+  document.getElementById('modal-bk').classList.add('open');
+}
+
+function openEditModal(id, tipo) {
+    const doc = S[tipo].find(d => d.id === id);
+    if (!doc) return;
+    
+    curEditId = id;
+    curModalTipo = tipo;
+    
+    document.getElementById('modal-title').textContent = tipo === 'cobrar' ? 'Editar cuenta por cobrar' : 'Editar cuenta por pagar';
+    document.getElementById('lbl-contraparte').textContent = tipo === 'cobrar' ? 'Cliente *' : 'Proveedor *';
+    
+    document.getElementById('f-contraparte').value = doc.contraparte || '';
+    document.getElementById('f-nit').value = doc.nit || '';
+    document.getElementById('f-factura').value = doc.factura || '';
+    document.getElementById('f-emision').value = doc.fecha_emision || '';
+    document.getElementById('f-vence').value = doc.fecha_vencimiento || '';
+    document.getElementById('f-concepto').value = doc.concepto || '';
+    
+    const det = doc.details || {};
+    document.getElementById('f-subtotal').value = det.subtotal || 0;
+    document.getElementById('f-aiu-a').value = det.peA || '';
+    document.getElementById('f-aiu-i').value = det.peI || '';
+    document.getElementById('f-aiu-u').value = det.peU || '';
+    document.getElementById('f-iva').value = det.iva || 0;
+    
+    // Retefuente (%) Logic
+    document.getElementById('f-retefuente-pct').value = det.peRfte || (det.subtotal > 0 ? ((det.retefuente / det.subtotal) * 100).toFixed(2) : '');
+    document.getElementById('f-retefuente').value = det.retefuente || 0;
+    
+    document.getElementById('f-reteica').value = det.reteica || 0;
+    document.getElementById('f-reteiva').value = det.reteiva || 0;
+    document.getElementById('f-garantias').value = det.garantias || 0;
+    document.getElementById('f-anticipos').value = det.anticipos || 0;
+    document.getElementById('f-ciudad').value = det.ciudad_ica || 'ninguna';
+    
+    calcNeto(true);
+    document.getElementById('modal-bk').classList.add('open');
+}
+
+function closeModal(){document.getElementById('modal-bk').classList.remove('open'); curEditId = null;}
+
+function autoIca() {
+    const cid = document.getElementById('f-ciudad').value;
+    const sub = parseFloat(document.getElementById('f-subtotal').value) || 0;
+    const city = CIT.find(c => c.id === cid);
+    if(sub > 0 && city) {
+        document.getElementById('f-reteica').value = Math.round((sub * city.rate) / 1000);
+    } else {
+        document.getElementById('f-reteica').value = '';
+    }
+    calcNeto();
+}
+
+function calcNeto(manualVal = false) {
+    const getVal = id => parseFloat(document.getElementById(id).value) || 0;
+    const subtotal = getVal('f-subtotal');
+    
+    // AIU variables
+    const peA = getVal('f-aiu-a');
+    const peI = getVal('f-aiu-i');
+    const peU = getVal('f-aiu-u');
+    const isAiu = (peA + peI + peU) > 0;
+    
+    // 1. Auto IVA logic
+    if(!manualVal) {
+        if(isAiu) {
+            document.getElementById('f-iva').value = Math.round((subtotal * (peU / 100)) * 0.19);
+        } else if (subtotal > 0) {
+            document.getElementById('f-iva').value = Math.round(subtotal * 0.19);
+        } else {
+            document.getElementById('f-iva').value = '';
+        }
+
+        // 2. Auto Retefuente logic
+        const peRfte = getVal('f-retefuente-pct');
+        if(subtotal > 0 && peRfte > 0) {
+            document.getElementById('f-retefuente').value = Math.round(subtotal * (peRfte/100));
+        }
+    }
+    
+    const iva = getVal('f-iva');
+    const valAiuAbs = isAiu ? (subtotal * (peA/100)) + (subtotal * (peI/100)) + (subtotal * (peU/100)) : 0;
+    
+    // Descuentos
+    const retefuente = getVal('f-retefuente');
+    const reteica = getVal('f-reteica');
+    const reteiva = getVal('f-reteiva');
+    const garantias = getVal('f-garantias');
+    const anticipos = getVal('f-anticipos');
+    
+    // Calculation: (Base + AIU absoluto + IVA) - Retenciones - Anticipos
+    const bruto = subtotal + valAiuAbs + iva;
+    const desc = retefuente + reteica + reteiva + garantias + anticipos;
+    const neto = bruto - desc;
+    
+    document.getElementById('f-valor-neto').value = neto;
+    document.getElementById('f-neto-calc').textContent = fmt(neto);
+}
+
+function saveDoc(){
+  const contraparte=document.getElementById('f-contraparte').value.trim();
+  const valorNETO=parseFloat(document.getElementById('f-valor-neto').value);
+  const emision=document.getElementById('f-emision').value;
+  const vence=document.getElementById('f-vence').value;
+  const ciudad=document.getElementById('f-ciudad').value;
+  if(!contraparte||!emision||!vence){alert('Completa los campos obligatorios (Cliente, Fechas).');return;}
+  if(valorNETO <= 0) {
+      if(!confirm("El valor neto de la factura es 0 o negativo. ¿Deseas guardarla de todas formas?")) return;
+  }
+  
+  const factura=document.getElementById('f-factura').value.trim();
+  const nit=document.getElementById('f-nit').value.trim();
+  
+  const getVal = id => parseFloat(document.getElementById(id).value) || 0;
+  
+  const peA = getVal('f-aiu-a');
+  const peI = getVal('f-aiu-i');
+  const peU = getVal('f-aiu-u');
+  const peRfte = getVal('f-retefuente-pct');
+  const isAiu = (peA + peI + peU) > 0;
+  
+  const docInfo = {
+      subtotal: getVal('f-subtotal'),
+      peA: peA, peI: peI, peU: peU,
+      peRfte: peRfte,
+      iva: getVal('f-iva'),
+      retefuente: getVal('f-retefuente'),
+      reteica: getVal('f-reteica'),
+      reteiva: getVal('f-reteiva'),
+      garantias: getVal('f-garantias'),
+      anticipos: getVal('f-anticipos'),
+      ciudad_ica: ciudad
+  };
+
+  const doc={
+      id: curEditId || uid(),
+      contraparte,
+      nit,
+      factura,
+      fecha_emision:emision,
+      fecha_vencimiento:vence,
+      valor_total:Math.abs(valorNETO),
+      valor_aplicado: curEditId ? (S[curModalTipo].find(d=>d.id===curEditId)?.valor_aplicado || 0) : 0,
+      concepto:document.getElementById('f-concepto').value.trim(),
+      ciudad,
+      details: docInfo
+  };
+
+  if(curEditId) {
+      const idx = S[curModalTipo].findIndex(d => d.id === curEditId);
+      if(idx !== -1) S[curModalTipo][idx] = doc;
+  } else {
+      S[curModalTipo].push(doc);
+  }
+
+  // Integracion ReteICA Automatica
+  if((ciudad === 'bogota' || ciudad === 'soacha') && docInfo.reteica > 0) {
+    try {
+      // Nota: Si es edicion, el registro en ICA se duplicará o quedará desfasado. 
+      // Por simplicidad en este módulo offline, siempre agregamos (tipo log).
+      const year = emision.split('-')[0];
+      const month = parseInt(emision.split('-')[1], 10);
+      let period = ciudad === 'soacha' ? month.toString() : Math.ceil(month / 2).toString();
+      
+      const storageKey = `reteica_${ciudad}_${year}_${period}`;
+      let data = localStorage.getItem(storageKey);
+      let icaData = data ? JSON.parse(data) : {records:[], returns:0};
+      
+      if (Array.isArray(icaData)) { icaData = {records: icaData, returns: 0}; }
+      
+      const tarifa = CIT.find(c => c.id === ciudad)?.rate || 0;
+      
+      icaData.records.push({
+         id: Date.now().toString(),
+         desc: (curEditId ? "[EDITADO] " : "") + contraparte.toUpperCase() + (factura ? ` (FAC: ${factura})` : ''),
+         nit: nit || 'S/N',
+         base: docInfo.subtotal,
+         tarifa: tarifa,
+         retenido: docInfo.reteica
+      });
+      localStorage.setItem(storageKey, JSON.stringify(icaData));
+    } catch(err) {
+      console.error("Error al guardar en ICA", err);
+    }
+  }
+
+  // Integracion Calculadora IVA Automatica
+  if (curModalTipo === 'cobrar') {
+      try {
+          const ivaStKey = 'iva_calculator_data'; 
+          let ivaRaw = localStorage.getItem(ivaStKey);
+          let ivaData = ivaRaw ? JSON.parse(ivaRaw) : { sales: [], purchases: [], reteiva: 0 };
+          
+          if (!ivaData.sales) ivaData.sales = [];
+          
+          const labelConcept = `${curEditId ? '[EDIT] ' : ''}${contraparte.toUpperCase()} -- FAC: ${factura||'S/N'}`;
+          
+          if(isAiu) {
+              ivaData.sales.push({
+                  concept: labelConcept,
+                  type: 'aiu',
+                  base: docInfo.subtotal,
+                  a: peA, i: peI, u: peU
+              });
+          } else {
+              ivaData.sales.push({
+                  concept: labelConcept,
+                  type: docInfo.iva > 0 ? 'general' : 'no-gravada',
+                  base: docInfo.subtotal,
+                  a: 5, i: 5, u: 5
+              });
+          }
+          
+          if(docInfo.reteiva > 0) {
+              ivaData.reteiva = (parseFloat(ivaData.reteiva) || 0) + docInfo.reteiva;
+          }
+          
+          localStorage.setItem(ivaStKey, JSON.stringify(ivaData));
+      } catch (err) {
+          console.error("Error al vincular con Calculadora de IVA", err);
+      }
+  }
+
+  save();closeModal();render();
+}
+
+// Modal pago
+function openPago(id,tipo){
+  curPagoId=id;curPagoTipo=tipo;
+  const docs=S[tipo];
+  const doc=docs.find(d=>d.id===id);
+  if(!doc)return;
+  const pend=doc.valor_total-doc.valor_aplicado;
+  document.getElementById('modal-pago-title').textContent=tipo==='cobrar'?'Registrar cobro':'Registrar pago';
+  document.getElementById('modal-pago-info').innerHTML=
+    `<strong>${doc.contraparte}</strong> · ${doc.factura||'S/N'}<br>Total: ${fmt(doc.valor_total)} · Aplicado: ${fmt(doc.valor_aplicado)} · <strong>Pendiente: ${fmt(pend)}</strong>`;
+  document.getElementById('pago-valor').value='';
+  document.getElementById('pago-valor').placeholder='Valor cobrado...';
+  document.getElementById('pago-fecha').value=todayISO();
+  document.getElementById('pago-ref').value='';
+  document.getElementById('modal-pago-bk').classList.add('open');
+}
+function closeModalPago(){document.getElementById('modal-pago-bk').classList.remove('open');}
+function savePago(){
+  const val=parseFloat(document.getElementById('pago-valor').value);
+  if(!val||val<=0){alert('Ingresa un valor válido.');return;}
+  const docs=S[curPagoTipo];
+  const doc=docs.find(d=>d.id===curPagoId);
+  if(!doc)return;
+  doc.valor_aplicado=Math.min(doc.valor_aplicado+val,doc.valor_total);
+  // Integración con Tesorería: crear movimiento automático
+  try{
+    const ts=JSON.parse(localStorage.getItem('dim_tesoreria_v1')||'null');
+    if(ts&&ts.movimientos&&ts.cuentas&&ts.cuentas.length>0){
+      const tipo_mov=curPagoTipo==='cobrar'?'ingreso':'egreso';
+      const pago_fecha=document.getElementById('pago-fecha').value;
+      const pago_ref=document.getElementById('pago-ref').value.trim();
+      ts.movimientos.push({id:uid(),fecha:pago_fecha,desc:`${curPagoTipo==='cobrar'?'Cobro':'Pago'} ${doc.factura||'S/N'} · ${doc.contraparte}`,cat:curPagoTipo==='cobrar'?'Cobros cartera':'Proveedores / Materiales',tipo:tipo_mov,valor:val,cuenta:ts.cuentas[0].id,ref:pago_ref||doc.factura||''});
+      localStorage.setItem('dim_tesoreria_v1',JSON.stringify(ts));
+    }
+  }catch(e){}
+  save();closeModalPago();render();
+}
+
+function deleteDoc(id,tipo){
+  if(!confirm('¿Eliminar este documento?'))return;
+  S[tipo]=S[tipo].filter(d=>d.id!==id);
+  save();render();
+}
+
+// Import Excel
+function excelDateToJSDate(serial) {
+  if (!serial || isNaN(serial)) return todayISO();
+  const utc_days  = Math.floor(serial - 25569);
+  const utc_value = utc_days * 86400;                                        
+  const date_info = new Date(utc_value * 1000);
+  const fractional_day = serial - Math.floor(serial) + 0.0000001;
+  let total_seconds = Math.floor(86400 * fractional_day);
+  const seconds = total_seconds % 60;
+  total_seconds -= seconds;
+  const hours = Math.floor(total_seconds / (60 * 60));
+  const minutes = Math.floor(total_seconds / 60) % 60;
+  date_info.setUTCHours(hours, minutes, seconds);
+  return date_info.toISOString().split('T')[0];
+}
+
+function parseSpanishDate(str) {
+  if (!str) return null;
+  const meses = {
+    enero: '01', febrero: '02', marzo: '03', abril: '04', mayo: '05', junio: '06',
+    julio: '07', agosto: '08', septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12'
+  };
+  const s = String(str).toLowerCase().trim();
+  const regex = /(\d{1,2})\s+de\s+([a-z]+)\s+de\s+(\d{4})/;
+  const match = s.match(regex);
+  if (match) {
+    const d = match[1].padStart(2, '0');
+    const m = meses[match[2]];
+    const y = match[3];
+    if (m) return `${y}-${m}-${d}`;
+  }
+  return null;
+}
+
+function importExcel(e, tipo) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      const data = new Uint8Array(evt.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0]; 
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+      if (jsonData.length === 0) {
+        throw new Error("El archivo está vacío o no tiene el formato correcto.");
+      }
+
+      let count = 0;
+      jsonData.forEach(row => {
+        const norm = {};
+        Object.keys(row).forEach(k => norm[k.toString().trim().toLowerCase()] = row[k]);
+
+        // Mapeo inteligente de columnas
+        const factura = (norm['# factura'] || norm['factura'] || norm['#factura'] || norm['no. factura'] || '').toString();
+        const contraparte = (norm['cliente'] || norm['tercero'] || norm['nombre'] || '').toString();
+        
+        let fecha = norm['fecha'] || norm['fecha emision'] || '';
+        let isoFecha = todayISO();
+        if (typeof fecha === 'number') {
+           isoFecha = excelDateToJSDate(fecha);
+        } else if (typeof fecha === 'string') {
+           const parsed = parseSpanishDate(fecha);
+           if (parsed) isoFecha = parsed;
+           else if (fecha.match(/^\d{4}-\d{2}-\d{2}$/)) isoFecha = fecha;
+        }
+
+        // Capturar "NETO" o "VALOR FACTURACION..."
+        let rawNeto = norm['neto'] || norm['valor facturacion despues impuestos'] || norm['valor facturacion con iva'] || norm['valor total'] || 0;
+        let valorTotal = typeof rawNeto === 'number' ? rawNeto : parseFloat(rawNeto.toString().replace(/[^0-9.-]/g,'')) || 0;
+
+        let rawPago = norm['pago'] || norm['pagos'] || 0;
+        let rawAnticipo = norm['anticipo'] || norm['anticipos'] || 0;
+        let p = typeof rawPago === 'number' ? rawPago : parseFloat(rawPago.toString().replace(/[^0-9.-]/g,'')) || 0;
+        let a = typeof rawAnticipo === 'number' ? rawAnticipo : parseFloat(rawAnticipo.toString().replace(/[^0-9.-]/g,'')) || 0;
+        let valorAplicado = p + a;
+
+        if (contraparte.trim() && valorTotal > 0) {
+          S[tipo].push({
+            id: uid(),
+            contraparte: contraparte.trim(),
+            nit: '',
+            factura: factura.trim() || 'S/N',
+            fecha_emision: isoFecha,
+            fecha_vencimiento: fwd(30), 
+            valor_total: Math.abs(valorTotal),
+            valor_aplicado: Math.max(0, Math.min(valorAplicado, Math.abs(valorTotal))),
+            concepto: (norm['o.p'] || norm['op'] ? `O.P. ${norm['o.p']||norm['op']}` : 'Factura importada')
+          });
+          count++;
+        }
+      });
+
+      if (count > 0) {
+        save();
+        render();
+        alert(`¡Completado! Se importaron ${count} facturas correctamente.`);
+      } else {
+        alert("No se detectaron facturas válidas. Asegúrate de que las columnas tengan títulos como 'CLIENTE', '# FACTURA', 'NETO' y 'PAGO'.");
+      }
+    } catch (err) {
+      alert("Error procesando el archivo: " + err.message);
+    }
+    e.target.value = '';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// Keyboard
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeModalPago();}});
+document.getElementById('modal-bk').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+document.getElementById('modal-pago-bk').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModalPago();});
+
+init();
+</script>
+</body>
+</html>

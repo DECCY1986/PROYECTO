@@ -1,0 +1,255 @@
+<!-- c:\Users\Janus\PROYECTO\personal\index.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Hub | DIMALCCO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="ph-bold ph-users-four"></i>
+                <span>Personal</span>
+            </div>
+            <nav id="nav-menu">
+                <a href="#" class="nav-item active" onclick="showSection('directorio')"><i class="ph ph-identification-card"></i> Directorio</a>
+                <a href="../index.html" class="nav-item"><i class="ph ph-house"></i> Hub Principal</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div>
+                    <h1>Directorio de Personal</h1>
+                    <p class="subtitle">Gestiona la base de datos maestra de tus colaboradores.</p>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-secondary" id="sync-btn" onclick="megaSync()">
+                        <i class="ph ph-arrows-counter-clockwise"></i> Sincronización Inteligente
+                    </button>
+                    <button class="btn btn-primary" onclick="openModal()">
+                        <i class="ph ph-plus"></i> Nuevo Registro
+                    </button>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="label">Total Colaboradores</span>
+                    <span class="value" id="count-total">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="label">Maestro Actualizado</span>
+                    <span class="value" id="sync-status">No</span>
+                </div>
+            </div>
+
+            <div class="card table-card">
+                <table id="emp-table">
+                    <thead>
+                        <tr>
+                            <th>Colaborador</th>
+                            <th>Identificación</th>
+                            <th>Cargo</th>
+                            <th>Salario & Bonificación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="emp-body"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL PRINCIPAL -->
+    <div id="modal" class="modal-backdrop">
+        <div class="card" style="width:450px; padding:32px; background:white">
+            <h2 style="margin-top:0; font-family:'Outfit'">Gestión de Empleado</h2>
+            <input type="hidden" id="m-id">
+            <div style="display:flex; flex-direction:column; gap:16px">
+                <div>
+                    <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">NOMBRE COMPLETO</label>
+                    <input type="text" id="m-nombre" placeholder="Ej. Juan Pérez" class="form-input">
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">CÉDULA</label>
+                    <input type="text" id="m-cedula" placeholder="1.234.567.890" class="form-input">
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">CARGO</label>
+                    <input type="text" id="m-cargo" placeholder="Auxiliar, Gerente..." class="form-input">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">SALARIO BASE</label>
+                        <input type="number" id="m-salario" placeholder="1750905" class="form-input">
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">BONIFICACIÓN 40%</label>
+                        <input type="number" id="m-bono" placeholder="0" class="form-input" style="border-color:#818cf8; background:#f5f3ff">
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:32px">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveOne()">Guardar Registro</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const KEY_MAIN = 'dimalcco_emp_v2';
+        const KEY_OLD_NOM = 'dim_nomina_v1';
+        let empleados = [];
+
+        function init() {
+            loadFromMain();
+            if(empleados.length === 0) megaSync();
+        }
+
+        function loadFromMain() {
+            const raw = localStorage.getItem(KEY_MAIN);
+            if (raw) {
+                empleados = JSON.parse(raw);
+                render();
+            }
+        }
+
+        function megaSync() {
+            let found = [];
+            const rawMain = localStorage.getItem(KEY_MAIN);
+            if(rawMain) {
+                const parsed = JSON.parse(rawMain);
+                if(Array.isArray(parsed)) found = [...parsed];
+            }
+            const rawOld = localStorage.getItem(KEY_OLD_NOM);
+            if(rawOld) {
+                try {
+                    const parsed = JSON.parse(rawOld);
+                    if(parsed.empleados && Array.isArray(parsed.empleados)) {
+                        parsed.empleados.forEach(e => {
+                            if(!found.some(exist => exist.cedula === e.cedula)) {
+                                found.push({
+                                    cedula: e.cedula || '',
+                                    nombre: e.nombre || '',
+                                    cargo: e.cargo || '',
+                                    bono: e.bono || 0,
+                                    salario: e.salario || 0,
+                                    arl: e.arl || 'I',
+                                    centro: e.cc || 'Producción'
+                                });
+                            }
+                        });
+                    }
+                } catch(e) { console.error(e); }
+            }
+
+            if(found.length === 0) {
+                found = [
+                    {nombre:'Martínez Ruiz, Carlos Alberto',cedula:'1.023.456.789',cargo:'Maestro Ebanista',salario:2200000, bono:0},
+                    {nombre:'González Pérez, Luis Fernando',cedula:'1.035.678.901',cargo:'Ebanista',salario:1800000, bono:0},
+                    {nombre:'Vargas Torres, Andrés Felipe',cedula:'1.018.234.567',cargo:'Auxiliar de producción',salario:1423500, bono:0},
+                    {nombre:'Rodríguez Soto, María Alejandra',cedula:'52.345.678',cargo:'Auxiliar contable',salario:1600000, bono:0},
+                    {nombre:'Ospina Leal, Juan Pablo',cedula:'1.012.345.678',cargo:'Vendedor',salario:1423500, bono:0}
+                ];
+            }
+
+            empleados = found;
+            localStorage.setItem(KEY_MAIN, JSON.stringify(empleados));
+            render();
+            document.getElementById('sync-status').textContent = "Sincronizado";
+        }
+
+        function render() {
+            const body = document.getElementById('emp-body');
+            body.innerHTML = '';
+            document.getElementById('count-total').textContent = empleados.length;
+
+            if (empleados.length === 0) {
+                body.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:40px; color:#64748b">No hay registros.</td></tr>`;
+                return;
+            }
+
+            empleados.forEach((emp, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div class="user-cell">
+                            <div class="avatar" style="background: hsla(${index * 45}, 70%, 50%, 0.1); color: hsl(${index * 45}, 70%, 50%);">${(emp.nombre||'P')[0]}</div>
+                            <span>${emp.nombre}</span>
+                        </div>
+                    </td>
+                    <td>${emp.cedula}</td>
+                    <td><span class="badge">${emp.cargo}</span></td>
+                    <td class="mono">
+                        <div style="font-weight:700">$ ${Number(emp.salario || 0).toLocaleString('es-CO')}</div>
+                        ${emp.bono ? `<div style="font-size:10px; color:var(--primary); margin-top:2px">Bono: $ ${Number(emp.bono).toLocaleString('es-CO')}</div>` : ''}
+                    </td>
+                    <td>
+                        <button class="btn-icon" onclick="editOne(${index})"><i class="ph-bold ph-pencil"></i></button>
+                        <button class="btn-icon danger" onclick="remove(${index})"><i class="ph-bold ph-trash"></i></button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function openModal() {
+            document.getElementById('m-id').value = -1;
+            document.getElementById('m-nombre').value = '';
+            document.getElementById('m-cedula').value = '';
+            document.getElementById('m-cargo').value = '';
+            document.getElementById('m-bono').value = '';
+            document.getElementById('m-salario').value = '';
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function editOne(idx) {
+            const e = empleados[idx];
+            document.getElementById('m-id').value = idx;
+            document.getElementById('m-nombre').value = e.nombre;
+            document.getElementById('m-cedula').value = e.cedula;
+            document.getElementById('m-cargo').value = e.cargo;
+            document.getElementById('m-bono').value = e.bono || 0;
+            document.getElementById('m-salario').value = e.salario;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        
+        function saveOne() {
+            const idx = parseInt(document.getElementById('m-id').value);
+            const data = {
+                nombre: document.getElementById('m-nombre').value,
+                cedula: document.getElementById('m-cedula').value,
+                cargo: document.getElementById('m-cargo').value,
+                bono: Number(document.getElementById('m-bono').value) || 0,
+                salario: Number(document.getElementById('m-salario').value)
+            };
+            if(!data.nombre || !data.salario) return alert('Nombre y Salario son obligatorios');
+
+            if(idx === -1) empleados.push(data);
+            else empleados[idx] = {...empleados[idx], ...data};
+
+            localStorage.setItem(KEY_MAIN, JSON.stringify(empleados));
+            closeModal();
+            render();
+        }
+
+        function remove(idx) {
+            if(confirm('¿Eliminar registro?')) {
+                empleados.splice(idx, 1);
+                localStorage.setItem(KEY_MAIN, JSON.stringify(empleados));
+                render();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

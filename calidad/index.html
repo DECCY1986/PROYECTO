@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Calidad | DIMALCCO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: rgba(24, 24, 27, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #10b981;
+            --accent-soft: rgba(16, 185, 129, 0.12);
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; overflow: hidden; }
+
+        .sidebar { width: 280px; background: rgba(15, 15, 18, 0.95); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 2rem 1.5rem; backdrop-filter: blur(20px); }
+        .brand { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 3rem; }
+        .brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent), #059669); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+        .brand h2 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+
+        .nav-menu { flex-grow: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border-radius: 12px; color: var(--text-muted); text-decoration: none; transition: all 0.2s; font-weight: 500; font-size: 0.95rem; }
+        .nav-item:hover, .nav-item.active { background: var(--accent-soft); color: var(--accent); }
+
+        .sidebar-footer { margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border); }
+        .back-link { display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; }
+
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 2.5rem 3rem; }
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+        .top-header h1 { font-size: 2rem; font-weight: 800; }
+
+        .quality-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .checklist-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; }
+        .checklist-card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+        .checklist-item {
+            display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid var(--border);
+        }
+        .checklist-item:last-child { border-bottom: none; }
+        .ci-info { display: flex; align-items: center; gap: 1rem; }
+        .ci-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); }
+        .ci-text h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.15rem; }
+        .ci-text p { font-size: 0.85rem; color: var(--text-muted); }
+
+        .toggle-switch { position: relative; width: 44px; height: 24px; appearance: none; background: #27272a; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+        .toggle-switch:checked { background: var(--accent); }
+        .toggle-switch::before { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s; }
+        .toggle-switch:checked::before { transform: translateX(20px); }
+
+        .audit-summary { display: flex; gap: 1rem; margin-top: 2rem; }
+        .audit-badge { flex: 1; text-align: center; padding: 1.25rem; border-radius: 14px; border: 1px solid var(--border); }
+        .audit-badge .ab-val { font-size: 1.5rem; font-weight: 700; display: block; margin-bottom: 0.25rem; }
+        .audit-badge .ab-lbl { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="ph-bold ph-shield-check"></i></div>
+            <h2>Calidad</h2>
+        </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active"><i class="ph ph-check-square"></i> Control de Procesos</a>
+            <a href="#" class="nav-item"><i class="ph ph-clipboard-text"></i> Auditorías Internas</a>
+            <a href="#" class="nav-item"><i class="ph ph-warning-diamond"></i> No Conformidades</a>
+            <a href="#" class="nav-item"><i class="ph ph-certificate"></i> Certificaciones ISO</a>
+            <a href="#" class="nav-item"><i class="ph ph-chart-line"></i> Trazabilidad</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="../index.html" target="_top" class="back-link"><i class="ph ph-arrow-left"></i> Volver al Hub</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div>
+                <h1>Gestión de Calidad</h1>
+                <p>Monitoreo de estándares, auditorías y cumplimiento normativo.</p>
+            </div>
+            <div style="display:flex; gap:12px">
+                <button onclick="alert('Control de Calidad guardado exitosamente')" style="background:var(--accent); color:white; border:none; padding:0.75rem 1.25rem; border-radius:10px; font-weight:600; cursor:pointer;"><i class="ph ph-floppy-disk"></i> Guardar</button>
+                <button style="background:var(--accent); color:white; border:none; padding:0.75rem 1.25rem; border-radius:10px; font-weight:600; cursor:pointer;"><i class="ph ph-plus-circle"></i> Nueva Auditoría</button>
+            </div>
+        </header>
+
+        <section class="quality-grid">
+            <div class="checklist-card">
+                <h3>Verificación en Línea (Mobiliario)</h3>
+                <div class="checklist-item">
+                    <div class="ci-info">
+                        <div class="ci-icon"><i class="ph ph-ruler"></i></div>
+                        <div class="ci-text">
+                            <h4>Dimensiones según Plano</h4>
+                            <p>Tolerancia ±1mm en ensambles.</p>
+                        </div>
+                    </div>
+                    <input type="checkbox" class="toggle-switch" checked>
+                </div>
+                <div class="checklist-item">
+                    <div class="ci-info">
+                        <div class="ci-icon"><i class="ph ph-drop"></i></div>
+                        <div class="ci-text">
+                            <h4>Uniformidad Barniz</h4>
+                            <p>Ausencia de grumos o burbujas.</p>
+                        </div>
+                    </div>
+                    <input type="checkbox" class="toggle-switch" checked>
+                </div>
+                <div class="checklist-item">
+                    <div class="ci-info">
+                        <div class="ci-icon"><i class="ph ph-screws"></i></div>
+                        <div class="ci-text">
+                            <h4>Anclaje Herrajes</h4>
+                            <p>Tornillería completa y ajuste firme.</p>
+                        </div>
+                    </div>
+                    <input type="checkbox" class="toggle-switch">
+                </div>
+                <div class="checklist-item">
+                    <div class="ci-info">
+                        <div class="ci-icon"><i class="ph ph-package"></i></div>
+                        <div class="ci-text">
+                            <h4>Protección Empaque</h4>
+                            <p>Uso de esquineros y plástico burbuja.</p>
+                        </div>
+                    </div>
+                    <input type="checkbox" class="toggle-switch" checked>
+                </div>
+            </div>
+
+            <div class="checklist-card">
+                <h3>Estado General de Conformidad</h3>
+                <div class="audit-summary">
+                    <div class="audit-badge" style="border-bottom: 4px solid var(--accent)">
+                        <span class="ab-val">96%</span>
+                        <span class="ab-lbl">Aprobación</span>
+                    </div>
+                    <div class="audit-badge" style="border-bottom: 4px solid var(--warning)">
+                        <span class="ab-val">12</span>
+                        <span class="ab-lbl">En Revisión</span>
+                    </div>
+                    <div class="audit-badge" style="border-bottom: 4px solid var(--danger)">
+                        <span class="ab-val">3</span>
+                        <span class="ab-lbl">Fallas Críticas</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h4 style="font-size: 1rem; margin-bottom: 1rem;">Historial de Auditorías</h4>
+                    <div style="background:rgba(255,255,255,0.03); padding:1rem; border-radius:12px; margin-bottom:0.75rem; border:1px solid var(--border);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:600;">Auditoría ISO 9001 - Mar 2026</span>
+                            <span class="status" style="background:rgba(16, 185, 129, 0.1); color:var(--accent); padding:0.2rem 0.6rem; border-radius:4px; font-size:0.75rem;">PASÓ</span>
+                        </div>
+                    </div>
+                    <div style="background:rgba(255,255,255,0.03); padding:1rem; border-radius:12px; border:1px solid var(--border);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:600;">Control Interno Planta 1</span>
+                            <span class="status" style="background:rgba(245, 158, 11, 0.1); color:var(--warning); padding:0.2rem 0.6rem; border-radius:4px; font-size:0.75rem;">OBSERVACIONES</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

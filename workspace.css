@@ -1,0 +1,46 @@
+/* DIMALCCO - Master Workspace CSS */
+:root {
+  --ws-primary: #4338ca;
+  --ws-sidebar: #0f172a;
+  --ws-sidebar-hover: #1e293b;
+  --ws-sidebar-text: #94a3b8;
+  --ws-header: #ffffff;
+  --ws-bg: #f1f5f9;
+  --ws-accent: #6366f1;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Sora', sans-serif; height: 100vh; overflow: hidden; background: var(--ws-bg); }
+
+.ws-layout { display: grid; grid-template-columns: 260px 1fr; height: 100vh; }
+
+/* Sidebar */
+.ws-sidebar { background: var(--ws-sidebar); display: flex; flex-direction: column; overflow-y: auto; color: #fff; border-right: 1px solid #1e293b; }
+.ws-logo { padding: 24px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1e293b; }
+.ws-logo-icon { width: 32px; height: 32px; background: var(--ws-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+
+.ws-nav { padding: 20px 0; flex: 1; }
+.nav-group { margin-bottom: 24px; }
+.nav-label { padding: 0 24px; font-size: 10px; font-weight: 700; text-transform: uppercase; color: #475569; letter-spacing: 0.1em; margin-bottom: 8px; display: block; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 24px; color: var(--ws-sidebar-text); text-decoration: none; font-size: 13px; transition: 0.2s; border-left: 3px solid transparent; }
+.nav-item:hover { background: var(--ws-sidebar-hover); color: #fff; }
+.nav-item.active { background: var(--ws-sidebar-hover); color: #fff; border-left-color: var(--ws-accent); }
+.nav-item i { font-size: 18px; }
+
+/* AI Assistant in Sidebar */
+.ws-ai-card { margin: 16px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 12px; padding: 16px; }
+.ws-ai-btn { width: 100%; padding: 10px; background: var(--ws-primary); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+/* Main Content Area */
+.ws-content { display: flex; flex-direction: column; height: 100vh; }
+.ws-header { height: 60px; background: var(--ws-header); border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; }
+.ws-header-title { font-size: 14px; font-weight: 600; color: #0f172a; }
+
+.ws-iframe-container { flex: 1; position: relative; background: #fff; }
+#ws-viewport { width: 100%; height: 100%; border: none; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ws-layout { grid-template-columns: 80px 1fr; }
+  .nav-label, .nav-item span, .ws-logo span, .ws-ai-card { display: none; }
+}

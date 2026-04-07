@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SST | DIMALCCO</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --primary: #14b8a6;
+      --primary-soft: #f0fdfa;
+      --accent: #2dd4bf;
+      --bg: #f8fafc;
+      --sidebar: #ffffff;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --border: #f1f5f9;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+      --radius: 12px;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'DM Sans',sans-serif; }
+    body { background: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow: hidden; }
+
+    /* SIDEBAR */
+    .sidebar { width: 280px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 50; }
+    .logo { padding: 2rem; display: flex; align-items: center; gap: 0.75rem; }
+    .logo-icon { width: 40px; height: 40px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(20,184,166,0.3); }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.25rem; color: var(--text); letter-spacing: -0.5px; }
+    .logo-sub { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: -2px; }
+
+    .nav { flex: 1; padding: 0.5rem 1rem; }
+    .nav-label { font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; padding: 1.5rem 1rem 0.5rem; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; border-radius: var(--radius); cursor: pointer; color: var(--text-muted); font-weight: 500; transition: all 0.2s; margin-bottom: 0.25rem; text-decoration: none; }
+    .nav-item:hover { background: var(--primary-soft); color: var(--primary); }
+    .nav-item.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+    .nav-item i { font-size: 1.25rem; }
+
+    .sidebar-footer { padding: 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-dim); }
+
+    /* MAIN */
+    .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+    .topbar { padding: 1.5rem 2.5rem; border-bottom: 1px solid var(--border); background: #fff; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 40; }
+    .topbar-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.5rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: #0d9488; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(20,184,166,0.2); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-ghost { background: transparent; color: var(--text-muted); }
+    .btn-ghost:hover { background: var(--border); color: var(--text); }
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+
+    .content { padding: 2.5rem; max-width: 1400px; margin: 0 auto; width: 100%; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* DASHBOARD & GRIDS */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+    .stat-card { background: var(--card); padding: 1.5rem; border-radius: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+    .stat-card::before { content: ''; position: absolute; top:0; left:0; width: 4px; height: 100%; background: var(--primary); }
+    .stat-card.danger::before { background: var(--danger); }
+    .stat-card.warning::before { background: var(--warning); }
+    .stat-label { font-size: 0.8rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; margin: 0.5rem 0; }
+    .stat-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+    .section-card { background: var(--card); border-radius: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 2rem; overflow: hidden; }
+    .card-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .card-body { padding: 1.5rem; }
+
+    /* TABLES */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 1rem; font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; border-bottom: 2px solid var(--border); }
+    td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: #fafafa; }
+
+    .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .badge-teal { background: #ccfbf1; color: #0f766e; }
+    .badge-red { background: #fee2e2; color: #b91c1c; }
+    .badge-amber { background: #fef3c7; color: #b45309; }
+    .badge-blue { background: #e0f2fe; color: #075985; }
+
+    .emp-row { display: flex; align-items: center; gap: 0.75rem; }
+    .avatar { width: 36px; height: 36px; border-radius: 10px; background: var(--primary-soft); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
+    .emp-name { font-weight: 600; color: var(--text); }
+    .emp-info { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* PLAN DE TRABAJO PROGRESS */
+    .progress-container { display: flex; align-items: center; gap: 1rem; width: 100%; max-width: 200px; }
+    .progress-bar { flex: 1; height: 8px; background: #f1f5f9; border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--primary); border-radius: 10px; }
+    .progress-text { font-size: 0.75rem; font-weight: 700; min-width: 35px; }
+
+    input.prog-input { width: 60px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem; outline: none; text-align: center; }
+
+    /* MODALS */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--card); width: 100%; max-width: 600px; border-radius: 24px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; animation: zoomIn 0.3s ease; }
+    @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 2rem; overflow-y: auto; }
+    .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border); background: #fafafa; display: flex; justify-content: flex-end; gap: 1rem; }
+
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; outline: none; transition: all 0.2s; }
+    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+
+    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-dim); }
+    .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
+
+    /* CHART-LIKE PROGRESS BARS */
+    .risk-bar { height: 8px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-top: 0.5rem; }
+    .risk-fill { height: 100%; border-radius: 10px; transition: width 0.5s ease; }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="ph-bold ph-heart-beat"></i></div>
+      <div>
+        <div class="logo-text">SST DIMALCCO</div>
+        <div class="logo-sub">Gestión 2026</div>
+      </div>
+    </div>
+    
+    <nav class="nav">
+      <div class="nav-label">General</div>
+      <div class="nav-item active" onclick="switchView('dashboard', this)"><i class="ph-bold ph-chart-line-up"></i> Dashboard</div>
+      <div class="nav-item" onclick="switchView('ausentismo', this)"><i class="ph-bold ph-calendar-blank"></i> Ausentismo</div>
+      <div class="nav-item" onclick="switchView('plan', this)"><i class="ph-bold ph-list-checks"></i> Plan de Trabajo</div>
+      
+      <div class="nav-label">Seguridad</div>
+      <div class="nav-item" onclick="switchView('riesgos', this)"><i class="ph-bold ph-shield-warning"></i> Matriz de Riesgos</div>
+      <div class="nav-item" onclick="switchView('epp', this)"><i class="ph-bold ph-hard-hat"></i> Entrega de EPP</div>
+      
+      <div class="nav-label">Salud</div>
+      <div class="nav-item" onclick="switchView('examenes', this)"><i class="ph-bold ph-stethoscope"></i> Exámenes Médicos</div>
+      
+      <div class="nav-label">Hub</div>
+      <a href="../../index.html" target="_top" class="nav-item"><i class="ph-bold ph-house"></i> Volver al Hub</a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      DIMALCCO SAS &bull; v2.6<br>Occupational Health
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="view-title">Dashboard Operativo</div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" id="btn-template" style="display:none" onclick="descargarPlantillaPlan()"><i class="ph-bold ph-file-xls"></i> Plantilla</button>
+        <button class="btn btn-ghost" id="btn-import" style="display:none" onclick="triggerImportPlan()"><i class="ph-bold ph-upload-simple"></i> Importar</button>
+        <button class="btn btn-ghost" onclick="exportSST()"><i class="ph-bold ph-download-simple"></i> Informe</button>
+        <button class="btn btn-success" onclick="saveSST()"><i class="ph-bold ph-floppy-disk"></i> Guardar</button>
+        <button class="btn btn-primary" id="btn-action" style="display:none" onclick="openNewModal()"><i class="ph-bold ph-plus"></i> Añadir</button>
+      </div>
+    </div>
+
+    <!-- Hidden File Input for Import -->
+    <input type="file" id="import-plan-file" style="display:none" accept=".xlsx, .xls" onchange="procPlanFile(event)">
+
+    <!-- VIEW: DASHBOARD -->
+    <div class="content" id="view-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Ausentismo Mensual</div>
+          <div class="stat-value" id="stat-dias">0</div>
+          <div class="stat-sub">Días totales este mes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avance Plan Trabajo</div>
+          <div class="stat-value" id="stat-plan-prog">0%</div>
+          <div class="stat-sub">Cumplimiento de actividades</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="stat-label">Accidentes (AT)</div>
+          <div class="stat-value" id="stat-at">0</div>
+          <div class="stat-sub">Reportados este año</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">Exámenes Vencidos</div>
+          <div class="stat-value" id="stat-exam-venc">0</div>
+          <div class="stat-sub">Requieren renovación pronto</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div class="section-card">
+          <div class="card-header"><div class="card-title"><i class="ph-bold ph-gauge"></i> Distribución de Riesgo</div></div>
+          <div class="card-body">
+            <div style="margin-bottom:1.5rem">
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.5rem"><span>Enfermedad General (EPS)</span><b id="val-gen">0</b></div>
+              <div class="risk-bar"><div class="risk-fill" id="bar-gen" style="width:0%; background:var(--primary)"></div></div>
+            </div>
+            <div style="margin-bottom:1.5rem">
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.5rem"><span>Incapacidad ARL (AT)</span><b id="val-at" style="color:var(--danger)">0</b></div>
+              <div class="risk-bar"><div class="risk-fill" id="bar-at" style="width:0%; background:var(--danger)"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="card-header"><div class="card-title"><i class="ph-bold ph-warning-circle"></i> Alertas de Seguridad</div></div>
+          <div class="card-body" id="dashboard-alerts">
+            <div class="empty-state" style="padding:1rem">Sin alertas críticas.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: AUSENTISMO -->
+    <div class="content" id="view-ausentismo" style="display:none">
+      <div class="section-card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Tipo</th><th>Subtipo</th><th>F. Inicio</th><th>Días</th><th>Estado</th></tr></thead>
+            <tbody id="table-aus"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: PLAN DE TRABAJO -->
+    <div class="content" id="view-plan" style="display:none">
+      <div class="section-card">
+        <div class="card-header">
+            <div class="card-title"><i class="ph ph-calendar-check"></i> Plan de Trabajo SST 2026</div>
+            <div style="display:flex; gap:0.5rem">
+               <button class="btn btn-ghost btn-sm" onclick="clearPlan()" style="color:var(--danger)"><i class="ph ph-trash"></i> Borrar Todo</button>
+               <button class="btn btn-primary btn-sm" onclick="openModalPlan()"><i class="ph ph-plus"></i> Actividad</button>
+            </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Código</th><th>Actividad / Meta</th><th>Responsable</th><th>Mes</th><th>Avance (%)</th><th>Evidencia</th><th>Estado</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-plan"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: RIESGOS -->
+    <div class="content" id="view-riesgos" style="display:none">
+      <div class="section-card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Área / Proceso</th><th>Peligro / Fuente</th><th>Consecuencia</th><th>Nivel</th><th>Controles</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-riesgos"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: EPP -->
+    <div class="content" id="view-epp" style="display:none">
+      <div class="section-card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Elemento</th><th>F. Entrega</th><th>F. Reposición</th><th>Estado</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-epp"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: EXAMENES -->
+    <div class="content" id="view-examenes" style="display:none">
+      <div class="section-card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Cargo</th><th>Último Examen</th><th>Curso Alturas</th><th>Estado General</th></tr></thead>
+            <tbody id="table-exams"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: NUEVA ACTIVIDAD PLAN -->
+  <div class="modal-overlay" id="modal-plan">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="card-title" id="m-plan-title">Nueva Actividad - Plan SST</div>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">Código</label><input type="text" class="form-control" id="p-cod"></div>
+        <div class="form-group"><label class="form-label">Actividad / Meta</label><input type="text" class="form-control" id="p-act"></div>
+        <div class="form-group"><label class="form-label">Responsable</label><input type="text" class="form-control" id="p-resp"></div>
+        <div class="form-group"><label class="form-label">Mes</label><input type="text" class="form-control" id="p-mes" placeholder="Ej: Mayo"></div>
+        <div class="form-group"><label class="form-label">Avance Inicial (%)</label><input type="number" class="form-control" id="p-prog" value="0"></div>
+        <div class="form-group"><label class="form-label">Evidencia</label><input type="text" class="form-control" id="p-evi" placeholder="Ej: Registro fotográfico"></div>
+        <div class="form-group"><label class="form-label">Estado</label>
+            <select id="p-est" class="form-control">
+                <option>PENDIENTE</option>
+                <option>EN PROCESO</option>
+                <option>COMPLETADO</option>
+            </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" id="m-plan-btn" onclick="addActividad()">Guardar Actividad</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: OTROS (GENERICO) -->
+  <div class="modal-overlay" id="modal-gen">
+    <div class="modal">
+      <div class="modal-header"><div class="card-title" id="m-gen-title">Añadir Registro</div><button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button></div>
+      <div class="modal-body" id="m-gen-body"></div>
+      <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" id="m-gen-btn">Guardar</button></div>
+    </div>
+  </div>
+
+  <script>
+    const LS_NOV = 'dimalcco_nov_v2';
+    const LS_EMP = 'dimalcco_emp_v2';
+    const LS_SST_PLAN = 'dimalcco_sst_plan_v2';
+    const LS_SST_EPP = 'dimalcco_sst_epp_v2';
+    const LS_SST_RIESGOS = 'dimalcco_sst_riesgos_v2';
+
+    let currentView = 'dashboard';
+    let editIndex = -1;
+
+    let plan = JSON.parse(localStorage.getItem(LS_SST_PLAN)) || [];
+    let epp = JSON.parse(localStorage.getItem(LS_SST_EPP)) || [];
+    let riesgos = JSON.parse(localStorage.getItem(LS_SST_RIESGOS)) || [];
+
+    function switchView(v, el) {
+        currentView = v;
+        document.querySelectorAll('.content').forEach(c => c.style.display='none');
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('view-'+v).style.display='block';
+        if(el) el.classList.add('active');
+        
+        const title = document.getElementById('view-title');
+        const btn = document.getElementById('btn-action');
+        const btnImp = document.getElementById('btn-import');
+        const btnTmp = document.getElementById('btn-template');
+        
+        btn.style.display='none';
+        btnImp.style.display='none';
+        btnTmp.style.display='none';
+
+        switch(v) {
+            case 'dashboard': title.textContent='Dashboard Operativo'; renderDashboard(); break;
+            case 'ausentismo': title.textContent='Control de Ausentismo'; renderAusentismo(); break;
+            case 'plan': 
+                title.textContent='Plan de Trabajo SST'; 
+                btnImp.style.display='flex'; 
+                btnTmp.style.display='flex'; 
+                renderPlan(); 
+                break;
+            case 'riesgos': title.textContent='Matriz de Riesgos'; btn.style.display='flex'; renderRiesgos(); break;
+            case 'epp': title.textContent='Entrega de EPP'; btn.style.display='flex'; renderEPP(); break;
+            case 'examenes': title.textContent='Exámenes Médicos'; renderExams(); break;
+        }
+    }
+
+    // ── RENDERERS ──
+    function renderDashboard() {
+        const novs = JSON.parse(localStorage.getItem(LS_NOV)) || [];
+        const sstNovs = novs.filter(n => n.tipo === 'Incapacidad' || (n.subtipo && n.subtipo.includes('médica')));
+        
+        const totalDias = sstNovs.reduce((s, n) => s + (parseFloat(n.dias) || 0), 0);
+        document.getElementById('stat-dias').textContent = totalDias;
+        
+        const avgPlan = plan.length ? Math.round(plan.reduce((s, a) => s + a.prog, 0) / plan.length) : 0;
+        document.getElementById('stat-plan-prog').textContent = avgPlan + '%';
+        
+        const cAT = sstNovs.filter(n => n.subtipo && n.subtipo.includes('(AT)')).length;
+        document.getElementById('stat-at').textContent = cAT;
+
+        const emps = JSON.parse(localStorage.getItem(LS_EMP)) || [];
+        const today = new Date();
+        const venc = emps.filter(e => {
+            if(!e.fechaExamen) return false;
+            const exDate = new Date(e.fechaExamen);
+            const expDate = new Date(exDate.setFullYear(exDate.getFullYear() + 1));
+            return expDate < today;
+        }).length;
+        document.getElementById('stat-exam-venc').textContent = venc;
+
+        // Bars
+        const cGen = sstNovs.filter(n => n.subtipo && n.subtipo.includes('EPS')).length;
+        const total = sstNovs.length || 1;
+        document.getElementById('val-gen').textContent = cGen;
+        document.getElementById('bar-gen').style.width = (cGen/total*100)+'%';
+        document.getElementById('val-at').textContent = cAT;
+        document.getElementById('bar-at').style.width = (cAT/total*100)+'%';
+
+        // Alerts
+        const container = document.getElementById('dashboard-alerts');
+        let html = '';
+        if(venc > 0) html += `<div style="background:#fff7ed; padding:10px; border-radius:10px; margin-bottom:10px; font-size:0.85rem; border-left:4px solid var(--warning)">⚠️ Hay <b>${venc}</b> exámenes médicos vencidos.</div>`;
+        if(cAT > 0) html += `<div style="background:#fef2f2; padding:10px; border-radius:10px; font-size:0.85rem; border-left:4px solid var(--danger)">🔴 Se registran <b>${cAT}</b> accidentes de trabajo (AT).</div>`;
+        container.innerHTML = html || '<div class="empty-state">Todo bajo control.</div>';
+    }
+
+    function renderAusentismo() {
+        const novs = JSON.parse(localStorage.getItem(LS_NOV)) || [];
+        const sst = novs.filter(n => n.tipo === 'Incapacidad' || (n.tipo === 'Permiso' && n.subtipo && n.subtipo.includes('Médica')));
+        document.getElementById('table-aus').innerHTML = sst.map(n => `
+            <tr>
+                <td><div class="emp-row"><div class="avatar">${n.nombre[0]}</div><div><div class="emp-name">${n.nombre}</div><div class="emp-info">C.C. ${n.cedula}</div></div></div></td>
+                <td><span class="badge ${n.tipo === 'Incapacidad' ? 'badge-red' : 'badge-amber'}">${n.tipo}</span></td>
+                <td>${n.subtipo || '—'}</td>
+                <td style="font-family:'DM Mono'">${n.fechaInicio}</td>
+                <td style="font-weight:700">${n.dias}</td>
+                <td><span class="badge badge-teal">${n.estado}</span></td>
+            </tr>
+        `).join('');
+    }
+
+    function renderPlan() {
+        document.getElementById('table-plan').innerHTML = plan.map((a, i) => `
+            <tr>
+                <td style="font-family:'DM Mono'; font-size:0.8rem">${a.cod || '—'}</td>
+                <td style="font-weight:600">${a.act}</td>
+                <td>${a.resp}</td>
+                <td style="text-transform: capitalize">${a.mes || '—'}</td>
+                <td>
+                    <div class="progress-container">
+                        <div class="progress-bar"><div class="progress-fill" style="width:${a.prog}%"></div></div>
+                        <input type="number" class="prog-input" value="${a.prog}" min="0" max="100" onchange="updPlan(${i}, this.value)">
+                    </div>
+                </td>
+                <td style="font-size:0.8rem">${a.evi || '—'}</td>
+                <td><span class="badge ${a.est === 'COMPLETADO' ? 'badge-teal' : (a.est === 'EN PROCESO' ? 'badge-amber' : 'badge-blue')}">${a.est || 'PENDIENTE'}</span></td>
+                <td>
+                    <div style="display:flex; gap:0.25rem">
+                        <button class="btn btn-ghost btn-sm" onclick="editPlan(${i})">✏️</button>
+                        <button class="btn btn-ghost btn-sm" onclick="delPlan(${i})">🗑️</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderRiesgos() {
+        document.getElementById('table-riesgos').innerHTML = riesgos.map((r, i) => `
+            <tr>
+                <td style="font-weight:600">${r.area}</td>
+                <td>${r.peligro}</td>
+                <td style="font-size:0.8rem">${r.cons}</td>
+                <td><span class="badge ${r.nivel === 'MUY ALTO' ? 'badge-red' : (r.nivel === 'ALTO' ? 'badge-amber' : 'badge-teal')}">${r.nivel}</span></td>
+                <td style="font-size:0.8rem">${r.ctrl}</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="delRiesgo(${i})">🗑️</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function renderEPP() {
+        document.getElementById('table-epp').innerHTML = epp.map((e, i) => `
+            <tr>
+                <td><div class="emp-name">${e.nombre}</div></td>
+                <td>${e.item}</td>
+                <td style="font-family:'DM Mono'">${e.fecha}</td>
+                <td style="font-family:'DM Mono'">${e.venc}</td>
+                <td><span class="badge badge-teal">Entregado</span></td>
+                <td><button class="btn btn-ghost btn-sm" onclick="delEPP(${i})">🗑️</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function renderExams() {
+        const emps = JSON.parse(localStorage.getItem(LS_EMP)) || [];
+        document.getElementById('table-exams').innerHTML = emps.map(e => {
+            const isH = e.alturaAplica && e.alturaAplica !== 'No aplica';
+            let hVenc = false;
+            let hDays = null;
+            if(isH && e.alturaExp) {
+                const exDate = new Date(e.alturaExp + 'T00:00:00');
+                const expDate = new Date(exDate.setMonth(exDate.getMonth() + 18));
+                hVenc = expDate < new Date();
+                hDays = Math.round((expDate - new Date()) / 86400000);
+            }
+
+            const hSt = isH ? (hVenc ? 'badge-red' : 'badge-teal') : 'badge-blue';
+            const hLb = isH ? (hVenc ? 'VENCIDO' : 'VIGENTE') : 'N/A';
+
+            return `
+                <tr>
+                    <td><div class="emp-name">${e.nombre}</div><div class="emp-info">${e.cedula}</div></td>
+                    <td>${e.cargo}</td>
+                    <td style="font-family:'DM Mono'">${e.fechaExamen || '—'} <span class="badge ${st}" style="font-size:0.6rem; padding:2px 6px">${lb}</span></td>
+                    <td style="font-family:'DM Mono'">${e.alturaExp || '—'} <span class="badge ${hSt}" style="font-size:0.6rem; padding:2px 6px">${hLb}</span></td>
+                    <td>
+                        <div style="font-size:0.7rem; color:var(--text-muted)">
+                            Examen: ${e.fechaExamen ? (lb === 'VENCIDO' ? '⚠️' : '✅') : '—'} 
+                            ${isH ? `| Alturas: ${hVenc ? '⚠️' : '✅'} (${hDays}d)` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // ── ACTIONS ──
+    function openModalPlan() { 
+        editIndex = -1;
+        document.getElementById('m-plan-title').textContent = "Nueva Actividad - Plan SST";
+        document.getElementById('m-plan-btn').textContent = "Guardar Actividad";
+        document.getElementById('p-cod').value = '';
+        document.getElementById('p-act').value = '';
+        document.getElementById('p-resp').value = '';
+        document.getElementById('p-mes').value = '';
+        document.getElementById('p-prog').value = 0;
+        document.getElementById('p-evi').value = '';
+        document.getElementById('p-est').value = 'PENDIENTE';
+        document.getElementById('modal-plan').classList.add('open'); 
+    }
+
+    function editPlan(i) {
+        editIndex = i;
+        const a = plan[i];
+        document.getElementById('m-plan-title').textContent = "Editar Actividad";
+        document.getElementById('m-plan-btn').textContent = "Actualizar Actividad";
+        document.getElementById('p-cod').value = a.cod || '';
+        document.getElementById('p-act').value = a.act || '';
+        document.getElementById('p-resp').value = a.resp || '';
+        document.getElementById('p-mes').value = a.mes || '';
+        document.getElementById('p-prog').value = a.prog || 0;
+        document.getElementById('p-evi').value = a.evi || '';
+        document.getElementById('p-est').value = a.est || 'PENDIENTE';
+        document.getElementById('modal-plan').classList.add('open');
+    }
+
+    function closeModal() { document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open')); }
+    
+    function addActividad() {
+        const a = {
+            id: editIndex >= 0 ? plan[editIndex].id : Date.now(),
+            cod: document.getElementById('p-cod').value,
+            act: document.getElementById('p-act').value,
+            resp: document.getElementById('p-resp').value,
+            mes: document.getElementById('p-mes').value,
+            prog: parseInt(document.getElementById('p-prog').value) || 0,
+            evi: document.getElementById('p-evi').value,
+            est: document.getElementById('p-est').value
+        };
+        if(!a.act) return alert('La actividad es obligatoria');
+        
+        if(editIndex >= 0) plan[editIndex] = a;
+        else plan.push(a);
+
+        saveSST(true); // Silent save
+        renderPlan();
+        closeModal();
+    }
+
+    function updPlan(i, v) {
+        plan[i].prog = Math.min(100, Math.max(0, parseInt(v) || 0));
+        saveSST(true); // Silent save
+        renderPlan();
+    }
+
+    function delPlan(i) { if(confirm('¿Eliminar esta actividad?')) { plan.splice(i, 1); saveSST(); renderPlan(); } }
+    function clearPlan() { if(confirm('¿ESTÁS SEGURO? Se eliminarán TODAS las actividades del plan de trabajo.')) { plan = []; saveSST(); renderPlan(); } }
+    function delRiesgo(i) { if(confirm('¿Eliminar riesgo?')) { riesgos.splice(i, 1); saveSST(); renderRiesgos(); } }
+    function delEPP(i) { if(confirm('¿Eliminar este registro de entrega?')) { epp.splice(i, 1); saveSST(); renderEPP(); } }
+
+    function openNewModal() {
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        if(currentView === 'riesgos') {
+            title.textContent = "Añadir Riesgo";
+            body.innerHTML = `
+                <div class="form-group"><label class="form-label">Área</label><input type="text" id="r-area" class="form-control"></div>
+                <div class="form-group"><label class="form-label">Peligro</label><input type="text" id="r-peli" class="form-control"></div>
+                <div class="form-group"><label class="form-label">Consecuencia</label><input type="text" id="r-cons" class="form-control"></div>
+                <div class="form-group"><label class="form-label">Nivel</label>
+                    <select id="r-niv" class="form-control"><option>BAJO</option><option>MEDIO</option><option>ALTO</option><option>MUY ALTO</option></select>
+                </div>
+                <div class="form-group"><label class="form-label">Controles</label><textarea id="r-ctrl" class="form-control"></textarea></div>
+            `;
+            btn.onclick = () => {
+                riesgos.push({
+                    id: Date.now(), area: document.getElementById('r-area').value, peligro: document.getElementById('r-peli').value,
+                    cons: document.getElementById('r-cons').value, nivel: document.getElementById('r-niv').value, ctrl: document.getElementById('r-ctrl').value
+                });
+                renderRiesgos(); closeModal();
+            };
+        } else if(currentView === 'epp') {
+            title.textContent = "Registro Entrega EPP";
+            const emps = JSON.parse(localStorage.getItem(LS_EMP)) || [];
+            body.innerHTML = `
+                <div class="form-group"><label class="form-label">Empleado</label>
+                    <select id="e-nom" class="form-control">${emps.map(e=>`<option>${e.nombre}</option>`).join('')}</select>
+                </div>
+                <div class="form-group"><label class="form-label">Elemento</label><input type="text" id="e-item" class="form-control" placeholder="Ej: Botas, Casco..."></div>
+                <div class="form-group"><label class="form-label">F. Entrega</label><input type="date" id="e-fecha" class="form-control"></div>
+                <div class="form-group"><label class="form-label">F. Reposición</label><input type="date" id="e-venc" class="form-control"></div>
+            `;
+            document.getElementById('e-fecha').valueAsDate = new Date();
+            btn.onclick = () => {
+                epp.push({
+                    nombre: document.getElementById('e-nom').value, item: document.getElementById('e-item').value,
+                    fecha: document.getElementById('e-fecha').value, venc: document.getElementById('e-venc').value
+                });
+                renderEPP(); closeModal();
+            };
+        }
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function saveSST(silent = false) {
+        localStorage.setItem(LS_SST_PLAN, JSON.stringify(plan));
+        localStorage.setItem(LS_SST_EPP, JSON.stringify(epp));
+        localStorage.setItem(LS_SST_RIESGOS, JSON.stringify(riesgos));
+        if(!silent) alert('Datos de SST guardados localmente.');
+    }
+
+    function exportSST() {
+        alert('Generando Informe General de SST para el COPASST...');
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(plan), "Plan Trabajo");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riesgos), "Matriz Riesgos");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(epp), "Entregas EPP");
+        XLSX.writeFile(wb, "Informe_SST_Dimalcco_2026.xlsx");
+    }
+
+    // ── PLAN DE TRABAJO IMPORT ──
+    function descargarPlantillaPlan() {
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([
+            ["Código", "Actividad", "Responsable", "Mes", "Avance (%)", "Evidencia", "Estado"],
+            ["A001", "Capacitación Primeros Auxilios", "Brigada de Salud", "Mayo", 0, "Registro de asistencia", "PENDIENTE"],
+            ["A002", "Inspección de Extintores", "Coord. SST", "Mayo", 100, "Certificado", "COMPLETADO"]
+        ]);
+        XLSX.utils.book_append_sheet(wb, ws, "Plan de Trabajo");
+        XLSX.writeFile(wb, "Plantilla_Plan_SST_Detallada.xlsx");
+    }
+
+    function triggerImportPlan() {
+        document.getElementById('import-plan-file').click();
+    }
+
+    function procPlanFile(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ex) {
+            try {
+                const data = new Uint8Array(ex.target.result);
+                const wb = XLSX.read(data, {type: 'array', cellDates: true});
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(ws, {defval: ''});
+                
+                if(rows.length === 0) throw new Error("El archivo está vacío");
+
+                const importedPlan = rows.map((r, i) => {
+                    // Try to match columns flexibly
+                    const codKey = Object.keys(r).find(k => k.toLowerCase().includes('cód')) || 'Código';
+                    const actKey = Object.keys(r).find(k => k.toLowerCase().includes('actividad')) || 'Actividad';
+                    const respKey = Object.keys(r).find(k => k.toLowerCase().includes('responsable')) || 'Responsable';
+                    const mesKey = Object.keys(r).find(k => k.toLowerCase().includes('mes')) || 'Mes';
+                    const progKey = Object.keys(r).find(k => k.toLowerCase().includes('avance')) || 'Avance (%)';
+                    const eviKey = Object.keys(r).find(k => k.toLowerCase().includes('evidencia')) || 'Evidencia';
+                    const estKey = Object.keys(r).find(k => k.toLowerCase().includes('estado')) || 'Estado';
+                    
+                    return {
+                        id: Date.now() + i,
+                        cod: r[codKey] || '',
+                        act: r[actKey] || 'Sin actividad',
+                        resp: r[respKey] || 'N/A',
+                        mes: r[mesKey] || '',
+                        prog: Math.min(100, Math.max(0, parseInt(r[progKey]) || 0)),
+                        evi: r[eviKey] || '',
+                        est: (r[estKey] || 'PENDIENTE').toUpperCase()
+                    };
+                });
+
+                if(confirm(`Se detectaron ${importedPlan.length} actividades. ¿Desea importarlas y anexarlas al plan actual?`)) {
+                    plan = [...plan, ...importedPlan];
+                    saveSST();
+                    renderPlan();
+                    alert("Importación exitosa.");
+                }
+            } catch(err) {
+                alert("Error al procesar el archivo: " + err.message);
+            }
+            e.target.value = ''; // Reset input
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    window.onload = () => switchView('dashboard');
+  </script>
+</body>
+</html>

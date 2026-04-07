@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agenda 2026 DIMALCCO PUBLICIDAD – Definitiva PRO (Offline)</title>
+
+  <!-- Iconos Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+      <h1><i class="ph-fill ph-check-square-offset" style="color:var(--ok)"></i> Agenda 2026 DIMALCCO PUBLICIDAD</h1>
+      <a href="../index.html" class="btn-hub"><i class="ph ph-house"></i> Mando Principal</a>
+    </div>
+    <div class="sub">Incluye: 🟢 Mi día · 📊 progreso mensual · ✅ marcar realizadas · 👤 responsable/prioridad visibles
+      · 📤 exportar a Excel (CSV). Actividades base incrustadas desde tu Excel.</div>
+
+    <div class="toolbar">
+      <label>Mes:</label>
+      <select id="monthSelect"></select>
+
+      <button class="ghost" id="viewMonthBtn"><i class="ph ph-calendar-blank"></i> Mes</button>
+      <button class="ghost" id="viewTodayBtn"><i class="ph-fill ph-check-circle" style="color:var(--ok)"></i> Mi
+        día</button>
+
+      <input id="search" type="text" placeholder="Buscar actividad / responsable…" />
+
+      <select id="filterResp">
+        <option value="">Responsable (todos)</option>
+      </select>
+      <select id="filterPri">
+        <option value="">Prioridad (todas)</option>
+        <option value="high">ALTA</option>
+        <option value="medium">MEDIA</option>
+        <option value="low">BAJA</option>
+      </select>
+      <select id="filterStatus">
+        <option value="">Estado (todos)</option>
+        <option value="pending">Pendiente</option>
+        <option value="done">Hecho</option>
+      </select>
+
+      <button class="primary" id="exportMonthBtn"><i class="ph ph-export"></i> Exportar mes</button>
+      <button class="ghost" id="exportAllBtn"><i class="ph ph-export"></i> Exportar todo</button>
+      <button class="danger" id="resetBtn"><i class="ph ph-warning"></i> Reiniciar</button>
+    </div>
+
+    <div class="progressWrap">
+      <div class="progressBar">
+        <div id="monthProg"></div>
+      </div>
+      <div class="progressText" id="monthText"></div>
+    </div>
+  </header>
+
+  <main>
+    <div id="view"></div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

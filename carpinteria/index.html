@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carpintería | DIMALCCO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: rgba(24, 24, 27, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #f59e0b;
+            --accent-soft: rgba(245, 158, 11, 0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2.5rem 2rem 4rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .glow { position: absolute; width: 500px; height: 500px; border-radius: 50%; filter: blur(140px); opacity: 0.18; pointer-events: none; z-index: 0; }
+        .glow-1 { background: #f59e0b; top: -200px; left: -100px; }
+        .glow-2 { background: #ef4444; bottom: -200px; right: -100px; }
+
+        .container { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+
+        /* Header */
+        header { text-align: center; margin-bottom: 3.5rem; animation: fadeIn 0.8s ease; }
+
+        .header-top {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .logo-icon {
+            width: 56px; height: 56px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.75rem; color: white;
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.3);
+        }
+
+        h1 {
+            font-size: 2.75rem; font-weight: 800; letter-spacing: -0.02em;
+            background: linear-gradient(to right, #fff, #fbbf24);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle { font-size: 1.05rem; color: var(--text-muted); max-width: 550px; margin: 0 auto; line-height: 1.6; }
+
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            margin-top: 1.25rem;
+            background: rgba(255,255,255,0.05); color: var(--text-muted);
+            padding: 0.6rem 1.2rem; border-radius: 10px;
+            text-decoration: none; font-weight: 500; font-size: 0.9rem;
+            border: 1px solid var(--border); transition: all 0.2s;
+        }
+        .back-btn:hover { color: white; background: rgba(255,255,255,0.08); }
+
+        /* Section Headers */
+        .section-title {
+            display: flex; align-items: center; gap: 0.75rem;
+            margin: 2.5rem 0 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            animation: fadeIn 0.8s ease;
+        }
+        .section-title i { font-size: 1.5rem; }
+        .section-title h2 { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; }
+        .section-title.impuestos i { color: #3b82f6; }
+        .section-title.talento i { color: #10b981; }
+        .section-title.bancos i { color: #a78bfa; }
+        .section-title.gestion i { color: #f59e0b; }
+
+        /* Grid */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Card */
+        .app-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 1.75rem;
+            text-decoration: none; color: var(--text-main);
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: fadeInUp 0.6s ease backwards;
+        }
+        .app-card:hover { transform: translateY(-6px); box-shadow: 0 16px 32px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.15); }
+
+        .app-card.placeholder { opacity: 0.5; pointer-events: none; }
+        .app-card.placeholder .badge-soon {
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(245,158,11,0.15); color: #fbbf24;
+            padding: 3px 10px; border-radius: 6px;
+            font-size: 11px; font-weight: 600; text-transform: uppercase;
+        }
+
+        .card-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; color: white;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .app-card h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .app-card p { color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; flex-grow: 1; margin-bottom: 1.25rem; }
+
+        .card-footer { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.85rem; transition: gap 0.2s; }
+        .app-card:hover .card-footer { gap: 0.65rem; }
+
+        /* Icon Colors */
+        .icon-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .icon-sky { background: linear-gradient(135deg, #0ea5e9, #0369a1); }
+        .icon-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .icon-green { background: linear-gradient(135deg, #10b981, #059669); }
+        .icon-orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .icon-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .icon-teal { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+        .icon-amber { background: linear-gradient(135deg, #b8902a, #92700e); }
+        .icon-slate { background: linear-gradient(135deg, #475569, #334155); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .apps-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <div class="logo-icon"><i class="ph-bold ph-hammer"></i></div>
+                <h1>DIMALCCO Carpintería</h1>
+            </div>
+            <p class="subtitle">Espacio de trabajo integral para la gestión de impuestos, talento humano y bancos.</p>
+            <div style="margin-top: 1.25rem; display: flex; justify-content: center; gap: 12px;">
+                <a href="../index.html" target="_top" class="back-btn"><i class="ph ph-arrow-left"></i> Volver a DIMALCCO</a>
+                <button onclick="alert('Datos de Carpintería guardados')" style="background:linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color:white; border:none; padding:0.6rem 1.2rem; border-radius:10px; font-weight:600; cursor:pointer; font-size:0.9rem; display:inline-flex; align-items:center; gap:0.5rem; box-shadow:0 10px 20px rgba(245,158,11,0.2);"><i class="ph ph-floppy-disk"></i> Guardar</button>
+            </div>
+        </header>
+
+        <!-- ═══════════════ PRODUCCIÓN ═══════════════ -->
+        <div class="section-title gestion">
+            <i class="ph-bold ph-hammer"></i>
+            <h2>Gestión de Producción</h2>
+        </div>
+        <section class="apps-grid">
+            <div class="app-card placeholder" style="animation-delay:.1s">
+                <span class="badge-soon">Próximamente</span>
+                <div class="card-icon icon-slate"><i class="ph ph-factory"></i></div>
+                <h3>Control de Planta</h3>
+                <p>Gestión de órdenes de producción (OP), consumo de materia prima y tiempos de fabricación.</p>
+                <div class="card-footer" style="color:#64748b"><span>En desarrollo</span></div>
+            </div>
+            <div class="app-card placeholder" style="animation-delay:.15s">
+                <span class="badge-soon">Próximamente</span>
+                <div class="card-icon icon-slate"><i class="ph ph-package"></i></div>
+                <h3>Inventario Madera</h3>
+                <p>Stock de láminas, maderas macizas, herrajes y consumibles de carpintería.</p>
+                <div class="card-footer" style="color:#64748b"><span>En desarrollo</span></div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>

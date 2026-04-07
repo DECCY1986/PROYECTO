@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estados Financieros · DIMALCCO SAS</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            /* Palette DIMALCCO SAS */
+            --bg: #f8fafc;
+            --sidebar-bg: #0f172a;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --primary: #4338ca;
+            --primary-light: #eef2ff;
+            --accent: #6366f1;
+            --success: #059669;
+            --success-light: #ecfdf5;
+            --warning: #d97706;
+            --warning-light: #fffbeb;
+            --danger: #dc2626;
+            --danger-light: #fef2f2;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --text-muted: #94a3b8;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; font-family: 'Sora', sans-serif; background: var(--bg); color: var(--text-main); overflow: hidden; }
+        body { display: flex; }
+
+        /* SIDEBAR (Integrated) */
+        #sidebar {
+            width: 240px; min-width: 240px; background: var(--sidebar-bg); color: #fff;
+            display: flex; flex-direction: column; padding: 24px 0; transition: all 0.3s;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1); z-index: 100;
+        }
+
+        .logo { padding: 0 24px 32px; display: flex; align-items: center; gap: 12px; }
+        .logo-icon {
+            width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;
+            box-shadow: 0 4px 12px rgba(67, 56, 202, 0.3);
+        }
+        .logo-text { font-size: 14px; font-weight: 700; letter-spacing: 0.05em; }
+        .logo-text span { font-size: 11px; font-weight: 400; color: var(--text-muted); display: block; }
+
+        .company-badge {
+            margin: 0 16px 24px; padding: 12px 14px; background: rgba(255,255,255,0.05);
+            border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.2s;
+        }
+        .company-badge:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
+        .company-name { font-size: 12px; font-weight: 600; }
+        .company-year { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        nav { flex: 1; }
+        nav a {
+            display: flex; align-items: center; gap: 12px; padding: 12px 24px;
+            text-decoration: none; color: var(--text-muted); font-size: 13px; font-weight: 500;
+            transition: all 0.2s; border-left: 4px solid transparent; cursor: pointer;
+        }
+        nav a:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        nav a.active { color: #fff; background: rgba(67, 56, 202, 0.15); border-left-color: var(--primary); }
+
+        .sidebar-footer { padding: 20px 24px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .btn-back { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 12px; text-decoration: none; transition: color 0.2s; }
+        .btn-back:hover { color: #fff; }
+
+        /* MAIN CONTENT */
+        #main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; background: var(--bg); }
+
+        /* TOPBAR */
+        .topbar {
+            padding: 20px 32px; background: #fff; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; position: sticky;
+            top: 0; z-index: 50; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .topbar h1 { font-size: 20px; font-weight: 700; color: var(--text-main); }
+        .topbar p { font-size: 12px; color: var(--text-sub); margin-top: 4px; }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px;
+            border-radius: var(--radius-sm); border: none; cursor: pointer;
+            font-family: inherit; font-size: 13px; font-weight: 600; transition: all 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
+        .btn-outline { background: #fff; color: var(--text-sub); border: 1px solid var(--border); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* PAGES */
+        .page { display: none; padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page.active { display: block; }
+
+        /* KPI GRID */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 32px; }
+        .kpi-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; position: relative; overflow: hidden; transition: all 0.3s; box-shadow: var(--shadow); }
+        .kpi-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); border-color: var(--primary); }
+        .kpi-icon { position: absolute; top: 24px; right: 24px; font-size: 24px; padding: 10px; border-radius: 12px; }
+        .kpi-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        .kpi-val { font-size: 28px; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-main); }
+
+        .bg-purple { background: var(--primary-light); color: var(--primary); }
+        .bg-green { background: var(--success-light); color: var(--success); }
+        .bg-red { background: var(--danger-light); color: var(--danger); }
+        .bg-blue { background: #eff6ff; color: #2563eb; }
+
+        /* TABLES */
+        .card-container { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 24px; }
+        .card-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: #fff; }
+        .card-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .search-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 16px; font-family: inherit; font-size: 13px; width: 260px; outline: none; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8fafc; padding: 12px 24px; text-align: left; font-size: 10px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        td { padding: 14px 24px; font-size: 13px; border-bottom: 1px solid #f1f5f9; color: var(--text-main); }
+        tr:hover td { background: #f8fafc; }
+
+        .cell-input { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; width: 130px; text-align: right; outline: none; }
+        .cell-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
+        .cell-select { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-family: inherit; font-size: 12px; outline: none; }
+
+        /* TAGS */
+        .tag { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .tag-active { background: var(--success-light); color: var(--success); }
+        .tag-passive { background: var(--danger-light); color: var(--danger); }
+        .tag-income { background: var(--primary-light); color: var(--primary); }
+        .tag-expense { background: var(--warning-light); color: var(--warning); }
+
+        /* TABS */
+        .tabs { display: flex; gap: 6px; margin-bottom: 24px; background: #fff; border: 1px solid var(--border); padding: 5px; border-radius: var(--radius); width: fit-content; box-shadow: var(--shadow); }
+        .tab { padding: 8px 18px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-sub); border: none; background: transparent; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+        .tab.active { background: var(--primary); color: #fff; }
+
+        .fin-table th:not(:first-child) { text-align: right; }
+        .fin-table td:not(:first-child) { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+        .section-row td { background: #f8fafc; font-weight: 700; font-size: 11px; color: var(--text-sub); text-transform: uppercase; padding: 10px 24px; }
+        .subtotal-row td { font-weight: 600; color: var(--primary); background: var(--primary-light); }
+        .total-row td { font-weight: 700; background: var(--primary); color: #fff; padding: 14px 24px; }
+
+        .status-banner { display: flex; align-items: center; gap: 12px; padding: 14px 24px; border-radius: var(--radius); margin-bottom: 24px; font-size: 13px; border: 1px solid transparent; }
+        .status-ok { background: var(--success-light); color: var(--success); border-color: #a7f3d0; }
+        .status-err { background: var(--danger-light); color: var(--danger); border-color: #fecaca; }
+
+        #toast {
+            position: fixed; bottom: 32px; right: 32px; background: #0f172a; color: #fff; padding: 14px 24px; border-radius: var(--radius-sm);
+            font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; transform: translateY(100px); opacity: 0; transition: all 0.3s; z-index: 1000; box-shadow: var(--shadow-lg);
+        }
+        #toast.show { transform: translateY(0); opacity: 1; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; border: 2px solid var(--bg); }
+    </style>
+</head>
+<body>
+
+<div id="sidebar">
+    <div class="logo">
+        <div class="logo-icon"><i class="ph-fill ph-chart-pie-slice"></i></div>
+        <div class="logo-text">DIMALCCO<span>CONTABILIDAD</span></div>
+    </div>
+    <div class="company-badge" onclick="editCompany()">
+        <div class="company-name" id="sb-company">DIMALCCO SAS</div>
+        <div class="company-year">EJERCICIO <span id="sb-year">2025</span></div>
+    </div>
+    <nav>
+        <a class="active" onclick="goPage('inicio')" data-page="inicio"><i class="ph ph-house"></i> Dashboard</a>
+        <a onclick="goPage('captura')" data-page="captura"><i class="ph ph-list-plus"></i> Captura Datos</a>
+        <a onclick="goPage('estados')" data-page="estados"><i class="ph ph-file-text"></i> Estados Fin.</a>
+        <a onclick="goPage('indicadores')" data-page="indicadores"><i class="ph ph-chart-line-up"></i> Indicadores</a>
+        <a onclick="goPage('reportes')" data-page="reportes"><i class="ph ph-presentation-chart"></i> Reportes</a>
+    </nav>
+    <div class="sidebar-footer">
+        <a href="../../index.html" class="btn-back" target="_top"><i class="ph ph-arrow-left"></i> Volver al Workspace</a>
+    </div>
+</div>
+
+<div id="main">
+    <header class="topbar">
+        <div>
+            <h1 id="top-title">Dashboard Financiero</h1>
+            <p id="top-desc">Visión 360 de la salud contable y financiera.</p>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn btn-outline" onclick="exportData()"><i class="ph ph-download"></i> Exportar</button>
+            <button class="btn btn-primary" onclick="saveAll()"><i class="ph ph-floppy-disk"></i> Guardar Todo</button>
+        </div>
+    </header>
+
+    <div class="page active" id="page-inicio">
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <i class="ph ph-wallet kpi-icon bg-purple"></i>
+                <div class="kpi-label">Activo Total</div>
+                <div class="kpi-val" id="kpi-activo">$ 0</div>
+            </div>
+            <div class="kpi-card">
+                <i class="ph ph-bank kpi-icon bg-red"></i>
+                <div class="kpi-label">Pasivo Total</div>
+                <div class="kpi-val" id="kpi-pasivo">$ 0</div>
+            </div>
+            <div class="kpi-card">
+                <i class="ph ph-scales kpi-icon bg-green"></i>
+                <div class="kpi-label">Patrimonio</div>
+                <div class="kpi-val" id="kpi-patrimonio">$ 0</div>
+            </div>
+            <div class="kpi-card">
+                <i class="ph ph-trend-up kpi-icon bg-blue"></i>
+                <div class="kpi-label">Utilidad Neta</div>
+                <div class="kpi-val" id="kpi-utilidad">$ 0</div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+            <div class="card-container" style="padding: 24px;">
+                <h3 style="margin-bottom: 20px;"><i class="ph ph-chart-pie"></i> Composición Balance</h3>
+                <canvas id="chartBalance" style="max-height: 300px;"></canvas>
+            </div>
+            <div class="card-container" style="padding: 24px;">
+                <h3 style="margin-bottom: 20px;"><i class="ph ph-chart-bar"></i> Ganancias vs Pérdidas</h3>
+                <canvas id="chartERI" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="page-captura">
+        <div class="card-container">
+            <div class="card-header">
+                <div class="card-title"><i class="ph ph-table"></i> Captura de Cuentas</div>
+                <div style="display: flex; gap: 12px;">
+                    <input type="text" class="search-box" id="searchAcc" placeholder="Buscar concepto..." oninput="filterAccs()">
+                    <button class="btn btn-primary" onclick="addAcc()"><i class="ph ph-plus"></i> Nueva Cuenta</button>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table id="acc-table">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th>Categoría</th>
+                            <th>Subcategoría</th>
+                            <th>Estado</th>
+                            <th style="text-align: right;">Saldos 2025</th>
+                            <th style="text-align: right;">Saldos 2024</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="acc-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="page" id="page-estados">
+        <div class="tabs">
+            <button class="tab active" onclick="switchStateTab('esf', this)"><i class="ph ph-article"></i> Balance (ESF)</button>
+            <button class="tab" onclick="switchStateTab('eri', this)"><i class="ph ph-receipt"></i> Resultados (ERI)</button>
+            <button class="tab" onclick="switchStateTab('flujo', this)"><i class="ph ph-arrows-left-right"></i> Flujo Caja</button>
+            <button class="tab" onclick="switchStateTab('patrimonio', this)"><i class="ph ph-users-three"></i> Patrimonio</button>
+        </div>
+        <div id="state-container"></div>
+    </div>
+
+    <div class="page" id="page-indicadores">
+        <div id="indicators-container"></div>
+    </div>
+
+    <div class="page" id="page-reportes">
+            <div style="padding: 60px; text-align: center;">
+                <i class="ph ph-file-pdf" style="font-size: 80px; color: var(--danger); margin-bottom: 24px;"></i>
+                <h2 style="margin-bottom: 12px;">Generar Reporte Completo</h2>
+                <p style="color: var(--text-sub); max-width: 500px; margin: 0 auto 40px;">Consolida todos los estados financieros y análisis en un único documento profesional.</p>
+                <div style="display: flex; justify-content: center; gap: 16px;">
+                    <button class="btn btn-outline" onclick="window.print()"><i class="ph ph-printer"></i> Vista Previa</button>
+                    <button class="btn btn-primary" style="padding: 14px 40px; font-size: 15px;" onclick="generatePDF()"><i class="ph ph-file-pdf"></i> Descargar PDF</button>
+                </div>
+            </div>
+    </div>
+</div>
+
+<div id="toast"><i class="ph ph-check-circle"></i> <span id="toast-msg">Cambios guardados</span></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+    // --- STATE ---
+    const DEFAULT_ACCOUNTS = [
+        {id:1, name:'Caja y Bancos', cat:'Activo', sub:'Corriente', st:'ESF', y2025:0, y2024:0},
+        {id:2, name:'Inventarios', cat:'Activo', sub:'Corriente', st:'ESF', y2025:0, y2024:0},
+        {id:3, name:'Propiedad Planta y Equipo', cat:'Activo', sub:'No Corriente', st:'ESF', y2025:0, y2024:0},
+        {id:4, name:'Cuentas por Pagar', cat:'Pasivo', sub:'Corriente', st:'ESF', y2025:0, y2024:0},
+        {id:5, name:'Obligaciones Financieras', cat:'Pasivo', sub:'No Corriente', st:'ESF', y2025:0, y2024:0},
+        {id:6, name:'Capital Social', cat:'Patrimonio', sub:'', st:'ESF', y2025:0, y2024:0},
+        {id:7, name:'Ventas', cat:'Ingreso', sub:'', st:'ERI', y2025:0, y2024:0},
+        {id:8, name:'Costos', cat:'Costo', sub:'', st:'ERI', y2025:0, y2024:0},
+        {id:9, name:'Gastos Adm/Ventas', cat:'Gasto', sub:'', st:'ERI', y2025:0, y2024:0}
+    ];
+
+    let state = loadState();
+    let charts = {};
+
+    function loadState() {
+        const saved = localStorage.getItem('dim_finances_v2');
+        if (saved) return JSON.parse(saved);
+        return {
+            accounts: JSON.parse(JSON.stringify(DEFAULT_ACCOUNTS)),
+            config: { company: 'DIMALCCO SAS', year: '2025' },
+            nextId: 20,
+            flow: { op: [], inv: [], fin: [] },
+            patrimonio: []
+        };
+    }
+
+    function saveAll() {
+        localStorage.setItem('dim_finances_v2', JSON.stringify(state));
+        showToast('Guardado con éxito');
+        renderAll();
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-msg').textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function fmt(n) { return '$ ' + Math.abs(n||0).toLocaleString('es-CO'); }
+
+    // --- NAVIGATION ---
+    function goPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        document.querySelectorAll('nav a').forEach(a => a.classList.toggle('active', a.dataset.page === pageId));
+        
+        if (pageId === 'inicio') { renderAll(); renderCharts(); }
+        if (pageId === 'captura') renderAccTable();
+        if (pageId === 'estados') renderStates();
+        if (pageId === 'indicadores') renderIndicators();
+    }
+
+    // --- CALCULATIONS ---
+    function calc() {
+        const accs = state.accounts;
+        const sum = (cat, yr) => accs.filter(a => a.cat === cat).reduce((s, a) => s + (a[yr]||0), 0);
+        const sumSub = (cat, sub, yr) => accs.filter(a => a.cat === cat && a.sub === sub).reduce((s, a) => s + (a[yr]||0), 0);
+
+        const yrMap = (yr) => ({
+            actC: sumSub('Activo', 'Corriente', yr), actNC: sumSub('Activo', 'No Corriente', yr),
+            pasC: sumSub('Pasivo', 'Corriente', yr), pasNC: sumSub('Pasivo', 'No Corriente', yr),
+            pat: sum('Patrimonio', yr), ing: sum('Ingreso', yr), cos: sum('Costo', yr), gas: sum('Gasto', yr)
+        });
+
+        const r = { y25: yrMap('y2025'), y24: yrMap('y2024') };
+        ['y25', 'y24'].forEach(y => {
+            r[y].act = r[y].actC + r[y].actNC;
+            r[y].pas = r[y].pasC + r[y].pasNC;
+            r[y].util = r[y].ing - r[y].cos - r[y].gas;
+            r[y].totalPat = r[y].pat + r[y].util;
+        });
+        return r;
+    }
+
+    function renderAll() {
+        const c = calc();
+        document.getElementById('kpi-activo').textContent = fmt(c.y25.act);
+        document.getElementById('kpi-pasivo').textContent = fmt(c.y25.pas);
+        document.getElementById('kpi-patrimonio').textContent = fmt(c.y25.totalPat);
+        document.getElementById('kpi-utilidad').textContent = fmt(c.y25.util);
+        document.getElementById('sb-company').textContent = state.config.company;
+        document.getElementById('sb-year').textContent = state.config.year;
+    }
+
+    function renderAccTable() {
+        const body = document.getElementById('acc-body');
+        body.innerHTML = '';
+        state.accounts.forEach(acc => {
+            const tr = document.createElement('tr');
+            const catTag = {Activo:'tag-active',Pasivo:'tag-passive',Ingreso:'tag-income',Gasto:'tag-expense',Costo:'tag-expense',Patrimonio:'tag-passive'}[acc.cat];
+            tr.innerHTML = `
+                <td><input class="cell-input" style="text-align:left; width: 100%; border:none;" value="${acc.name}" onchange="updateAcc(${acc.id}, 'name', this.value)"></td>
+                <td>
+                    <select class="cell-select" onchange="updateAcc(${acc.id}, 'cat', this.value); renderAccTable()">
+                        ${['Activo','Pasivo','Patrimonio','Ingreso','Costo','Gasto'].map(c => `<option value="${c}" ${acc.cat===c?'selected':''}>${c}</option>`).join('')}
+                    </select>
+                </td>
+                <td><select class="cell-select" onchange="updateAcc(${acc.id}, 'sub', this.value)">
+                    <option value="Corriente" ${acc.sub==='Corriente'?'selected':''}>Corriente</option>
+                    <option value="No Corriente" ${acc.sub==='No Corriente'?'selected':''}>No Corriente</option>
+                    <option value="" ${acc.sub===''?'selected':''}>N/A</option>
+                </select></td>
+                <td><select class="cell-select" onchange="updateAcc(${acc.id}, 'st', this.value)">
+                    <option value="ESF" ${acc.st==='ESF'?'selected':''}>Balance</option>
+                    <option value="ERI" ${acc.st==='ERI'?'selected':''}>P&L</option>
+                </select></td>
+                <td style="text-align:right"><input class="cell-input" type="number" value="${acc.y2025}" onchange="updateAcc(${acc.id}, 'y2025', +this.value); this.value=Math.round(+this.value)"></td>
+                <td style="text-align:right"><input class="cell-input" type="number" value="${acc.y2024}" onchange="updateAcc(${acc.id}, 'y2024', +this.value); this.value=Math.round(+this.value)"></td>
+                <td><button class="btn" style="color:var(--danger); padding:4px;" onclick="deleteAcc(${acc.id})"><i class="ph ph-trash"></i></button></td>
+            `;
+            body.appendChild(tr);
+        });
+    }
+
+    function updateAcc(id, f, v) { 
+        const a = state.accounts.find(x => x.id === id); 
+        if (a) {
+            a[f] = (f==='y2025'||f==='y2024') ? Math.round(v) : v;
+        } 
+    }
+    function deleteAcc(id) { state.accounts = state.accounts.filter(x => x.id !== id); renderAccTable(); }
+    function addAcc() { state.accounts.push({id:state.nextId++, name:'Nueva Cuenta', cat:'Activo', sub:'Corriente', st:'ESF', y2025:0, y2024:0}); renderAccTable(); }
+    function filterAccs() { const q = document.getElementById('searchAcc').value.toLowerCase(); document.querySelectorAll('#acc-body tr').forEach(tr => tr.style.display = tr.querySelector('input').value.toLowerCase().includes(q) ? '' : 'none'); }
+
+    let currentTab = 'esf';
+    function switchStateTab(tab, btn) {
+        currentTab = tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        renderStates();
+    }
+
+    function pct(a, b) { if (b === 0) return '0%'; const v = ((a / b) - 1) * 100; return (v > 0 ? '+' : '') + v.toFixed(1) + '%'; }
+
+    function renderStates() {
+        const c = calc();
+        const accs = state.accounts;
+        const container = document.getElementById('state-container');
+
+        function rows(arr) {
+            return arr.map(a => `<tr><td style="padding-left:32px">${a.name}</td><td>${fmt(a.y2025)}</td><td>${fmt(a.y2024)}</td><td>${pct(a.y2025, a.y2024)}</td></tr>`).join('');
+        }
+
+        if (currentTab === 'esf') {
+            const actCorRows = accs.filter(a => a.cat === 'Activo' && a.sub === 'Corriente');
+            const actNoCorRows = accs.filter(a => a.cat === 'Activo' && a.sub === 'No Corriente');
+            const pasCorRows = accs.filter(a => a.cat === 'Pasivo' && a.sub === 'Corriente');
+            const pasNoCorRows = accs.filter(a => a.cat === 'Pasivo' && a.sub === 'No Corriente');
+            const patRows = accs.filter(a => a.cat === 'Patrimonio');
+
+            const balanced = Math.abs(c.y25.act - (c.y25.pas + c.y25.totalPat)) < 1;
+            container.innerHTML = `<div class="status-banner ${balanced ? 'status-ok' : 'status-err'}"><i class="ph ph-${balanced?'check':'warning'}-circle"></i> <div><strong>Validación Partida Doble:</strong> ${balanced?'Balanceado: Activo = Pasivo + Patrimonio':'Desbalance detectado ('+fmt(c.y25.act-(c.y25.pas+c.y25.totalPat))+')'}</div></div>
+            <div class="card-container"><table class="fin-table"><thead><tr><th>Concepto</th><th>2025</th><th>2024</th><th>Var. %</th></tr></thead><tbody>
+            <tr class="section-row"><td colspan="4">ACTIVOS</td></tr>
+            <tr><td style="padding-left:16px;font-weight:600;color:var(--text-sub)">Activo Corriente</td><td></td><td></td><td></td></tr>
+            ${rows(actCorRows)}
+            <tr class="subtotal-row"><td>Total Activo Corriente</td><td>${fmt(c.y25.actC)}</td><td>${fmt(c.y24.actC)}</td><td>${pct(c.y25.actC,c.y24.actC)}</td></tr>
+            <tr><td style="padding-left:16px;font-weight:600;color:var(--text-sub)">Activo No Corriente</td><td></td><td></td><td></td></tr>
+            ${rows(actNoCorRows)}
+            <tr class="subtotal-row"><td>Total Activo No Corriente</td><td>${fmt(c.y25.actNC)}</td><td>${fmt(c.y24.actNC)}</td><td>${pct(c.y25.actNC,c.y24.actNC)}</td></tr>
+            <tr class="total-row"><td>TOTAL ACTIVO</td><td>${fmt(c.y25.act)}</td><td>${fmt(c.y24.act)}</td><td>${pct(c.y25.act,c.y24.act)}</td></tr>
+            
+            <tr class="section-row"><td colspan="4">PASIVOS</td></tr>
+            <tr><td style="padding-left:16px;font-weight:600;color:var(--text-sub)">Pasivo Corriente</td><td></td><td></td><td></td></tr>
+            ${rows(pasCorRows)}
+            <tr class="subtotal-row"><td>Total Pasivo Corriente</td><td>${fmt(c.y25.pasC)}</td><td>${fmt(c.y24.pasC)}</td><td>${pct(c.y25.pasC,c.y24.pasC)}</td></tr>
+            <tr><td style="padding-left:16px;font-weight:600;color:var(--text-sub)">Pasivo No Corriente</td><td></td><td></td><td></td></tr>
+            ${rows(pasNoCorRows)}
+            <tr class="subtotal-row"><td>Total Pasivo No Corriente</td><td>${fmt(c.y25.pasNC)}</td><td>${fmt(c.y24.pasNC)}</td><td>${pct(c.y25.pasNC,c.y24.pasNC)}</td></tr>
+            <tr class="total-row"><td>TOTAL PASIVO</td><td>${fmt(c.y25.pas)}</td><td>${fmt(c.y24.pas)}</td><td>${pct(c.y25.pas,c.y24.pas)}</td></tr>
+            
+            <tr class="section-row"><td colspan="4">PATRIMONIO</td></tr>
+            ${rows(patRows)}
+            <tr class="subtotal-row" style="color:var(--accent)"><td>(+) Utilidad del Ejercicio</td><td>${fmt(c.y25.util)}</td><td>${fmt(c.y24.util)}</td><td>${pct(c.y25.util,c.y24.util)}</td></tr>
+            <tr class="total-row" style="background:var(--accent)"><td>TOTAL PATRIMONIO</td><td>${fmt(c.y25.totalPat)}</td><td>${fmt(c.y24.totalPat)}</td><td>${pct(c.y25.totalPat,c.y24.totalPat)}</td></tr>
+            <tr class="total-row" style="background:var(--success)"><td>TOTAL PASIVO + PATRIMONIO</td><td>${fmt(c.y25.pas+c.y25.totalPat)}</td><td>${fmt(c.y24.pas+c.y24.totalPat)}</td><td>${pct(c.y25.pas+c.y25.totalPat,c.y24.pas+c.y24.totalPat)}</td></tr>
+            </tbody></table></div>`;
+        } else if (currentTab === 'eri') {
+            container.innerHTML = `<div class="card-container"><table class="fin-table"><thead><tr><th>Concepto</th><th>2025</th><th>2024</th><th>Var. %</th></tr></thead><tbody>
+            <tr class="section-row"><td colspan="4">INGRESOS</td></tr>
+            <tr class="subtotal-row"><td>Ventas Totales</td><td>${fmt(c.y25.ing)}</td><td>${fmt(c.y24.ing)}</td><td>${pct(c.y25.ing,c.y24.ing)}</td></tr>
+            <tr class="section-row"><td colspan="4">EGRESOS</td></tr>
+            <tr class="subtotal-row"><td>Costos Totales</td><td>${fmt(c.y25.cos)}</td><td>${fmt(c.y24.cos)}</td><td>${pct(c.y25.cos,c.y24.cos)}</td></tr>
+            <tr class="subtotal-row"><td>Gastos Totales</td><td>${fmt(c.y25.gas)}</td><td>${fmt(c.y24.gas)}</td><td>${pct(c.y25.gas,c.y24.gas)}</td></tr>
+            <tr class="total-row"><td>UTILIDAD NETA</td><td>${fmt(c.y25.util)}</td><td>${fmt(c.y24.util)}</td><td>${pct(c.y25.util,c.y24.util)}</td></tr>
+            </tbody></table></div>`;
+        } else {
+            container.innerHTML = `<div class="card-container" style="padding: 40px; text-align:center">
+                <i class="ph ph-wrench" style="font-size: 32px; color: var(--text-muted);"></i>
+                <p style="margin-top:16px; color: var(--text-sub);">Módulo en desarrollo. Capture saldos para generar proyecciones de flujo.</p>
+            </div>`;
+        }
+    }
+
+    function renderIndicators() {
+        const c = calc();
+        const container = document.getElementById('indicators-container');
+        const list = [
+            { n: 'Razón Corriente', v: c.y25.pasC>0?(c.y25.actC/c.y25.pasC).toFixed(2):'0', d: 'Capacidad de pago CP.', i: '> 1.5' },
+            { n: 'Nivel Endeudamiento', v: c.y25.act>0?(c.y25.pas/c.y25.act*100).toFixed(1)+'%':'0%', d: 'Activos financiados por terceros.', i: '< 50%' },
+            { n: 'Margen Neto', v: c.y25.ing>0?(c.y25.util/c.y25.ing*100).toFixed(1)+'%':'0%', d: 'Utilidad por cada peso vendido.', i: '> 8%' }
+        ];
+        container.innerHTML = `<div class="kpi-grid">${list.map(x => `<div class="kpi-card"><div class="kpi-label">${x.n}</div><div class="kpi-val">${x.v}</div><div style="font-size:11px;color:var(--text-sub);margin-top:8px">${x.d}</div><div style="font-size:10px;font-weight:700;color:var(--primary);margin-top:4px">META: ${x.i}</div></div>`).join('')}</div>`;
+    }
+
+    function renderCharts() {
+        const c = calc();
+        const canvasBalance = document.getElementById('chartBalance');
+        const canvasERI = document.getElementById('chartERI');
+        
+        if (!canvasBalance || !canvasERI) return;
+
+        if (charts.balance) charts.balance.destroy();
+        if (charts.eri) charts.eri.destroy();
+        charts.balance = new Chart(canvasBalance, {
+            type: 'doughnut',
+            data: { labels: ['Act. Corriente', 'Act. No Corriente', 'Pasivos', 'Patrimonio'], datasets: [{ data: [c.y25.actC, c.y25.actNC, c.y25.pas, c.y25.pat], backgroundColor: ['#4338ca','#6366f1','#dc2626','#059669'], borderWidth: 0 }] },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
+        charts.eri = new Chart(canvasERI, {
+            type: 'bar',
+            data: { labels: ['Ingresos', 'Costos', 'Gastos', 'Utilidad'], datasets: [{ label:'2025', data: [c.y25.ing, -c.y25.cos, -c.y25.gas, c.y25.util], backgroundColor: '#4338ca', borderRadius: 8 }] },
+            options: { scales: { y: { grid: { display: false } } } }
+        });
+    }
+
+    function editCompany() { const n = prompt('Empresa:', state.config.company); if(n) state.config.company=n; const y = prompt('Año:', state.config.year); if(y) state.config.year=y; renderAll(); }
+    function exportData() { const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='finanzas_dimalcco.json'; a.click(); }
+
+    goPage('inicio');
+</script>
+</body>
+</html>

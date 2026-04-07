@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tesorería · DIMALCCO SAS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f1f5f9;--surface:#fff;--border:#e2e8f0;--border-soft:#f8fafc;
+  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;
+  --accent:#4338ca;--accent-soft:#eef2ff;
+  --income:#059669;--income-bg:#ecfdf5;
+  --expense:#dc2626;--expense-bg:#fef2f2;
+  --warn:#d97706;--warn-bg:#fffbeb;
+  --header:#0f172a;--font:'Sora',sans-serif;--mono:'DM Mono',monospace;
+  --r:10px;--r-sm:6px
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+
+/* ── HEADER ── */
+.hdr{background:var(--header);color:#f8fafc;padding:20px 28px 22px}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+.hdr-eyebrow{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#64748b;margin-bottom:4px}
+.hdr-title{font-size:20px;font-weight:600;color:#f8fafc}
+.hdr-date{font-family:var(--mono);font-size:11px;color:#64748b;text-align:right;line-height:1.8}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1e293b;border-radius:8px;overflow:hidden}
+.metric{background:var(--header);padding:14px 16px}
+.metric-lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#64748b;margin-bottom:6px}
+.metric-val{font-family:var(--mono);font-size:17px;font-weight:500;color:#f8fafc}
+.metric-val.g{color:#34d399}.metric-val.r{color:#f87171}.metric-val.y{color:#fbbf24}
+.metric-sub{font-size:10px;color:#475569;margin-top:3px}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:272px 1fr;min-height:calc(100vh - 175px)}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:18px 14px;overflow-y:auto}
+.sec-title{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px;padding:0 2px}
+.acct-card{border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px;cursor:default;transition:box-shadow .15s}
+.acct-card:hover{box-shadow:0 2px 6px rgba(0,0,0,.07)}
+.acct-badge{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);margin-bottom:8px}
+.dot{width:6px;height:6px;border-radius:50%}
+.dot.banco{background:var(--accent)}.dot.caja{background:var(--warn)}
+.acct-name{font-weight:500;font-size:13px;color:var(--text);margin-bottom:8px}
+.acct-bal{font-family:var(--mono);font-size:15px;font-weight:500}
+.acct-bal.neg{color:var(--expense)}
+.acct-delta{font-size:10px;color:var(--text-3);margin-top:3px;font-family:var(--mono)}
+.acct-delta.pos{color:var(--income)}.acct-delta.neg{color:var(--expense)}
+.btn-add-acct{width:100%;padding:9px;border:1px dashed var(--border);border-radius:var(--r);background:none;font-family:var(--font);font-size:11px;color:var(--text-3);cursor:pointer;transition:all .15s;margin-top:4px}
+.btn-add-acct:hover{border-color:var(--accent);color:var(--accent)}
+.alert-box{background:var(--warn-bg);border:1px solid #fde68a;border-radius:var(--r);padding:11px 13px;margin-top:18px}
+.alert-title{font-size:10px;font-weight:600;color:var(--warn);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.alert-item{font-size:11px;color:#92400e;padding:4px 0;border-bottom:1px solid #fde68a;line-height:1.5}
+.alert-item:last-child{border-bottom:none}
+
+/* ── MAIN ── */
+.main{padding:20px 22px}
+.tab-bar{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px;margin-bottom:18px;width:fit-content}
+.tab{padding:7px 18px;border-radius:5px;font-size:12px;font-weight:500;color:var(--text-2);cursor:pointer;border:none;background:none;font-family:var(--font);transition:all .15s}
+.tab.active{background:var(--accent);color:#fff;box-shadow:0 1px 4px rgba(67,56,202,.3)}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.flbl{font-size:11px;color:var(--text-3);white-space:nowrap}
+select,input[type=date],input[type=text],input[type=number]{font-family:var(--font);font-size:12px;color:var(--text);background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 9px;outline:none;transition:border-color .15s}
+select:focus,input:focus{border-color:var(--accent)}
+.spacer{flex:1}
+.btn-primary{display:flex;align-items:center;gap:5px;padding:8px 15px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;transition:background .15s,transform .1s;white-space:nowrap}
+.btn-primary:hover{background:#3730a3}.btn-primary:active{transform:scale(.98)}
+.btn-secondary{padding:7px 14px;background:none;border:1px solid var(--border);border-radius:var(--r-sm);font-family:var(--font);font-size:12px;cursor:pointer;color:var(--text-2);transition:all .15s}
+.btn-secondary:hover{border-color:var(--text-3);color:var(--text)}
+
+/* ── TABLE ── */
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:#f8fafc;border-bottom:1px solid var(--border)}
+th{padding:9px 13px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);white-space:nowrap}
+th.num{text-align:right}
+td{padding:10px 13px;font-size:12px;color:var(--text);border-bottom:1px solid var(--border-soft);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+td.num{text-align:right;font-family:var(--mono);font-size:11px}
+.pill{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.pill.ingreso{background:var(--income-bg);color:var(--income)}
+.pill.egreso{background:var(--expense-bg);color:var(--expense)}
+.c-in{color:var(--income)}.c-eg{color:var(--expense)}
+.bal-run{font-family:var(--mono);font-size:11px;font-weight:500}
+.tag{font-size:9px;color:var(--text-3);background:var(--bg);padding:1px 5px;border-radius:3px;margin-left:4px}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-3);font-size:13px}
+.btn-del{opacity:0;padding:3px 7px;border:1px solid #fecaca;border-radius:4px;background:none;color:var(--expense);font-size:10px;cursor:pointer;transition:all .15s}
+tr:hover .btn-del{opacity:1}.btn-del:hover{background:var(--expense-bg)}
+.pagination{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-top:1px solid var(--border);background:#f8fafc}
+.pg-info{font-size:11px;color:var(--text-3)}
+.pg-btns{display:flex;gap:3px}
+.pg-btn{padding:4px 9px;border:1px solid var(--border);border-radius:4px;background:#fff;font-family:var(--font);font-size:10px;cursor:pointer;color:var(--text-2);transition:all .15s}
+.pg-btn:hover{border-color:var(--accent);color:var(--accent)}.pg-btn:disabled{opacity:.35;cursor:default}
+.summary-strip{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:10px}
+.sum-item{padding:11px 14px;border-right:1px solid var(--border)}
+.sum-item:last-child{border-right:none}
+.sum-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);margin-bottom:4px}
+.sum-val{font-family:var(--mono);font-size:13px;font-weight:500}
+
+/* ── PROJECTION ── */
+#tab-proyeccion{display:none}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:18px}
+.chart-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.chart-sub{font-size:11px;color:var(--text-3);margin-bottom:14px}
+.legend{display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-2)}
+.leg-line{width:24px;height:2px;border-radius:2px}
+svg.chart{width:100%;height:200px;overflow:visible}
+.proj-tbl{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.btn-proj{padding:7px 14px;border:1px dashed var(--border);border-radius:var(--r-sm);background:none;font-family:var(--font);font-size:12px;color:var(--text-3);cursor:pointer;transition:all .15s}
+.btn-proj:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── MODAL ── */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--surface);border-radius:14px;padding:26px;width:480px;max-width:95vw;box-shadow:0 20px 40px rgba(0,0,0,.2);animation:min .2s ease}
+@keyframes min{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.modal-title{font-size:15px;font-weight:600;color:var(--text)}
+.modal-close{width:28px;height:28px;border:none;background:var(--bg);border-radius:5px;cursor:pointer;font-size:15px;color:var(--text-2);display:flex;align-items:center;justify-content:center;transition:background .15s}
+.modal-close:hover{background:var(--border)}
+.tipo-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.tipo-btn{padding:10px;border-radius:8px;border:2px solid var(--border);background:none;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;color:var(--text-2)}
+.tipo-btn.ingreso.active{border-color:var(--income);background:var(--income-bg);color:var(--income)}
+.tipo-btn.egreso.active{border-color:var(--expense);background:var(--expense-bg);color:var(--expense)}
+.form-row{margin-bottom:14px}
+.form-lbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-2);margin-bottom:5px}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:9px 11px;font-family:var(--font);font-size:13px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);outline:none;transition:border-color .15s}
+.form-row input:focus,.form-row select:focus{border-color:var(--accent);background:#fff}
+.form-g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-ftr{display:flex;justify-content:flex-end;gap:8px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-eyebrow">DIMALCCO SAS · Módulo Finanzas</div>
+      <div class="hdr-title">Tesorería &amp; Flujo de Caja</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:16px">
+      <button class="btn-primary" onclick="save(); alert('Datos de Tesorería guardados correctamente')"><i class="ph ph-floppy-disk"></i> Guardar Todo</button>
+      <div class="hdr-date" id="hdr-date"></div>
+    </div>
+  </div>
+  <div class="metrics" id="metrics"></div>
+</header>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sec-title">Cuentas activas</div>
+    <div id="acct-list"></div>
+    <button class="btn-add-acct" onclick="addCuenta()">+ Nueva cuenta</button>
+    <div id="alerts-sec"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="tab-bar">
+      <button class="tab active" onclick="setTab('mov',this)">Movimientos</button>
+      <button class="tab" onclick="setTab('proj',this)">Proyección 90 días</button>
+    </div>
+
+    <!-- TAB MOVIMIENTOS -->
+    <div id="tab-mov">
+      <div class="toolbar">
+        <span class="flbl">Cuenta</span>
+        <select id="f-cuenta" onchange="applyFilters()"><option value="all">Todas</option></select>
+        <span class="flbl">Tipo</span>
+        <select id="f-tipo" onchange="applyFilters()">
+          <option value="all">Todos</option>
+          <option value="ingreso">Ingresos</option>
+          <option value="egreso">Egresos</option>
+        </select>
+        <span class="flbl">Desde</span>
+        <input type="date" id="f-desde" onchange="applyFilters()">
+        <span class="flbl">Hasta</span>
+        <input type="date" id="f-hasta" onchange="applyFilters()">
+        <button class="btn-secondary" onclick="clearF()" style="font-size:11px;padding:5px 9px">Limpiar</button>
+        <div class="spacer"></div>
+        <button class="btn-primary" onclick="openModal()"><span>+</span> Nuevo movimiento</button>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Descripción</th><th>Categoría</th>
+              <th>Cuenta</th><th>Tipo</th>
+              <th class="num">Valor</th><th class="num">Saldo acum.</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="mov-tbody"></tbody>
+        </table>
+        <div class="pagination" id="pag"></div>
+      </div>
+      <div class="summary-strip" id="sum-strip"></div>
+    </div>
+
+    <!-- TAB PROYECCIÓN -->
+    <div id="tab-proyeccion">
+      <div class="chart-card">
+        <div class="chart-title">Proyección de saldo consolidado</div>
+        <div class="chart-sub">Próximos 90 días · basado en movimientos programados y CxC pendiente</div>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-line" style="background:#4338ca"></div>Saldo proyectado</div>
+          <div class="leg-item"><div class="leg-line" style="background:#059669"></div>Ingreso esperado</div>
+          <div class="leg-item"><div class="leg-line" style="background:#dc2626"></div>Egreso proyectado</div>
+          <div class="leg-item"><div class="leg-line" style="background:#dc2626;border-top:2px dashed #dc2626;height:0"></div>Alerta mínimo</div>
+        </div>
+        <svg id="proj-chart" class="chart" viewBox="0 0 780 210"></svg>
+      </div>
+
+      <div class="toolbar" style="margin-top:4px">
+        <div class="sec-title" style="margin:0">Movimientos proyectados</div>
+        <div class="spacer"></div>
+        <button class="btn-proj" onclick="openModalProj()">+ Agregar proyección</button>
+      </div>
+
+      <div class="proj-tbl">
+        <table>
+          <thead>
+            <tr><th>Fecha esperada</th><th>Descripción</th><th>Fuente</th><th>Tipo</th><th class="num">Valor</th><th></th></tr>
+          </thead>
+          <tbody id="proj-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: Movimiento -->
+<div class="modal-backdrop" id="modal-bk">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Nuevo movimiento</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="tipo-toggle">
+      <button class="tipo-btn ingreso active" id="btn-in" onclick="setTipo('ingreso')">↑ Ingreso</button>
+      <button class="tipo-btn egreso" id="btn-eg" onclick="setTipo('egreso')">↓ Egreso</button>
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">Descripción *</label>
+      <input type="text" id="f-desc" placeholder="Ej. Cobro factura 052 · Cliente Rodríguez">
+    </div>
+    <div class="form-g2">
+      <div class="form-row">
+        <label class="form-lbl">Valor COP *</label>
+        <input type="number" id="f-val" placeholder="0" min="0" step="1000">
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Fecha *</label>
+        <input type="date" id="f-fecha">
+      </div>
+    </div>
+    <div class="form-g2">
+      <div class="form-row">
+        <label class="form-lbl">Cuenta *</label>
+        <select id="f-cuenta-modal"></select>
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Categoría</label>
+        <select id="f-cat"></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">Referencia / No. documento</label>
+      <input type="text" id="f-ref" placeholder="Ej. FC-052, ANT-026">
+    </div>
+    <div class="modal-ftr">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveMov()">Guardar movimiento</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Proyección -->
+<div class="modal-backdrop" id="modal-proj-bk">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">Agregar movimiento proyectado</div>
+      <button class="modal-close" onclick="closeModalProj()">✕</button>
+    </div>
+    <div class="tipo-toggle">
+      <button class="tipo-btn ingreso active" id="pbtn-in" onclick="setProjTipo('ingreso')">↑ Ingreso esperado</button>
+      <button class="tipo-btn egreso" id="pbtn-eg" onclick="setProjTipo('egreso')">↓ Gasto proyectado</button>
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">Descripción *</label>
+      <input type="text" id="pf-desc" placeholder="">
+    </div>
+    <div class="form-g2">
+      <div class="form-row">
+        <label class="form-lbl">Valor COP *</label>
+        <input type="number" id="pf-val" placeholder="0" min="0">
+      </div>
+      <div class="form-row">
+        <label class="form-lbl">Fecha esperada *</label>
+        <input type="date" id="pf-fecha">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">Fuente</label>
+      <select id="pf-fuente">
+        <option value="cxc">CxC — Cobro pendiente</option>
+        <option value="recurrente">Recurrente / Fijo</option>
+        <option value="manual">Estimado manual</option>
+      </select>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn-secondary" onclick="closeModalProj()">Cancelar</button>
+      <button class="btn-primary" onclick="saveProj()">Guardar proyección</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DB = 'dim_tesoreria_v1';
+const PG = 10;
+const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const CATS = {
+  ingreso: ['Ventas','Anticipos clientes','Cobros cartera','Préstamos recibidos','Otros ingresos'],
+  egreso:  ['Proveedores / Materiales','Nómina','Parafiscales','Arriendo','Servicios públicos',
+            'Seguros','Transporte','Mantenimiento','Impuestos','Préstamos pagados','Gastos administrativos','Otros egresos']
+};
+
+/* ── UTILS ── */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+const todayISO = () => new Date().toISOString().split('T')[0];
+const ago = n => { const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().split('T')[0]; };
+const fwd = n => { const d=new Date(); d.setDate(d.getDate()+n); return d.toISOString().split('T')[0]; };
+const fmtDate = iso => { if(!iso) return ''; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; };
+const fmt = v => '$ '+Math.abs(v).toLocaleString('es-CO');
+
+/* ── DEFAULT STATE ── */
+function defaultState() {
+  return {
+    cuentas: [
+      {id:'c1',nombre:'BBVA Principal',tipo:'banco',saldo_inicial:8500000,activa:true},
+      {id:'c2',nombre:'Caja Menor',tipo:'caja',saldo_inicial:500000,activa:true}
+    ],
+    movimientos: [
+      {id:'m3',fecha:ago(16),desc:'Cobro factura 045 · Cliente García Hnos.',cat:'Cobros cartera',tipo:'ingreso',valor:6200000,cuenta:'c1',ref:'FC-045'},
+      {id:'m6',fecha:ago(12),desc:'Venta proyecto closets · Apto. Los Cedros (etapa 1)',cat:'Ventas',tipo:'ingreso',valor:9800000,cuenta:'c1',ref:'VTA-031'},
+      {id:'m11',fecha:ago(5),desc:'Cobro factura 048 · Constructora Andina',cat:'Cobros cartera',tipo:'ingreso',valor:12500000,cuenta:'c1',ref:'FC-048'},
+      {id:'m8',fecha:ago(10),desc:'Herrajes y accesorios · Ferretería Central',cat:'Proveedores / Materiales',tipo:'egreso',valor:1240000,cuenta:'c3',ref:'PV-119'},
+      {id:'m12',fecha:ago(4),desc:'Transporte y fletes entrega proyecto García',cat:'Transporte',tipo:'egreso',valor:320000,cuenta:'c3',ref:''},
+      {id:'m1',fecha:ago(19),desc:'Anticipo proyecto cocinas integrales · Familia Moreno',cat:'Anticipos clientes',tipo:'ingreso',valor:4500000,cuenta:'c2',ref:'ANT-024'},
+      {id:'m2',fecha:ago(18),desc:'Proveedores Maderas del Norte · facturas 201-204',cat:'Proveedores / Materiales',tipo:'egreso',valor:2800000,cuenta:'c2',ref:'PV-118'},
+      {id:'m14',fecha:ago(1),desc:'Venta mueble baño · cliente particular',cat:'Ventas',tipo:'ingreso',valor:1650000,cuenta:'c2',ref:'VTA-032'}
+    ],
+    proyecciones: [
+      {id:'p1',fecha:fwd(3),desc:'Cobro factura 049 · Cliente Martínez',tipo:'ingreso',valor:4200000,fuente:'cxc'},
+      {id:'p2',fecha:fwd(6),desc:'Nómina 1ª quincena (estimado)',tipo:'egreso',valor:5460000,fuente:'recurrente'},
+      {id:'p3',fecha:fwd(8),desc:'Pedido maderas laminadas · proyecto escritorios',tipo:'egreso',valor:3100000,fuente:'manual'},
+      {id:'p4',fecha:fwd(11),desc:'Saldo factura proyecto Moreno (60%)',tipo:'ingreso',valor:6750000,fuente:'cxc'},
+      {id:'p5',fecha:fwd(15),desc:'Arriendo taller',tipo:'egreso',valor:2200000,fuente:'recurrente'},
+      {id:'p6',fecha:fwd(16),desc:'Nómina 2ª quincena (estimado)',tipo:'egreso',valor:5460000,fuente:'recurrente'},
+      {id:'p7',fecha:fwd(21),desc:'Cobro factura 051 · Constructora Andina (saldo 40%)',tipo:'ingreso',valor:15000000,fuente:'cxc'},
+      {id:'p8',fecha:fwd(22),desc:'Servicios públicos',tipo:'egreso',valor:480000,fuente:'recurrente'},
+      {id:'p9',fecha:fwd(30),desc:'Nómina 1ª quincena mes siguiente',tipo:'egreso',valor:5460000,fuente:'recurrente'},
+      {id:'p10',fecha:fwd(35),desc:'Arriendo taller mes siguiente',tipo:'egreso',valor:2200000,fuente:'recurrente'}
+    ],
+    config: {saldo_minimo: 3000000},
+    pagina: 1
+  };
+}
+
+/* ── STATE ── */
+let S, filtered=[];
+
+function load() {
+  try { const s=localStorage.getItem(DB); if(s) return JSON.parse(s); } catch(e){}
+  return defaultState();
+}
+function save() { localStorage.setItem(DB, JSON.stringify(S)); }
+
+/* ── BALANCES ── */
+function balCuenta(cid) {
+  const c = S.cuentas.find(x=>x.id===cid);
+  if (!c) return 0;
+  let b = c.saldo_inicial;
+  S.movimientos.forEach(m => { if(m.cuenta!==cid) return; b += m.tipo==='ingreso' ? m.valor : -m.valor; });
+  return b;
+}
+function totalBal() {
+  return S.cuentas.filter(c=>c.activa).reduce((s,c)=>s+balCuenta(c.id),0);
+}
+function monthStats() {
+  const now=new Date(), pref=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  let ing=0, eg=0;
+  S.movimientos.forEach(m=>{ if(!m.fecha.startsWith(pref)) return; ing+=m.tipo==='ingreso'?m.valor:0; eg+=m.tipo==='egreso'?m.valor:0; });
+  return {ing,eg};
+}
+
+/* Running balances map: actual balance at the moment of each movement */
+function buildBalMap() {
+  const acctBal={};
+  S.cuentas.forEach(c=>{ acctBal[c.id]=c.saldo_inicial; });
+  const bm={};
+  [...S.movimientos].sort((a,b)=>a.fecha.localeCompare(b.fecha)||a.id.localeCompare(b.id)).forEach(m=>{
+    acctBal[m.cuenta]=(acctBal[m.cuenta]||0)+(m.tipo==='ingreso'?m.valor:-m.valor);
+    bm[m.id]={acct:acctBal[m.cuenta], total:Object.values(acctBal).reduce((s,v)=>s+v,0)};
+  });
+  return bm;
+}
+
+function getAlerts() {
+  const al=[]; const tot=totalBal();
+  if(tot<S.config.saldo_minimo) al.push(`Saldo total (${fmt(tot)}) por debajo del mínimo operativo (${fmt(S.config.saldo_minimo)})`);
+  S.cuentas.filter(c=>c.activa).forEach(c=>{ const b=balCuenta(c.id); if(b<0) al.push(`${c.nombre}: saldo negativo ${fmt(b)}`); });
+  return al;
+}
+
+/* ── RENDER HEADER ── */
+function renderHeader() {
+  const now=new Date();
+  const opts={weekday:'long',year:'numeric',month:'long',day:'numeric'};
+  document.getElementById('hdr-date').innerHTML=
+    `<div>${now.toLocaleDateString('es-CO',opts)}</div><div style="font-size:10px;margin-top:3px">NIT 900.XXX.XXX-X</div>`;
+  const tot=totalBal(), {ing,eg}=monthStats(), al=getAlerts().length;
+  const cls=tot<S.config.saldo_minimo?'y':'';
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric">
+      <div class="metric-lbl">Saldo consolidado</div>
+      <div class="metric-val ${cls}">${fmt(tot)}</div>
+      <div class="metric-sub">${S.cuentas.filter(c=>c.activa).length} cuentas activas</div>
+    </div>
+    <div class="metric">
+      <div class="metric-lbl">Ingresos del mes</div>
+      <div class="metric-val g">${fmt(ing)}</div>
+      <div class="metric-sub">Acumulado mes actual</div>
+    </div>
+    <div class="metric">
+      <div class="metric-lbl">Egresos del mes</div>
+      <div class="metric-val r">${fmt(eg)}</div>
+      <div class="metric-sub">Acumulado mes actual</div>
+    </div>
+    <div class="metric">
+      <div class="metric-lbl">Resultado neto mes</div>
+      <div class="metric-val ${ing-eg>=0?'g':'r'}">${fmt(ing-eg)}</div>
+      <div class="metric-sub">${al?`⚠ ${al} alerta(s)`:'Sin alertas'}</div>
+    </div>`;
+}
+
+/* ── SIDEBAR ── */
+function renderSidebar() {
+  // populate cuenta filters + form
+  const fSel=document.getElementById('f-cuenta');
+  fSel.innerHTML='<option value="all">Todas</option>'+S.cuentas.filter(c=>c.activa).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+  document.getElementById('f-cuenta-modal').innerHTML=S.cuentas.filter(c=>c.activa).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');
+
+  const now=new Date(), pref=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('acct-list').innerHTML=S.cuentas.filter(c=>c.activa).map(c=>{
+    const bal=balCuenta(c.id);
+    let delta=0;
+    S.movimientos.forEach(m=>{ if(m.cuenta!==c.id||!m.fecha.startsWith(pref)) return; delta+=m.tipo==='ingreso'?m.valor:-m.valor; });
+    return `<div class="acct-card">
+      <div class="acct-badge"><span class="dot ${c.tipo}"></span>${c.tipo==='banco'?'Banco':'Caja'}</div>
+      <div class="acct-name">${c.nombre}</div>
+      <div class="acct-bal ${bal<0?'neg':''}">${fmt(bal)}</div>
+      <div class="acct-delta ${delta>=0?'pos':'neg'}">${delta>=0?'↑':'↓'} ${fmt(Math.abs(delta))} este mes</div>
+    </div>`;
+  }).join('');
+
+  const als=getAlerts();
+  document.getElementById('alerts-sec').innerHTML=als.length===0?'':
+    `<div class="alert-box"><div class="alert-title">⚠ Alertas de liquidez</div>${als.map(a=>`<div class="alert-item">${a}</div>`).join('')}</div>`;
+}
+
+/* ── MOVEMENTS TABLE ── */
+function applyFilters() {
+  const cuenta=document.getElementById('f-cuenta').value;
+  const tipo=document.getElementById('f-tipo').value;
+  const desde=document.getElementById('f-desde').value;
+  const hasta=document.getElementById('f-hasta').value;
+  filtered=[...S.movimientos]
+    .filter(m=>{
+      if(cuenta!=='all'&&m.cuenta!==cuenta) return false;
+      if(tipo!=='all'&&m.tipo!==tipo) return false;
+      if(desde&&m.fecha<desde) return false;
+      if(hasta&&m.fecha>hasta) return false;
+      return true;
+    })
+    .sort((a,b)=>b.fecha.localeCompare(a.fecha)||b.id.localeCompare(a.id));
+  S.pagina=1;
+  renderTable();
+}
+
+function clearF() {
+  ['f-cuenta','f-tipo'].forEach(id=>document.getElementById(id).value='all');
+  ['f-desde','f-hasta'].forEach(id=>document.getElementById(id).value='');
+  applyFilters();
+}
+
+function renderTable() {
+  const tbody=document.getElementById('mov-tbody');
+  const totalPg=Math.ceil(filtered.length/PG)||1;
+  const pg=Math.min(S.pagina,totalPg);
+  const rows=filtered.slice((pg-1)*PG, pg*PG);
+  const cuenta=document.getElementById('f-cuenta').value;
+  const bm=buildBalMap();
+
+  if(!filtered.length){
+    tbody.innerHTML=`<tr><td colspan="8" class="empty-state">No hay movimientos que coincidan con el filtro</td></tr>`;
+    document.getElementById('pag').innerHTML='';
+    renderSummary([]);
+    return;
+  }
+
+  tbody.innerHTML=rows.map(m=>{
+    const c=S.cuentas.find(x=>x.id===m.cuenta);
+    const balObj=bm[m.id];
+    const bal=cuenta==='all'?(balObj?.total??0):(balObj?.acct??0);
+    return `<tr>
+      <td style="white-space:nowrap;color:var(--text-2);font-family:var(--mono);font-size:11px">${fmtDate(m.fecha)}</td>
+      <td>
+        <div style="font-weight:500;font-size:12px;color:var(--text)">${m.desc}</div>
+        ${m.ref?`<span class="tag">${m.ref}</span>`:''}
+      </td>
+      <td style="color:var(--text-3);font-size:11px">${m.cat}</td>
+      <td style="color:var(--text-3);font-size:11px;white-space:nowrap">${c?c.nombre:'—'}</td>
+      <td><span class="pill ${m.tipo}">${m.tipo==='ingreso'?'↑ Ingreso':'↓ Egreso'}</span></td>
+      <td class="num ${m.tipo==='ingreso'?'c-in':'c-eg'}" style="font-weight:500">
+        ${m.tipo==='egreso'?'− ':''}${fmt(m.valor)}
+      </td>
+      <td class="num bal-run" style="color:${bal<0?'var(--expense)':'var(--text)'}">${fmt(bal)}</td>
+      <td><button class="btn-del" onclick="delMov('${m.id}')">Eliminar</button></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('pag').innerHTML=`
+    <span class="pg-info">${filtered.length} movimiento(s) · pág. ${pg} de ${totalPg}</span>
+    <div class="pg-btns">
+      <button class="pg-btn" onclick="goPage(1)" ${pg===1?'disabled':''}>«</button>
+      <button class="pg-btn" onclick="goPage(${pg-1})" ${pg===1?'disabled':''}>‹</button>
+      <button class="pg-btn" onclick="goPage(${pg+1})" ${pg===totalPg?'disabled':''}>›</button>
+      <button class="pg-btn" onclick="goPage(${totalPg})" ${pg===totalPg?'disabled':''}>»</button>
+    </div>`;
+  renderSummary(filtered);
+}
+
+function renderSummary(movs) {
+  let ing=0,eg=0; movs.forEach(m=>{ if(m.tipo==='ingreso') ing+=m.valor; else eg+=m.valor; });
+  document.getElementById('sum-strip').innerHTML=`
+    <div class="sum-item"><div class="sum-lbl">Ingresos</div><div class="sum-val" style="color:var(--income)">${fmt(ing)}</div></div>
+    <div class="sum-item"><div class="sum-lbl">Egresos</div><div class="sum-val" style="color:var(--expense)">${fmt(eg)}</div></div>
+    <div class="sum-item"><div class="sum-lbl">Neto filtro</div><div class="sum-val" style="color:${ing-eg>=0?'var(--income)':'var(--expense)'}">${fmt(ing-eg)}</div></div>
+    <div class="sum-item"><div class="sum-lbl">Registros</div><div class="sum-val" style="color:var(--text-2)">${movs.length}</div></div>`;
+}
+
+function goPage(p){ S.pagina=p; renderTable(); }
+function delMov(id){ if(!confirm('¿Eliminar este movimiento?')) return; S.movimientos=S.movimientos.filter(m=>m.id!==id); save(); renderAll(); }
+
+/* ── PROJECTION ── */
+function renderProjection() {
+  const tbody=document.getElementById('proj-tbody');
+  const sorted=[...S.proyecciones].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  const fuenteLbl={cxc:'CxC',recurrente:'Recurrente',manual:'Estimado'};
+  const fuenteClr={cxc:'var(--accent)',recurrente:'var(--text-3)',manual:'var(--warn)'};
+  if(!sorted.length){
+    tbody.innerHTML=`<tr><td colspan="6" class="empty-state">No hay movimientos proyectados</td></tr>`;
+  } else {
+    tbody.innerHTML=sorted.map(p=>`<tr>
+      <td style="white-space:nowrap;font-family:var(--mono);font-size:11px;color:var(--text-2)">${fmtDate(p.fecha)}</td>
+      <td style="font-size:12px">${p.desc}</td>
+      <td><span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${fuenteClr[p.fuente]}">${fuenteLbl[p.fuente]||p.fuente}</span></td>
+      <td><span class="pill ${p.tipo}">${p.tipo==='ingreso'?'↑':'↓'} ${p.tipo}</span></td>
+      <td class="num ${p.tipo==='ingreso'?'c-in':'c-eg'}">${p.tipo==='egreso'?'− ':''}${fmt(p.valor)}</td>
+      <td><button class="btn-del" onclick="delProj('${p.id}')">Eliminar</button></td>
+    </tr>`).join('');
+  }
+  drawChart();
+}
+
+function delProj(id){ S.proyecciones=S.proyecciones.filter(p=>p.id!==id); save(); renderProjection(); }
+
+function drawChart() {
+  const svg=document.getElementById('proj-chart');
+  const W=780,H=210,PAD={t:16,r:20,b:38,l:70};
+  const cW=W-PAD.l-PAD.r, cH=H-PAD.t-PAD.b;
+  const today=new Date();
+  const startBal=totalBal();
+  const projs=[...S.proyecciones].sort((a,b)=>a.fecha.localeCompare(b.fecha));
+
+  // Build daily balance array
+  const pts=[];
+  let bal=startBal;
+  for(let d=0;d<=90;d++){
+    const dt=new Date(today); dt.setDate(today.getDate()+d);
+    const iso=dt.toISOString().split('T')[0];
+    projs.forEach(p=>{ if(p.fecha===iso) bal+=p.tipo==='ingreso'?p.valor:-p.valor; });
+    pts.push({d,iso,bal});
+  }
+
+  const vals=pts.map(p=>p.bal);
+  const minV=Math.min(...vals,S.config.saldo_minimo)*0.88;
+  const maxV=Math.max(...vals)*1.1;
+  const rng=maxV-minV||1;
+  const sx=d=>PAD.l+(d/90)*cW;
+  const sy=v=>PAD.t+cH-((v-minV)/rng)*cH;
+
+  const polyPts=pts.map(p=>`${sx(p.d)},${sy(p.bal)}`).join(' ');
+  const areaPts=`${sx(0)},${sy(minV)} ${polyPts} ${sx(90)},${sy(minV)}`;
+
+  // Y ticks
+  let yH='', steps=5;
+  for(let i=0;i<=steps;i++){
+    const v=minV+(rng*i/steps), y=sy(v);
+    const lbl=v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v.toFixed(0);
+    yH+=`<line x1="${PAD.l}" y1="${y}" x2="${W-PAD.r}" y2="${y}" stroke="#e2e8f0" stroke-width="0.5"/>
+      <text x="${PAD.l-6}" y="${y}" text-anchor="end" dominant-baseline="central" font-size="9" fill="#94a3b8" font-family="DM Mono,monospace">${lbl}</text>`;
+  }
+
+  // X ticks (every 15 days)
+  let xH='';
+  for(let d=0;d<=90;d+=15){
+    const x=sx(d), dt=new Date(today); dt.setDate(today.getDate()+d);
+    xH+=`<line x1="${x}" y1="${PAD.t}" x2="${x}" y2="${PAD.t+cH}" stroke="#f1f5f9" stroke-width="0.5"/>
+      <text x="${x}" y="${PAD.t+cH+14}" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="DM Mono,monospace">${dt.getDate()} ${MONTHS[dt.getMonth()]}</text>`;
+  }
+
+  // Projection event dots
+  let dots='';
+  projs.forEach(p=>{
+    const pDate=new Date(p.fecha), diff=Math.round((pDate-today)/(864e5));
+    if(diff<0||diff>90) return;
+    const pt=pts[Math.min(diff,90)];
+    if(!pt) return;
+    dots+=`<circle cx="${sx(diff)}" cy="${sy(pt.bal)}" r="4" fill="${p.tipo==='ingreso'?'#059669':'#dc2626'}" opacity=".85"/>`;
+  });
+
+  const minY=sy(S.config.saldo_minimo);
+
+  svg.innerHTML=`
+    <defs>
+      <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#4338ca" stop-opacity=".18"/>
+        <stop offset="100%" stop-color="#4338ca" stop-opacity=".02"/>
+      </linearGradient>
+    </defs>
+    ${yH}${xH}
+    <polygon points="${areaPts}" fill="url(#cg)"/>
+    <line x1="${PAD.l}" y1="${minY}" x2="${W-PAD.r}" y2="${minY}" stroke="#dc2626" stroke-width="1" stroke-dasharray="5 3"/>
+    <text x="${W-PAD.r+3}" y="${minY}" dominant-baseline="central" font-size="8" fill="#dc2626" font-family="DM Mono,monospace">Mín</text>
+    <polyline points="${polyPts}" fill="none" stroke="#4338ca" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+    <line x1="${PAD.l}" y1="${PAD.t}" x2="${PAD.l}" y2="${PAD.t+cH}" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="3 2" opacity=".6"/>
+    <text x="${PAD.l+5}" y="${PAD.t+8}" font-size="8" fill="#1e293b" font-family="DM Mono,monospace" opacity=".7">Hoy</text>
+    <line x1="${PAD.l}" y1="${PAD.t}" x2="${PAD.l}" y2="${PAD.t+cH}" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="${PAD.l}" y1="${PAD.t+cH}" x2="${W-PAD.r}" y2="${PAD.t+cH}" stroke="#e2e8f0" stroke-width="1"/>`;
+}
+
+/* ── MODAL MOVIMIENTO ── */
+let mTipo='ingreso', pTipo='ingreso';
+
+function openModal() {
+  mTipo='ingreso';
+  document.getElementById('btn-in').classList.add('active');
+  document.getElementById('btn-eg').classList.remove('active');
+  document.getElementById('f-fecha').value=todayISO();
+  ['f-desc','f-val','f-ref'].forEach(id=>document.getElementById(id).value='');
+  updateCats();
+  document.getElementById('modal-bk').classList.add('open');
+  setTimeout(()=>document.getElementById('f-desc').focus(),100);
+}
+function closeModal(){ document.getElementById('modal-bk').classList.remove('open'); }
+function setTipo(t){ mTipo=t; document.getElementById('btn-in').classList.toggle('active',t==='ingreso'); document.getElementById('btn-eg').classList.toggle('active',t==='egreso'); updateCats(); }
+function updateCats(){ document.getElementById('f-cat').innerHTML=CATS[mTipo].map(c=>`<option>${c}</option>`).join(''); }
+
+function saveMov() {
+  const desc=document.getElementById('f-desc').value.trim();
+  const val=parseFloat(document.getElementById('f-val').value);
+  const fecha=document.getElementById('f-fecha').value;
+  const cuenta=document.getElementById('f-cuenta-modal').value;
+  if(!desc||!val||!fecha||!cuenta){ alert('Completa los campos obligatorios.'); return; }
+  S.movimientos.push({id:uid(),fecha,desc,cat:document.getElementById('f-cat').value,tipo:mTipo,valor:Math.abs(val),cuenta,ref:document.getElementById('f-ref').value.trim()});
+  save(); closeModal(); renderAll();
+}
+
+/* ── MODAL PROYECCIÓN ── */
+function openModalProj() {
+  pTipo='ingreso';
+  document.getElementById('pbtn-in').classList.add('active');
+  document.getElementById('pbtn-eg').classList.remove('active');
+  ['pf-desc','pf-val'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pf-fecha').value=fwd(7);
+  document.getElementById('modal-proj-bk').classList.add('open');
+}
+function closeModalProj(){ document.getElementById('modal-proj-bk').classList.remove('open'); }
+function setProjTipo(t){ pTipo=t; document.getElementById('pbtn-in').classList.toggle('active',t==='ingreso'); document.getElementById('pbtn-eg').classList.toggle('active',t==='egreso'); }
+function saveProj() {
+  const desc=document.getElementById('pf-desc').value.trim();
+  const val=parseFloat(document.getElementById('pf-val').value);
+  const fecha=document.getElementById('pf-fecha').value;
+  if(!desc||!val||!fecha){ alert('Completa todos los campos.'); return; }
+  S.proyecciones.push({id:uid(),fecha,desc,tipo:pTipo,valor:Math.abs(val),fuente:document.getElementById('pf-fuente').value});
+  save(); closeModalProj(); renderProjection();
+}
+
+/* ── TABS ── */
+function setTab(tab,btn) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const isMov=tab==='mov';
+  document.getElementById('tab-mov').style.display=isMov?'block':'none';
+  document.getElementById('tab-proyeccion').style.display=isMov?'none':'block';
+  if(!isMov) renderProjection();
+}
+
+/* ── NUEVA CUENTA ── */
+function addCuenta() {
+  const nombre=prompt('Nombre de la cuenta:');
+  if(!nombre) return;
+  const tipo=confirm('¿Es cuenta bancaria?\n(Cancelar = Caja menor)')?'banco':'caja';
+  const saldo=parseFloat(prompt('Saldo inicial (COP):')||'0')||0;
+  S.cuentas.push({id:uid(),nombre:nombre.trim(),tipo,saldo_inicial:saldo,activa:true});
+  save(); renderAll();
+}
+
+/* ── EVENTOS GLOBALES ── */
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeModalProj(); }});
+document.getElementById('modal-bk').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModal(); });
+document.getElementById('modal-proj-bk').addEventListener('click',e=>{ if(e.target===e.currentTarget) closeModalProj(); });
+
+/* ── INIT ── */
+function renderAll() { renderHeader(); renderSidebar(); applyFilters(); }
+
+S=load();
+renderAll();
+</script>
+</body>
+</html>

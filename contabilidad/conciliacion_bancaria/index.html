@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conciliación Bancaria — Automatizada</title>
+    <meta name="description"
+        content="Herramienta de conciliación bancaria automática. Cruza extractos de BBVA contra registros de Helisa. Exporta diferencias a Excel." />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+    <!-- ══ HEADER ════════════════════════════════════════════════ -->
+    <header class="app-header">
+        <a href="../../index.html" class="btn-back-hub" title="Volver al Hub Principal">
+            <span class="icon">🏠</span>
+        </a>
+        <div class="header-logo">🏦</div>
+        <div class="header-title">
+            <h1>Conciliación Bancaria</h1>
+            <p>Smart Reconciliation Engine · DIMALCCO</p>
+        </div>
+        <div class="header-badge-premium">PREMIUM v1.0</div>
+    </header>
+
+    <!-- ══ CONTENIDO PRINCIPAL ═══════════════════════════════════ -->
+    <main class="main-container">
+
+        <!-- ── Selector de cuentas ─────────────────────────────── -->
+        <section class="cuentas-section">
+            <div class="section-label">Seleccione la cuenta a conciliar</div>
+            <div id="cuentas-tabs"></div>
+        </section>
+
+        <!-- ── Indicador banco activo ──────────────────────────── -->
+        <div class="bank-selector">
+            🏛️ Banco seleccionado: <strong id="banco-label">BBVA</strong>
+        </div>
+    &nbsp;·&nbsp; Cargue los archivos del extracto bancario y de Helisa para proceder
+        </div>
+
+        <!-- ══ SECCIÓN CARGA ═══════════════════════════════════════ -->
+        <section id="upload-section">
+            <div class="upload-grid">
+
+                <!-- Card Banco -->
+                <div class="upload-card">
+                    <div class="upload-card-header">
+                        <span class="icon">📊</span>
+                        <div>
+                            <h3>Extracto Bancario</h3>
+                            <p>Descargado desde la sucursal virtual</p>
+                        </div>
+                    </div>
+                    <div class="drop-zone" id="drop-banco" role="button" tabindex="0"
+                        aria-label="Zona para cargar extracto bancario">
+                        <div class="drop-icon">📂</div>
+                        <div class="drop-text">
+                            <strong>Haga clic o arrastre</strong> el archivo aquí
+                        </div>
+                        <div class="drop-formats">XLS · XLSX · CSV · TXT</div>
+                        <div class="file-name-display" id="banco-filename">Ningún archivo seleccionado</div>
+                    </div>
+                    <input type="file" id="input-banco" accept=".xls,.xlsx,.csv,.txt" />
+                </div>
+
+                <!-- Card Helisa -->
+                <div class="upload-card">
+                    <div class="upload-card-header">
+                        <span class="icon">📋</span>
+                        <div>
+                            <h3>Exportación Helisa</h3>
+                            <p>Módulo Tesorería → Movimiento de bancos</p>
+                        </div>
+                    </div>
+                    <div class="drop-zone" id="drop-helisa" role="button" tabindex="0"
+                        aria-label="Zona para cargar exportación de Helisa">
+                        <div class="drop-icon">📂</div>
+                        <div class="drop-text">
+                            <strong>Haga clic o arrastre</strong> el archivo aquí
+                        </div>
+                        <div class="drop-formats">XLS · XLSX · CSV · TXT</div>
+                        <div class="file-name-display" id="helisa-filename">Ningún archivo seleccionado</div>
+                    </div>
+                    <input type="file" id="input-helisa" accept=".xls,.xlsx,.csv,.txt" />
+                </div>
+
+            </div>
+
+            <!-- Botón conciliar -->
+            <div class="action-row">
+                <button class="btn-conciliar" id="btn-conciliar" disabled>
+                    🔄 Conciliar
+                </button>
+            </div>
+
+            <!-- Instrucciones -->
+            <details class="instructions-details">
+                <summary>
+                    <span>ℹ️ ¿Cómo exportar los archivos correctamente?</span>
+                </summary>
+                <div class="instructions-content">
+                    <div class="instr-col">
+                        <h4>📥 BBVA (Extractos / Movimientos)</h4>
+                        <ul>
+                            <li>Ingrese a la <strong>Sucursal Virtual Empresas</strong></li>
+                            <li>Vaya a <em>Reportes y archivos → Extractos</em></li>
+                            <li>Seleccione cuenta y período de Marzo</li>
+                            <li>Descargue en formato <strong>XLS (Excel)</strong></li>
+                        </ul>
+                    </div>
+                    <div class="instr-col">
+                        <h4>📤 Helisa (Movimiento de bancos)</h4>
+                        <ul>
+                            <li>Módulo <strong>Tesorería → Movimiento de bancos</strong></li>
+                            <li>Filtre por la cuenta contable y el mes de Marzo</li>
+                            <li>Genere la salida a <strong>Excel</strong></li>
+                            <li>Asegúrese de incluir columnas de Fecha, Débito y Crédito</li>
+                        </ul>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <!-- ══ SECCIÓN RESULTADOS ══════════════════════════════════ -->
+        <section id="resultados-section">
+
+            <!-- Encabezado resultados -->
+            <div class="result-header">
+                <div>
+                    <h2>📊 Resultado de Conciliación</h2>
+                    <div class="result-meta">
+                        <span>Cuenta: <strong id="res-cuenta">—</strong></span>
+                        <span>Banco: <strong id="res-banco">—</strong></span>
+                        <span>Fecha: <strong id="res-fecha">—</strong></span>
+                    </div>
+                </div>
+                <div class="result-actions">
+                    <span class="save-indicator" id="save-indicator">Sin datos guardados</span>
+                    <button class="btn-action btn-save" id="btn-guardar" onclick="saveProgress()">💾 Guardar</button>
+                    <button class="btn-action btn-nueva" id="btn-nueva">↩ Nueva conciliación</button>
+                    <button class="btn-action btn-pdf" id="btn-pdf">📄 Generar PDF</button>
+                    <button class="btn-action btn-export" id="btn-exportar">📥 Exportar a Excel</button>
+                </div>
+            </div>
+
+            <!-- Datos para Excel profesional y Saldos -->
+            <div class="export-params">
+                <div class="section-label">Reporte Excel y Cuadre de Saldos</div>
+
+                <div class="param-field" style="margin-bottom: 16px; max-width: 250px;">
+                    <label for="input-periodo">Período</label>
+                    <input type="text" id="input-periodo" placeholder="Ej: ENERO 2026" />
+                </div>
+
+                <div class="balances-grid">
+                    <!-- Banco -->
+                    <div class="balance-card-summary">
+                        <div class="balance-card-header">
+                            <span>🏦</span> Banco
+                        </div>
+                        <div class="balance-row">
+                            <span>Saldo Inicial:</span>
+                            <input type="text" id="input-saldo-banco" class="balance-input" placeholder="0.00" />
+                        </div>
+                        <div class="balance-row readonly">
+                            <span>(+) Entradas:</span>
+                            <span id="res-entradas-banco" class="balance-value">$ 0,00</span>
+                        </div>
+                        <div class="balance-row readonly">
+                            <span>(-) Salidas:</span>
+                            <span id="res-salidas-banco" class="balance-value">$ 0,00</span>
+                        </div>
+                        <div class="balance-row total">
+                            <span>Saldo Final:</span>
+                            <span id="res-final-banco" class="balance-value val-ok">$ 0,00</span>
+                        </div>
+                    </div>
+
+                    <!-- Helisa -->
+                    <div class="balance-card-summary">
+                        <div class="balance-card-header">
+                            <span>📒</span> Helisa
+                        </div>
+                        <div class="balance-row">
+                            <span>Saldo Inicial:</span>
+                            <input type="text" id="input-saldo-helisa" class="balance-input" placeholder="0.00" />
+                        </div>
+                        <div class="balance-row readonly">
+                            <span>(+) Entradas (Débitos):</span>
+                            <span id="res-entradas-helisa" class="balance-value">$ 0,00</span>
+                        </div>
+                        <div class="balance-row readonly">
+                            <span>(-) Salidas (Créditos):</span>
+                            <span id="res-salidas-helisa" class="balance-value">$ 0,00</span>
+                        </div>
+                        <div class="balance-row total">
+                            <span>Saldo Final:</span>
+                            <span id="res-final-helisa" class="balance-value val-ok">$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Métricas -->
+            <div class="metrics-grid">
+
+                <div class="metric-card card-ok">
+                    <div class="metric-icon">✅</div>
+                    <div class="metric-label">Conciliados</div>
+                    <div class="metric-value" id="res-conciliados">0</div>
+                </div>
+
+                <div class="metric-card card-warn">
+                    <div class="metric-icon">⚠️</div>
+                    <div class="metric-label">Solo en banco</div>
+                    <div class="metric-value" id="res-solo-banco">0</div>
+                </div>
+
+                <div class="metric-card card-info">
+                    <div class="metric-icon">📋</div>
+                    <div class="metric-label">Solo en Helisa</div>
+                    <div class="metric-value" id="res-solo-helisa">0</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">🏦</div>
+                    <div class="metric-label">Total Banco</div>
+                    <div class="metric-value" id="res-total-banco" style="font-size:16px; padding-top:4px;">$ —</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">📒</div>
+                    <div class="metric-label">Total Helisa</div>
+                    <div class="metric-value" id="res-total-helisa" style="font-size:16px; padding-top:4px;">$ —</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-icon">🔍</div>
+                    <div class="metric-label">Diferencia</div>
+                    <div class="metric-value val-ok" id="res-diferencia" style="font-size:16px; padding-top:4px;">$ —
+                    </div>
+                </div>
+
+                <div class="metric-card card-ok">
+                    <div class="metric-icon">📈</div>
+                    <div class="metric-label">% Cruce</div>
+                    <div class="metric-value val-ok" id="res-pct">0%</div>
+                </div>
+
+            </div>
+
+            <!-- Tabs detalle -->
+            <div class="res-tabs">
+                <button class="res-tab active" data-tab="conciliados">✅ Conciliados</button>
+                <button class="res-tab" data-tab="diferencias">⚠️ Diferencias</button>
+            </div>
+
+            <!-- Pane: Conciliados -->
+            <div class="res-pane active" id="pane-conciliados">
+                <div class="table-wrapper">
+                    <table id="tabla-conciliados">
+                        <thead>
+                            <tr>
+                                <th>Fecha Banco</th>
+                                <th>Descripción Banco</th>
+                                <th class="num">Débito Banco</th>
+                                <th class="num">Crédito Banco</th>
+                                <th>Fecha Helisa</th>
+                                <th>Descripción Helisa</th>
+                                <th class="num">Débito Helisa</th>
+                                <th class="num">Crédito Helisa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="8" class="empty-msg">Ejecute una conciliación para ver resultados</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pane: Diferencias -->
+            <div class="res-pane" id="pane-diferencias">
+                <div class="table-wrapper">
+                    <table id="tabla-diferencias">
+                        <thead>
+                            <tr>
+                                <th>Tipo de diferencia</th>
+                                <th>Fecha</th>
+                                <th>Descripción</th>
+                                <th>Referencia / Comprobante</th>
+                                <th class="num">Débito</th>
+                                <th class="num">Crédito</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="empty-msg">Ejecute una conciliación para ver diferencias</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- ══ TOAST NOTIFICATIONS ════════════════════════════════════ -->
+    <div id="toast-container" aria-live="polite"></div>
+
+    <!-- ══ SCRIPTS ════════════════════════════════════════════════ -->
+    <!-- SheetJS para leer y escribir Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <!-- html2pdf para generar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Módulos propios -->
+    <script src="parsers.js"></script>
+    <script src="reconciler.js"></script>
+    <script src="exporter.js"></script>
+    <script src="app.js"></script>
+
+</body>
+
+</html>

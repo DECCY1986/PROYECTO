@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Intelligence | DIMALCCO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-dark: #09090b;
+            --bg-card: rgba(24, 24, 27, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #10b981;
+            --accent-soft: rgba(16, 185, 129, 0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; overflow: hidden; }
+
+        .sidebar { width: 280px; background: rgba(15, 15, 18, 0.95); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 2rem 1.5rem; backdrop-filter: blur(20px); }
+        .brand { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 3rem; }
+        .brand-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent), #059669); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: white; box-shadow: 0 0 20px rgba(16, 185, 129, 0.3); }
+        .brand h2 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
+
+        .nav-menu { flex-grow: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border-radius: 12px; color: var(--text-muted); text-decoration: none; transition: all 0.2s; font-weight: 500; font-size: 0.95rem; }
+        .nav-item:hover, .nav-item.active { background: var(--accent-soft); color: var(--accent); }
+
+        .sidebar-footer { margin-top: auto; padding-top: 2rem; border-top: 1px solid var(--border); }
+        .back-link { display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; }
+
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 2.5rem 3rem; }
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+        .top-header h1 { font-size: 2rem; font-weight: 800; }
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+        .chart-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; }
+        .chart-card h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; }
+        .chart-container { height: 300px; position: relative; }
+
+        .full-width { grid-column: span 2; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon"><i class="ph-bold ph-chart-line-up"></i></div>
+            <h2>DIMALCCO BI</h2>
+        </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active"><i class="ph ph-presentation-chart"></i> Tablero Ejecutivo</a>
+            <a href="#" class="nav-item"><i class="ph ph-money"></i> Rentabilidad Mensual</a>
+            <a href="#" class="nav-item"><i class="ph ph-scales"></i> KPI Ventas</a>
+            <a href="#" class="nav-item"><i class="ph ph-users-three"></i> Productividad</a>
+            <a href="#" class="nav-item"><i class="ph ph-file-pdf"></i> Reportes PDF</a>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="../index.html" target="_top" class="back-link"><i class="ph ph-arrow-left"></i> Volver al Hub</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="top-header">
+            <div>
+                <h1>Business Intelligence</h1>
+                <p>Análisis de datos y toma de decisiones en tiempo real.</p>
+            </div>
+            <div style="display:flex; gap:1rem">
+                <select style="background:var(--bg-card); color:white; border:1px solid var(--border); padding:0.5rem 1rem; border-radius:8px;">
+                    <option>Marzo 2026</option>
+                    <option>Febrero 2026</option>
+                </select>
+                <button style="background:var(--accent); color:white; border:none; padding:0.5rem 1rem; border-radius:8px; font-weight:600;"><i class="ph ph-floppy-disk"></i> Guardar</button>
+                <button style="background:var(--accent); color:white; border:none; padding:0.5rem 1rem; border-radius:8px; font-weight:600;" onclick="alert('Datos de BI actualizados exitosamente')">Actualizar <i class="ph ph-arrows-clockwise"></i></button>
+            </div>
+        </header>
+
+        <section class="dashboard-grid">
+            <div class="chart-card full-width">
+                <h3>Ventas vs Presupuesto (Anual)</h3>
+                <div class="chart-container">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3>Distribución de Gastos</h3>
+                <div class="chart-container">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3>Cumplimiento KPI Operacional</h3>
+                <div class="chart-container">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const ctxMain = document.getElementById('mainChart').getContext('2d');
+        new Chart(ctxMain, {
+            type: 'line',
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Ventas Reales',
+                    data: [1250, 1580, 1420, 1900, 2100, 2400],
+                    borderColor: '#10b981',
+                    borderWidth: 4,
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)'
+                }, {
+                    label: 'Presupuesto',
+                    data: [1400, 1400, 1600, 1600, 1800, 2000],
+                    borderColor: '#94a3b8',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#94a3b8' } } },
+                scales: {
+                    x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+
+        const ctxPie = document.getElementById('pieChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: ['Materia Prima', 'Nómina', 'Gastos Fijos', 'Marketing'],
+                datasets: [{
+                    data: [45, 25, 20, 10],
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { color: '#94a3b8' } } }
+            }
+        });
+
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['Calidad', 'Tiempos', 'Costos', 'Servicio'],
+                datasets: [{
+                    label: '% Cumplimiento',
+                    data: [92, 85, 78, 95],
+                    backgroundColor: '#10b981',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
