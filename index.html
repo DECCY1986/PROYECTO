@@ -186,15 +186,30 @@
 <!-- MODAL: AI Config (Global) -->
 <div class="modal-backdrop" id="aiModalBk" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(2px)">
     <div style="background:#fff; padding:32px; border-radius:16px; width:400px; box-shadow:0 20px 40px rgba(0,0,0,0.2)">
-        <h3 style="margin-bottom:20px; font-size:18px">Configuración Claude AI</h3>
+        <h3 style="margin-bottom:20px; font-size:18px">Configuración & Datos</h3>
         <div style="margin-bottom:16px">
-            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px">API KEY</label>
+            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px">ANTHROPIC API KEY</label>
             <input type="password" id="aiKeyInput" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px" placeholder="sk-ant-...">
         </div>
         <div style="margin-bottom:24px">
             <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px">PROXY URL (OPCIONAL)</label>
             <input type="text" id="aiProxyInput" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px" placeholder="https://...">
         </div>
+        
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-bottom: 24px">
+            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:12px">GESTIÓN DE DATOS (BACKUP)</label>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                <button onclick="exportData()" style="padding:10px; border:1px solid #4338ca; color:#4338ca; border-radius:8px; background:none; cursor:pointer; font-size:11px; font-weight:600">
+                    <i class="ph ph-download-simple"></i> Exportar Todo
+                </button>
+                <button onclick="document.getElementById('importFile').click()" style="padding:10px; border:1px solid #059669; color:#059669; border-radius:8px; background:none; cursor:pointer; font-size:11px; font-weight:600">
+                    <i class="ph ph-upload-simple"></i> Importar Backup
+                </button>
+                <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+            </div>
+            <p style="font-size:10px; color:#94a3b8; margin-top:8px">Usa esto para mover tus datos entre la versión local y la web.</p>
+        </div>
+
         <div style="display:flex; justify-content:flex-end; gap:12px">
             <button onclick="closeAIConfig()" style="padding:10px 16px; border:1px solid #e2e8f0; border-radius:8px; background:none; cursor:pointer">Cancelar</button>
             <button onclick="saveAIConfig()" style="padding:10px 16px; background:#4338ca; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:600">Guardar</button>
@@ -269,6 +284,44 @@ async function sendAIMessage() {
         document.getElementById('aiLoading').style.display = 'none';
         chatArea.scrollTop = chatArea.scrollHeight;
     }
+}
+
+// Data Management Logic
+function exportData() {
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('dim_')) {
+            data[key] = localStorage.getItem(key);
+        }
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup_dimalcco_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+}
+
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (confirm('Esto sobrescribirá tus datos actuales. ¿Deseas continuar?')) {
+                Object.keys(data).forEach(key => {
+                    localStorage.setItem(key, data[key]);
+                });
+                alert('Datos importados correctamente. Recargando workspace...');
+                location.reload();
+            }
+        } catch (err) {
+            alert('Error al leer el archivo de backup.');
+        }
+    };
+    reader.readAsText(file);
 }
 </script>
 </body>
