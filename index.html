@@ -14,7 +14,7 @@
 <div class="ws-layout">
     <!-- SIDEBAR -->
     <aside class="ws-sidebar">
-        <div class="ws-logo">
+        <div class="ws-logo" onclick="toggleAdminMode()" style="cursor:pointer">
             <div class="ws-logo-icon"><i class="ph ph-buildings" style="color:#fff"></i></div>
             <span style="font-weight:700;letter-spacing:0.05em;font-size:16px">DIMALCCO <span style="font-weight:300;opacity:0.6">SAS</span></span>
         </div>
@@ -103,7 +103,7 @@
                 </a>
             </div>
 
-            <div class="nav-group">
+            <div class="nav-group" id="agenda-group" style="display:none">
                 <span class="nav-label">Agenda & Tareas</span>
                 <a href="#" class="nav-item" onclick="loadModule('agenda/index.html', this)">
                     <i class="ph ph-calendar-check"></i> <span>Agenda 2026</span>
@@ -322,6 +322,36 @@ function importData(event) {
     };
     reader.readAsText(file);
 }
+
+// Secret Administration Logic
+let logoClicks = 0;
+function toggleAdminMode() {
+    logoClicks++;
+    if (logoClicks >= 3) {
+        const agenda = document.getElementById('agenda-group');
+        const isHidden = agenda.style.display === 'none';
+        
+        if (isHidden) {
+            localStorage.setItem('dim_admin_view', 'true');
+            agenda.style.display = 'block';
+            console.log("Admin View Enabled");
+        } else {
+            localStorage.removeItem('dim_admin_view');
+            agenda.style.display = 'none';
+            console.log("Admin View Disabled");
+        }
+        logoClicks = 0;
+    }
+    // Reset counter after 2 seconds of inactivity
+    setTimeout(() => { logoClicks = 0; }, 2000);
+}
+
+// Initial check for Admin View
+window.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('dim_admin_view') === 'true') {
+        document.getElementById('agenda-group').style.display = 'block';
+    }
+});
 </script>
 </body>
 </html>
