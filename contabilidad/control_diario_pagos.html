@@ -171,6 +171,53 @@
         .diff-ok { color: #4ade80 !important; }
         .diff-err { color: #f87171 !important; }
 
+        /* History Section */
+        .history-section {
+            margin-top: 40px;
+            background: var(--surface);
+            border-radius: var(--r);
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+        .history-section h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 16px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .history-table {
+            width: 100%;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            border-collapse: collapse;
+        }
+        .history-table th {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            text-align: left;
+            padding: 12px;
+            border: none;
+        }
+        .history-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-main);
+        }
+        .history-table tr:hover { background: rgba(255,255,255,0.03); cursor: pointer; }
+        .btn-view {
+            padding: 4px 8px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
@@ -248,6 +295,25 @@
                 <i class="ph ph-file-xls" style="font-size:20px;"></i> EXPORTAR A EXCEL (.XLSX)
             </button>
         </div>
+
+        <div class="history-section">
+            <h2><i class="ph ph-clock-counter-clockwise"></i> Historial de Cierres Diarios</h2>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Saldo Inicial</th>
+                        <th>Total Pagos</th>
+                        <th>Saldo Banco</th>
+                        <th>Diferencia</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="history-body">
+                    <!-- Dinámico -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <button class="btn-save" onclick="saveData()">
@@ -306,6 +372,42 @@
             
             renderRows();
             calculate();
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const db = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+            const tbody = document.getElementById('history-body');
+            tbody.innerHTML = '';
+            
+            const dates = Object.keys(db).sort().reverse();
+            
+            if (dates.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5; padding:20px;">No hay registros anteriores</td></tr>';
+                return;
+            }
+
+            dates.forEach(date => {
+                const d = db[date];
+                const totalPagos = (d.items || []).reduce((s, it) => s + (it.valor || 0), 0);
+                const diff = (d.saldoBanco || 0) - ((d.saldoInicial || 0) - totalPagos);
+                
+                const tr = document.createElement('tr');
+                tr.onclick = () => {
+                    document.getElementById('input-fecha').value = date;
+                    changeDate(date);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
+                tr.innerHTML = `
+                    <td style="font-family:var(--mono); font-weight:700;">${date}</td>
+                    <td style="font-family:var(--mono);">${fmt(d.saldoInicial || 0)}</td>
+                    <td style="font-family:var(--mono); color:#fb923c;">${fmt(totalPagos)}</td>
+                    <td style="font-family:var(--mono); font-weight:700;">${fmt(d.saldoBanco || 0)}</td>
+                    <td style="font-family:var(--mono);" class="${Math.abs(diff) < 1 ? 'diff-ok' : 'diff-err'}">${fmt(diff)}</td>
+                    <td><button class="btn-view">CARGAR</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
         function changeDate(newDate) {
