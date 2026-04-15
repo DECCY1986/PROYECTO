@@ -231,10 +231,16 @@ document.addEventListener('DOMContentLoaded', () => {
             recDomQty: 0, recDomVal: 0,
             extDomQty: 0, extDomVal: 0,
             travelQty: travelHoursQty, travelVal: travelVal,
+            rawPay: tarifaDiaria + travelVal, // Valor sin considerar descuentos por faltantes todavía
             totalShift: tarifaDiaria + travelVal
         };
 
-        if (totalHours === 0) return details; // Absent case
+        if (totalHours === 0) {
+            const pending = isTravelRecord ? 0 : ordHours;
+            const pendingVal = pending * (ratesForCalcs.extDia || 0);
+            details.totalShift = details.rawPay - pendingVal;
+            return details;
+        }
 
         const [hIn, mIn] = (record.timeIn || "00:00").split(':').map(Number);
         const ratesForCalcs = safeRates;
@@ -279,7 +285,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const pending = Math.max(0, ordHours - totalHours);
         const pendingVal = pending * ratesForCalcs.extDia;
 
-        details.totalShift = details.ordPay + details.extDiaVal + details.recNoctVal + details.extNoctVal + details.recDomVal + details.extDomVal + details.travelVal - pendingVal;
+        details.rawPay = details.ordPay + details.extDiaVal + details.recNoctVal + details.extNoctVal + details.recDomVal + details.extDomVal + details.travelVal;
+        details.totalShift = details.rawPay - pendingVal;
         return details;
     };
 
@@ -316,37 +323,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const quincenaBase = (workerRates[worker] && workerRates[worker].quincena) ? workerRates[worker].quincena : (1750905 / 2);
         const rates = calculateDynamicRates(quincenaBase, equivalentDays || 1); 
 
+        const IS_CROSSING_ACTIVE = crossPendingCheckbox ? crossPendingCheckbox.checked : false;
+
         let aggregate = {
             totalDays: new Set(workerRecords.filter(r => !r.isTravelRecord).map(r => r.date)).size,
             extDia: { q: 0, v: 0 }, rNoct: { q: 0, v: 0 }, extNoct: { q: 0, v: 0 },
             rDom: { q: 0, v: 0 }, extDom: { q: 0, v: 0 }, travel: { q: 0, v: 0 },
-            totalExtra: 0, totalPay: 0,
-            pendingHours: { q: 0, v: 0 },
+            totalExtraMoney: 0, // Suma de todos los valores de extras/recargos
+            totalPendingHours: { q: 0, v: 0 },
             ops: {}
         };
 
         workerRecords.forEach(r => {
             const d = getDetailedShiftPay(r, rates);
-            if (!d) { // Handle case where getDetailedShiftPay returns null due to missing rates
-                console.warn(`Skipping record for ${r.workerName} on ${r.date} due to missing rates or invalid data.`);
-                return;
-            }
+            if (!d) return;
+            
             aggregate.extDia.q += d.extDiaQty; aggregate.extDia.v += d.extDiaVal;
             aggregate.rNoct.q += d.recNoctQty; aggregate.rNoct.v += d.recNoctVal;
             aggregate.extNoct.q += d.extNoctQty; aggregate.extNoct.v += d.extNoctVal;
             aggregate.rDom.q += d.recDomQty; aggregate.rDom.v += d.recDomVal;
             aggregate.extDom.q += d.extDomQty; aggregate.extDom.v += d.extDomVal;
             aggregate.travel.q += d.travelQty; aggregate.travel.v += d.travelVal;
-            aggregate.totalExtra += (d.extDiaVal + d.extNoctVal + d.extDomVal + d.recNoctVal + d.recDomVal + d.travelVal);
+            
+            aggregate.totalExtraMoney += (d.extDiaVal + d.extNoctVal + d.extDomVal + d.recNoctVal + d.recDomVal + d.travelVal);
 
             const pending = r.isTravelRecord ? 0 : Math.max(0, r.ordinaryHours - r.totalHours);
             const pendingVal = pending * rates.extDia;
-            aggregate.pendingHours.q += pending;
-            aggregate.pendingHours.v += pendingVal;
+            aggregate.totalPendingHours.q += pending;
+            aggregate.totalPendingHours.v += pendingVal;
 
-            // Calculate correct total pay for this day based on whether it was half day
-            const dailyAdjusment = r.isTravelRecord ? 0 : (r.esMedioDia ? rates.dia / 2 : rates.dia);
-            aggregate.totalPay += dailyAdjusment + d.totalShift - d.ordPay; // total pay minus the default 'ordPay' included in totalShift to avoid double counting
+            const dailyAdjustment = r.isTravelRecord ? 0 : (r.esMedioDia ? rates.dia / 2 : rates.dia);
 
             const opKey = `${r.opNumber || 'S/N'} | ${r.projectName}`;
             if (!aggregate.ops[opKey]) aggregate.ops[opKey] = { days: 0, extra: 0, location: r.location, pending: 0 };
@@ -355,15 +361,48 @@ document.addEventListener('DOMContentLoaded', () => {
             aggregate.ops[opKey].pending += pendingVal;
         });
 
-        const baseAsignada = rates.quincena; // El valor asignado ya no se multiplica por rates.dia, porque rates.dia * equivalentDays = quincena (por definición de la nueva fórmula).
+        const baseAsignada = rates.quincena;
+        
+        // --- Lógica de Cruce ---
+        let finalExtraPay = 0;
+        let finalDeduction = 0;
+        let crossingDetailHtml = '';
 
+        if (IS_CROSSING_ACTIVE) {
+            // El usuario quiere cruzar tiempo por tiempo (1:1)
+            // Priorizamos cruzar con Extra Diurna, que es la más común.
+            const totalExtraQty = aggregate.extDia.q + aggregate.extNoct.q + aggregate.extDom.q;
+            const balanceQty = totalExtraQty - aggregate.totalPendingHours.q;
 
-        let finalExtra = aggregate.totalExtra - aggregate.pendingHours.v;
-        const finalTotalToPay = baseAsignada + finalExtra;
+            if (balanceQty >= 0) {
+                // Hay más extras que faltantes. Se compensan todas las faltantes.
+                // Estimamos el valor de las extras restantes. 
+                // Por simplicidad en el "cruce de tiempo", restamos el valor de la deuda del total de extras.
+                finalExtraPay = Math.max(0, aggregate.totalExtraMoney - aggregate.totalPendingHours.v);
+                finalDeduction = 0;
+                crossingDetailHtml = `<div style="color: var(--color-success); font-size: 0.8rem; margin-top: 4px;">✅ Se compensaron ${aggregate.totalPendingHours.q.toFixed(1)}h faltantes con tiempo extra.</div>`;
+            } else {
+                // Las extras no alcanzan para cubrir los faltantes.
+                finalExtraPay = 0; // Se usaron todas para compensar
+                // El saldo negativo se deduce como dinero (horas pendientes netas).
+                const remainingPendingQty = aggregate.totalPendingHours.q - totalExtraQty;
+                finalDeduction = remainingPendingQty * rates.extDia;
+                crossingDetailHtml = `<div style="color: var(--color-danger); font-size: 0.8rem; margin-top: 4px;">⚠️ Saldo pendiente: ${remainingPendingQty.toFixed(1)}h tras cruzar con extras.</div>`;
+            }
+        } else {
+            // Sin cruce: Se pagan todas las extras y se descuentan todos los faltantes.
+            finalExtraPay = aggregate.totalExtraMoney;
+            finalDeduction = aggregate.totalPendingHours.v;
+        }
+
+        const finalTotalToPay = baseAsignada + finalExtraPay - finalDeduction;
 
         payrollSummaryArea.innerHTML = `
             <div class="payroll-card" id="summaryCapture">
-                <div class="payroll-header">Resumen de Nómina: ${worker}</div>
+                <div class="payroll-header">
+                    <div>Resumen de Nómina: ${worker}</div>
+                    <div style="font-size: 0.8rem; font-weight: normal; opacity: 0.8;">Cruce de Horas: ${IS_CROSSING_ACTIVE ? 'ACTIVADO' : 'DESACTIVADO'}</div>
+                </div>
                 
                 <div class="payroll-row" style="background: #fdfdfd; font-weight: 700;">
                     <div class="payroll-cell label">CONCEPTO</div>
@@ -380,63 +419,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div class="payroll-row">
-                    <div class="payroll-cell">EXTRA DIURNA 15%</div>
+                    <div class="payroll-cell">HORAS EXTRAS Y RECARGOS (BRUTO)</div>
+                    <div class="payroll-cell value">-</div>
+                    <div class="payroll-cell value">${(aggregate.extDia.q + aggregate.extNoct.q + aggregate.extDom.q).toFixed(1)} h</div>
+                    <div class="payroll-cell value">$${aggregate.totalExtraMoney.toLocaleString()}</div>
+                </div>
+
+                <div class="payroll-row" style="color: ${aggregate.totalPendingHours.q > 0 ? '#dc2626' : 'inherit'}">
+                    <div class="payroll-cell">HORAS NO LABORADAS (FALTANTES)</div>
                     <div class="payroll-cell value">$${rates.extDia.toLocaleString()}</div>
-                    <div class="payroll-cell value">${aggregate.extDia.q} h</div>
-                    <div class="payroll-cell value">$${aggregate.extDia.v.toLocaleString()}</div>
+                    <div class="payroll-cell value">${aggregate.totalPendingHours.q.toFixed(1)} h</div>
+                    <div class="payroll-cell value">-$${aggregate.totalPendingHours.v.toLocaleString()}</div>
                 </div>
 
-                <div class="payroll-row">
-                    <div class="payroll-cell">RECARGO NOCTURNO (9PM - 5AM)</div>
-                    <div class="payroll-cell value">$${rates.rNoct.toLocaleString()}</div>
-                    <div class="payroll-cell value">${aggregate.rNoct.q} h</div>
-                    <div class="payroll-cell value">$${aggregate.rNoct.v.toLocaleString()}</div>
+                ${IS_CROSSING_ACTIVE ? `
+                <div class="payroll-row" style="background: #fffbeb; border-left: 4px solid var(--color-warning);">
+                    <div class="payroll-cell" style="font-weight: 700;">RESULTADO DEL CRUCE (TIEMPO x TIEMPO)</div>
+                    <div class="payroll-cell" colspan="2">${crossingDetailHtml}</div>
+                    <div class="payroll-cell value" style="font-weight: 700;">$${(finalExtraPay - finalDeduction).toLocaleString()}</div>
                 </div>
-
-                <div class="payroll-row">
-                    <div class="payroll-cell">EXTRA NOCTURNA 50%</div>
-                    <div class="payroll-cell value">$${rates.extNoct.toLocaleString()}</div>
-                    <div class="payroll-cell value">${aggregate.extNoct.q} h</div>
-                    <div class="payroll-cell value">$${aggregate.extNoct.v.toLocaleString()}</div>
-                </div>
-
-                <div class="payroll-row">
-                    <div class="payroll-cell">RECARGO DOMINICAL 50%</div>
-                    <div class="payroll-cell value">$${rates.rDom.toLocaleString()}</div>
-                    <div class="payroll-cell value">${aggregate.rDom.q} h</div>
-                    <div class="payroll-cell value">$${aggregate.rDom.v.toLocaleString()}</div>
-                </div>
-
-                <div class="payroll-row">
-                    <div class="payroll-cell">EXTRA DOMINICAL 75%</div>
-                    <div class="payroll-cell value">$${rates.extDom.toLocaleString()}</div>
-                    <div class="payroll-cell value">${aggregate.extDom.q} h</div>
-                    <div class="payroll-cell value">$${aggregate.extDom.v.toLocaleString()}</div>
-                </div>
-
-                <div class="payroll-row">
-                    <div class="payroll-cell">HORAS DE VIAJE (0.5x)</div>
-                    <div class="payroll-cell value">$${rates.travel.toLocaleString()}</div>
-                    <div class="payroll-cell value">${aggregate.travel.q} h</div>
-                    <div class="payroll-cell value">$${Math.round(aggregate.travel.v).toLocaleString()}</div>
-                </div>
-
-                ${aggregate.pendingHours.q > 0 ? `
-                <div class="payroll-row">
-                    <div class="payroll-cell" style="color: #dc2626;">HORAS PENDIENTES (FALTANTES)</div>
-                    <div class="payroll-cell value" style="color: #dc2626;">$${rates.extDia.toLocaleString()}</div>
-                    <div class="payroll-cell value" style="color: #dc2626;">${aggregate.pendingHours.q.toFixed(2)} h</div>
-                    <div class="payroll-cell value" style="color: #dc2626;">-$${aggregate.pendingHours.v.toLocaleString()}</div>
-                </div>
-                ` : ''}
-
+                ` : `
                 <div class="payroll-row payroll-total-row">
-                    <div class="payroll-cell">TOTAL TRABAJO EXTRA ${aggregate.pendingHours.v > 0 ? '(CON DESCUENTO DE PENDIENTES)' : ''}</div>
+                    <div class="payroll-cell">TOTAL TRABAJO EXTRA NETO</div>
                     <div class="payroll-cell"></div><div class="payroll-cell"></div>
-                    <div class="payroll-cell value">$${finalExtra.toLocaleString()}</div>
+                    <div class="payroll-cell value">$${(finalExtraPay - finalDeduction).toLocaleString()}</div>
                 </div>
+                `}
 
-                <div class="payroll-row payroll-total-row" style="background: #e2e8f0;">
+                <div class="payroll-row payroll-total-row" style="background: #e2e8f0; font-size: 1.1rem;">
                     <div class="payroll-cell">TOTAL A PAGAR TOTAL</div>
                     <div class="payroll-cell"></div><div class="payroll-cell"></div>
                     <div class="payroll-cell value">$${finalTotalToPay.toLocaleString(undefined, { maximumFractionDigits: 0 })}</div>
@@ -536,6 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td style="font-weight: 700;">${rec.isTravelRecord ? '-' : rec.ordinaryHours + 'h'}</td>
                 <td style="font-weight: 700;">${rec.isTravelRecord ? rec.travelHours + 'h' : rec.totalHours + 'h'}</td>
                 <td style="font-weight: 700;">${rec.isTravelRecord ? '-' : diffDisplay}</td>
+                <td><small>${rec.observations || '-'}</small></td>
                 <td style="font-weight: 800; color: var(--color-success)">$${detail.totalShift.toLocaleString()}</td>
                 <td class="no-pdf">
                     <button onclick="editRecord(${rec.id})" style="background:none; border:none; color:var(--color-accent-primary); cursor:pointer; margin-right: 10px;">
@@ -599,13 +610,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     hourForm.onsubmit = (e) => {
         e.preventDefault();
-        const workerName = document.getElementById('workerName').value;
-        const date = document.getElementById('date').value;
-        const location = document.getElementById('location').value;
-        const projectName = document.getElementById('projectName').value;
-        const opNumber = document.getElementById('opNumber').value;
         const timeIn = document.getElementById('timeIn').value;
         const timeOut = document.getElementById('timeOut').value;
+        const observations = document.getElementById('observations').value;
         const isTravelRecord = recordTypeSelect ? (recordTypeSelect.value === 'travel') : false;
 
         const esMedioDia = isHalfDayCheckbox ? isHalfDayCheckbox.checked : false;
@@ -647,7 +654,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const recordData = {
             id: editIdInput.value ? parseInt(editIdInput.value) : Date.now(),
-            workerName, date, location, projectName, opNumber, timeIn: finalTimeIn, timeOut: finalTimeOut, totalHours, ordinaryHours, esMedioDia: isTravelRecord ? false : esMedioDia, travelHours: travelHoursCount, isTravelRecord
+            workerName, date, location, projectName, opNumber, timeIn: finalTimeIn, timeOut: finalTimeOut, totalHours, ordinaryHours, esMedioDia: isTravelRecord ? false : esMedioDia, travelHours: travelHoursCount, isTravelRecord, observations
         };
 
         if (editIdInput.value) {
@@ -728,9 +735,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (tableWorkerFilter) {
-        tableWorkerFilter.addEventListener('change', () => {
-            renderTable();
+    if (crossPendingCheckbox) {
+        crossPendingCheckbox.addEventListener('change', () => {
+            renderSummary();
         });
     }
 
