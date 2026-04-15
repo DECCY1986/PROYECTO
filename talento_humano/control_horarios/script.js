@@ -33,11 +33,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 1. Base de Datos de Tarifas FIJAS (Solicitado por el usuario) ---
     const FIXED_QUINCENA = {
-        "JULIO RODRIGUEZ": 1080000,
-        "HENRY GONZALES": 1200000,
-        "JUAN CARLOS MARTINEZ": 1230000,
-        "PAOLA CANTOR": 1100000,
-        "NEIDER CAMILO": 1100000
+        "WILLIAM DIAZ VARGAS": 4000000,
+        "OSCAR MIGUEL CANTOR ZAMUDIO": 3000000,
+        "MAURICIO MEDINA OLVIDARES": 2000000,
+        "DIEGO JAVIER QUINTERO DUEÑAS": 1705000,
+        "DECCY BAYONA": 1550000,
+        "JORGE RODRIGUEZ FERNANDEZ": 1400000,
+        "WILLIAM ENRIQUE LOPEZ SORA": 1400000,
+        "JUAN CARLOS MARTINEZ SANDOVAL": 1353000,
+        "JULIO AGUDELO": 1350000,
+        "ORLANDO MORALES SANDOVAL": 1350000,
+        "YESICCA PAOLA CANTOR SUAREZ": 1300000,
+        "RODRIGO ALEXANDER RODRIGUEZ CENTENO": 1294150,
+        "MARIA CAMILA DIAZ CANTOR": 1200000,
+        "JULIO ARMANDO RODRIGUEZ": 1188000,
+        "JHONNY RAFAEL CASTRELLON RODRIGUEZ": 1182500,
+        "CAMILO DURAN": 1210000,
+        "JULIO PIERNAGORDA": 1000000,
+        "DIEGO VELANDIA": 1265000,
+        "JORGE GILBERTO RODRIGUEZ AGUILERA": 1350000,
+        "HENRY GONZALES": 1320000
     };
 
     let workerRates = {};
@@ -988,5 +1003,179 @@ document.addEventListener('DOMContentLoaded', () => {
     if (workerFilter && workerFilter.value) {
         try { renderSummary(); } catch (err) { console.error("Error al renderizar resumen:", err); }
     }
+
+    // --- LÓGICA DE CARGA MASIVA QUINCENAL ---
+    const btnOpenBulk = document.getElementById('btn-open-bulk');
+    const bulkModal = document.getElementById('bulkEntryModal');
+    const btnCloseBulk = document.getElementById('btnCloseBulkModal');
+    const bulkWorkerName = document.getElementById('bulkWorkerName');
+    const btnGenerateBulkTable = document.getElementById('btnGenerateBulkTable');
+    const bulkTableBody = document.getElementById('bulkTableBody');
+    const bulkTableContainer = document.getElementById('bulkTableContainer');
+    const btnSaveBulk = document.getElementById('btnSaveBulk');
+
+    if (btnOpenBulk) {
+        btnOpenBulk.onclick = () => {
+            bulkModal.style.display = 'block';
+            // Populate workers
+            bulkWorkerName.innerHTML = '<option value="">Seleccione un trabajador...</option>' + 
+                Object.keys(workerRates).map(w => `<option value="${w}">${w}</option>`).join('');
+            
+            // Set current month/fortnight
+            const now = new Date();
+            let m = (now.getMonth() + 1).toString().padStart(2, '0');
+            document.getElementById('bulkMonth').value = m;
+            document.getElementById('bulkFortnight').value = now.getDate() <= 15 ? '1' : '2';
+            bulkTableContainer.style.display = 'none';
+        };
+    }
+
+    if (btnCloseBulk) {
+        btnCloseBulk.onclick = () => { bulkModal.style.display = 'none'; };
+    }
+    window.closeBulkModal = () => { if(bulkModal) bulkModal.style.display = 'none'; };
+
+    if (btnGenerateBulkTable) {
+        btnGenerateBulkTable.onclick = () => {
+            const worker = bulkWorkerName.value;
+            const month = document.getElementById('bulkMonth').value;
+            const fortnight = document.getElementById('bulkFortnight').value;
+            if (!worker) return alert('Seleccione un trabajador.');
+            
+            const year = new Date().getFullYear();
+            let startDay = fortnight === '1' ? 1 : 16;
+            let endDay = fortnight === '1' ? 15 : new Date(year, parseInt(month), 0).getDate();
+
+            const glLoc = document.getElementById('bulkLocation').value;
+            const glPrj = document.getElementById('bulkProjectName').value || '';
+            const glOp = document.getElementById('bulkOpNumber').value || '';
+
+            let html = '';
+            for (let d = startDay; d <= endDay; d++) {
+                const dateStr = `${year}-${month}-${d.toString().padStart(2, '0')}`;
+                
+                html += `
+                    <tr data-date="${dateStr}" style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 8px;">${dateStr}</td>
+                        <td style="padding: 8px;">
+                            <select class="b-loc" style="width:100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                                <option value="obra" ${glLoc==='obra'?'selected':''}>Obra</option>
+                                <option value="planta" ${glLoc==='planta'?'selected':''}>Planta</option>
+                            </select>
+                        </td>
+                        <td style="padding: 8px;"><input type="text" class="b-prj" value="${glPrj.replace(/"/g, '&quot;')}" list="projectsList" style="width:100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;"></td>
+                        <td style="padding: 8px;"><input type="text" class="b-op" value="${glOp.replace(/"/g, '&quot;')}" list="opList" style="width:100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;"></td>
+                        <td style="padding: 8px; text-align: center;"><input type="checkbox" class="b-falta" style="width: 1.2rem; height: 1.2rem; accent-color: var(--color-danger);"></td>
+                        <td style="padding: 8px; text-align: center;"><input type="checkbox" class="b-medio" style="width: 1.2rem; height: 1.2rem; accent-color: var(--color-warning);"></td>
+                        <td style="padding: 8px; text-align: center;"><input type="checkbox" class="b-viaje" style="width: 1.2rem; height: 1.2rem; accent-color: var(--color-accent-primary);"></td>
+                        <td style="padding: 8px;"><input type="time" class="b-in" style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;"></td>
+                        <td style="padding: 8px;"><input type="text" class="b-out" placeholder="MM:HH" pattern="^([0-9]+):([0-5][0-9])$" title="Formato HH:MM (ej. 26:30)" style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;"></td>
+                    </tr>
+                `;
+            }
+            bulkTableBody.innerHTML = html;
+            bulkTableContainer.style.display = 'block';
+
+            // Logica visual para deshabilitar entradas si es falta
+            document.querySelectorAll('.b-falta').forEach(chk => {
+                chk.addEventListener('change', function() {
+                    const row = this.closest('tr');
+                    row.querySelector('.b-in').disabled = this.checked;
+                    row.querySelector('.b-out').disabled = this.checked;
+                });
+            });
+        };
+    }
+
+    if (btnSaveBulk) {
+        btnSaveBulk.onclick = () => {
+            const worker = bulkWorkerName.value;
+            let addedCount = 0;
+            const rows = bulkTableBody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const date = row.getAttribute('data-date');
+                const isFalta = row.querySelector('.b-falta').checked;
+                const isMedio = row.querySelector('.b-medio').checked;
+                const isViaje = row.querySelector('.b-viaje').checked;
+                const inVal = row.querySelector('.b-in').value;
+                const outVal = row.querySelector('.b-out').value;
+                
+                const location = row.querySelector('.b-loc').value;
+                const prj = row.querySelector('.b-prj').value || 'S/N';
+                const op = row.querySelector('.b-op').value || 'S/N';
+
+                if (!isFalta && !inVal && !outVal) return; // Fila ignorada (vacía)
+
+                let totalHours = "0.00";
+                let tIn = inVal;
+                let tOut = outVal;
+                let travelHoursCount = 0;
+
+                if (isFalta && !isViaje) {
+                    totalHours = "0.00";
+                    tIn = "";
+                    tOut = "";
+                } else {
+                    if (!tIn || !tOut) return; // Si marco entrada pero no salida o viceversa, ignoramos (lo ideal seria advertir)
+                    const [hIn, mIn] = tIn.split(':').map(Number);
+                    const [hOut, mOut] = tOut.split(':').map(Number);
+                    if (isNaN(hIn) || isNaN(mIn) || isNaN(hOut) || isNaN(mOut)) return;
+
+                    let diff = (hOut * 60 + mOut) - (hIn * 60 + mIn);
+                    if (diff < 0 && hOut < 24) diff += 24 * 60;
+
+                    if (isViaje) {
+                        travelHoursCount = parseFloat((diff / 60).toFixed(2));
+                        totalHours = "0.00";
+                    } else {
+                        totalHours = (diff / 60).toFixed(2);
+                    }
+                }
+
+                const ordinaryHours = isViaje ? 0 : getOrdinaryHours(date, location, isMedio);
+
+                const recordData = {
+                    id: Date.now() + Math.floor(Math.random()*10000), // Randomize id to avoid overlaps
+                    workerName: worker, 
+                    date: date, 
+                    location: location, 
+                    projectName: prj, 
+                    opNumber: op, 
+                    timeIn: tIn, 
+                    timeOut: tOut, 
+                    totalHours: totalHours, 
+                    ordinaryHours: ordinaryHours, 
+                    esMedioDia: isViaje ? false : isMedio, 
+                    travelHours: travelHoursCount, 
+                    isTravelRecord: isViaje
+                };
+
+                // Si ya existe registro de ese trabajador ese dia, lo reemplazamos
+                const existingIndex = records.findIndex(r => r.workerName === worker && r.date === date);
+                if (existingIndex !== -1) {
+                    records[existingIndex] = recordData;
+                } else {
+                    records.push(recordData);
+                }
+                addedCount++;
+            });
+
+            if (addedCount > 0) {
+                saveRecords();
+                renderTable();
+                bulkModal.style.display = 'none';
+                
+                const toast = document.createElement('div');
+                toast.innerHTML = `<i class="ph ph-check-circle"></i> ${addedCount} turnos registrados correctamente.`;
+                toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:12px 24px;border-radius:8px;font-weight:600;font-size:0.95rem;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);animation:fadeIn 0.3s ease;';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+            } else {
+                alert('No se registró ningún turno. Asegúrese de llenar Entrada y Salida o marcar Falta en al menos un día.');
+            }
+        };
+    }
+
 });
 

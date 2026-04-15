@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIMALCCO | Conciliador de Flujos de Caja</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+        .drag-active {
+            border-color: #38bdf8 !important;
+            background: rgba(56, 189, 248, 0.1) !important;
+            transform: scale(1.01);
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #0ea5e9 0%, #4f46e5 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-gradient:hover {
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+            transform: translateY(-2px);
+        }
+        .scrollbar-custom::-webkit-scrollbar { width: 6px; height: 6px; }
+        .scrollbar-custom::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.5); border-radius: 4px; }
+        .scrollbar-custom::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .scrollbar-custom::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        .row-conciliado {
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            border-left: 3px solid #10b981;
+        }
+        .month-active {
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.2) 0%, transparent 100%);
+            border-left: 3px solid #38bdf8;
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Top Navbar -->
+    <header class="glass-panel border-b border-slate-700/50 py-4 px-6 flex justify-between items-center shrink-0 z-20">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 flex items-center justify-center to-sky-500 shadow-lg">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">Conciliador Pro</h1>
+                <p class="text-xs text-slate-400 font-light">Flujos de Caja DIMALCCO</p>
+            </div>
+        </div>
+        <div class="flex gap-4">
+            <button id="btnExportar" class="hidden btn-gradient px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Exportar Excel
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex overflow-hidden relative z-10">
+
+        <!-- Initial Upload View -->
+        <div id="uploadView" class="absolute inset-0 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm z-30 transition-opacity duration-500">
+            <div class="glass-panel max-w-xl w-full rounded-2xl p-10 text-center">
+                <h2 class="text-3xl font-bold mb-4 text-white">Sube tu Archivo Contable</h2>
+                <p class="text-slate-400 mb-8 font-light">Carga el Excel con todo el registro anual. Nosotros lo estructuramos por mes para que puedas conciliar recibo por recibo.</p>
+                
+                <div id="dropzone" class="border-2 border-dashed border-slate-600 rounded-xl p-10 transition-all cursor-pointer hover:border-sky-400 hover:bg-slate-800/40 relative">
+                    <input type="file" id="fileInput" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" accept=".xlsx, .xls, .csv">
+                    <svg class="w-12 h-12 text-slate-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <p class="font-medium text-slate-300">Arrastra tu Excel aquí o haz clic</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column Mapping View (Hidden Initially) -->
+        <div id="mappingView" class="hidden absolute inset-0 flex items-center justify-center bg-slate-900 justify-center z-30 overflow-y-auto py-10">
+            <div class="glass-panel max-w-2xl w-full rounded-2xl p-8">
+                <h2 class="text-2xl font-bold mb-2 text-white">Mapeo de Columnas</h2>
+                <p class="text-slate-400 mb-6 font-light text-sm">Tu archivo no tiene encabezados claros. Por favor indícanos qué significa cada columna para poder agrupar por mes correctamente.</p>
+                
+                <div id="mappingOptions" class="space-y-4 mb-8">
+                    <!-- Injected by JS -->
+                </div>
+                <button id="btnStartWork" class="w-full btn-gradient py-3 rounded-xl font-bold shadow-lg">Comenzar a Conciliar</button>
+            </div>
+        </div>
+
+        <!-- Sidebar for Months -->
+        <aside class="w-64 glass-panel border-r border-slate-700/50 flex flex-col shrink-0">
+            <div class="p-4 border-b border-slate-700/50">
+                <h3 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-1">Periodos Contables</h3>
+                <div class="text-xl font-bold" id="totalRowsTxt">0 Registros</div>
+            </div>
+            <div class="flex-1 overflow-y-auto scrollbar-custom p-2 space-y-1" id="monthsList">
+                <!-- Injected by JS -->
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <section class="flex-1 flex flex-col overflow-hidden bg-[#0b101e]/80">
+            <div class="p-4 border-b border-slate-700/50 flex justify-between items-center shrink-0 gap-4">
+                <h2 class="text-xl font-bold flex items-center gap-2 whitespace-nowrap min-w-[200px]" id="currentMonthTitle">
+                    <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    Selecciona un mes
+                </h2>
+                <div class="flex-1 max-w-md relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" id="busquedaInput" placeholder="Buscar monto exacto (ej. 30900) o descripción..." class="w-full bg-slate-900 border border-slate-600 rounded-full pl-10 pr-4 py-2 text-sm text-white focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none transition-colors hidden shadow-inner">
+                </div>
+                <div class="text-sm text-slate-400 flex gap-4 whitespace-nowrap">
+                    <span>Revisados: <strong class="text-white" id="monthProgress">0%</strong></span>
+                </div>
+            </div>
+            
+            <!-- Table Header -->
+            <div class="grid grid-cols-[100px_minmax(120px,1fr)_minmax(200px,2fr)_120px_100px] gap-4 px-6 py-3 bg-slate-800/80 text-xs uppercase tracking-wider font-semibold text-slate-400 shrink-0 border-b border-slate-700/50">
+                <div>Fecha</div>
+                <div>Nº Flujo asignado</div>
+                <div>Descripción</div>
+                <div class="text-right">Valor</div>
+                <div class="text-center">Conciliado</div>
+            </div>
+
+            <!-- Table Body -->
+            <div class="flex-1 overflow-y-auto scrollbar-custom p-2" id="workspaceRows">
+                <!-- Injected by JS -->
+                <div class="flex h-full items-center justify-center flex-col text-slate-500">
+                    <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    <p>Sube un archivo para comenzar</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Data State
+        let rawData = [];
+        let cleanData = []; // array of objects
+        let groupedData = {}; // { "YYYY-MM": [rows] }
+        let currentMonthKey = null;
+        let originalWorkbook = null;
+        let originalSheetName = "";
+
+        // UI Refs
+        const uploadView = document.getElementById('uploadView');
+        const fileInput = document.getElementById('fileInput');
+        const dropzone = document.getElementById('dropzone');
+        const mappingView = document.getElementById('mappingView');
+        const btnStartWork = document.getElementById('btnStartWork');
+        const monthsList = document.getElementById('monthsList');
+        const workspaceRows = document.getElementById('workspaceRows');
+        const currentMonthTitle = document.getElementById('currentMonthTitle');
+        const monthProgress = document.getElementById('monthProgress');
+        const monthTotal = document.getElementById('monthTotal');
+        const totalRowsTxt = document.getElementById('totalRowsTxt');
+        const btnExportar = document.getElementById('btnExportar');
+
+        // Drag & Drop
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag-active'); });
+        dropzone.addEventListener('dragleave', (e) => { e.preventDefault(); dropzone.classList.remove('drag-active'); });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-active');
+            if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if(e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        function cleanNumberStr(str) {
+            if(typeof str !== 'string') return str;
+            let numStr = str.replace(/\$/g, '').trim();
+            if(numStr.includes(',') && !numStr.includes('.')) { numStr = numStr.replace(/,/g, ''); }
+            numStr = numStr.replace(/,/g, '');
+            let parsed = parseFloat(numStr);
+            return isNaN(parsed) ? str : parsed;
+        }
+
+        // Generic Date Parser
+        function parseDate(val) {
+            if(!val) return null;
+            if(val instanceof Date) return val;
+            
+            let str = String(val).trim().toLowerCase();
+            // Handle cases like "5-feb." or "10-Feb"
+            const monthsMap = {'jan':1,'jan.':1,'ene':1,'ene.':1,'feb':2,'feb.':2,'mar':3,'mar.':3,
+                               'apr':4,'apr.':4,'abr':4,'abr.':4,'may':5,'may.':5,'jun':6,'jun.':6,
+                               'jul':7,'jul.':7,'aug':8,'aug.':8,'ago':8,'ago.':8,'sep':9,'sep.':9,
+                               'oct':10,'oct.':10,'nov':11,'nov.':11,'dec':12,'dec.':12,'dic':12,'dic.':12};
+            
+            // Regex for D-MMM (e.g. 5-feb.)
+            const match = str.match(/^(\d{1,2})[-/]([a-z]{3}\.?)(?:[-/](\d{2,4}))?$/);
+            if(match) {
+                let d = parseInt(match[1]);
+                let m = monthsMap[match[2]];
+                let y = match[3] ? parseInt(match[3]) : 2025; // Default to 2025 if no year based on user request "2025 al 2026"
+                if(y < 100) y += 2000;
+                if(m) return new Date(y, m-1, d);
+            }
+
+            // Fallback generic parsing
+            let pd = new Date(str);
+            if(!isNaN(pd.getTime())) return pd;
+            
+            return null; // could not parse
+        }
+
+        async function handleFile(file) {
+            uploadView.innerHTML = `<div class="text-white text-xl animate-pulse">Procesando archivo...</div>`;
+            const data = await file.arrayBuffer();
+            originalWorkbook = XLSX.read(data, {type: 'array', cellDates: true});
+            originalSheetName = originalWorkbook.SheetNames[0];
+            const worksheet = originalWorkbook.Sheets[originalSheetName];
+            
+            // Read as Array of Arrays without assuming first row is header
+            rawData = XLSX.utils.sheet_to_json(worksheet, {header: 1, raw: false});
+            
+            // Filter entirely empty rows
+            rawData = rawData.filter(row => row.some(cell => cell !== null && cell !== undefined && String(cell).trim() !== ''));
+
+            setupMappingView();
+        }
+
+        function setupMappingView() {
+            uploadView.classList.add('hidden');
+            mappingView.classList.remove('hidden');
+
+            // Find max columns to show dropdowns
+            let maxCols = 0;
+            rawData.slice(0, 50).forEach(row => { if(row.length > maxCols) maxCols = row.length; });
+
+            const sampleRow = rawData.find(row => row.length === maxCols) || rawData[0];
+
+            let html = `<div class="grid grid-cols-[auto_1fr] gap-4 text-left">`;
+            for(let i=0; i<maxCols; i++) {
+                let sampleVal = sampleRow[i] !== undefined ? String(sampleRow[i]).substring(0,30) : '';
+                html += `
+                    <div class="py-2 text-slate-300 border-b border-slate-700/50">Columna ${i+1} <span class="text-slate-500 text-xs ml-2">(Ej: ${sampleVal})</span></div>
+                    <div class="py-2 border-b border-slate-700/50">
+                        <select class="col-mapper bg-slate-800 border border-slate-600 rounded px-3 py-1 text-sm text-white w-full outline-none focus:border-sky-500" data-col="${i}">
+                            <option value="">-- Ignorar --</option>
+                            <option value="numFlujo">Nº Flujo de Caja (ID)</option>
+                            <option value="fecha">Fecha</option>
+                            <option value="descripcion">Descripción / Concepto</option>
+                            <option value="valor">Valor ($)</option>
+                            <option value="categoria">Categoría</option>
+                        </select>
+                    </div>
+                `;
+            }
+            html += `</div>`;
+            document.getElementById('mappingOptions').innerHTML = html;
+
+            // Try to auto-guess
+            const selects = document.querySelectorAll('.col-mapper');
+            if(sampleRow.length >= 4) {
+               // heuristics based on observation:
+               // CSV: 1607," $ 6,400,000 ",5-feb.,anticipo... 
+               // Col 0: ID, Col 1: Valor, Col 2: Fecha, Col 3: Desc
+               for(let i=0; i<maxCols; i++) {
+                   let s = String(sampleRow[i]||'');
+                   if(s.includes('$')) { if(selects[i]) selects[i].value = "valor"; continue; }
+                   if(s.match(/\d{1,2}-[a-zA-Z]{3}/)) { if(selects[i]) selects[i].value = "fecha"; continue; }
+                   if(s.length > 20) { if(selects[i]) selects[i].value = "descripcion"; continue; }
+               }
+            }
+        }
+
+        btnStartWork.addEventListener('click', () => {
+            const mappers = document.querySelectorAll('.col-mapper');
+            const colMap = { fecha: -1, valor: -1, descripcion: -1, numFlujo: -1, categoria: -1 };
+            
+            mappers.forEach(s => {
+                if(s.value !== '') { colMap[s.value] = parseInt(s.dataset.col); }
+            });
+
+            if(colMap.fecha === -1 || colMap.valor === -1 || colMap.numFlujo === -1) {
+                alert("Para esta tarea es ideal seleccionar 'Fecha', 'Valor' y 'Nº Flujo de Caja'.");
+            }
+
+            processData(colMap);
+        });
+
+        function processData(colMap) {
+            cleanData = [];
+            
+            rawData.forEach((row, idx) => {
+                let dRaw = colMap.fecha !== -1 ? row[colMap.fecha] : null;
+                let dateObj = parseDate(dRaw);
+                
+                let vRawVal = colMap.valor !== -1 ? cleanNumberStr(row[colMap.valor]) : 0;
+                let valNum = typeof vRawVal === 'number' ? vRawVal : 0;
+                
+                let desc = colMap.descripcion !== -1 ? (row[colMap.descripcion] || '') : '';
+                let numF = colMap.numFlujo !== -1 ? (row[colMap.numFlujo] || '') : '';
+
+                if(dateObj && !isNaN(dateObj.getTime())) {
+                    cleanData.push({
+                        _originalIndex: idx, // keep track to merge later
+                        rawRow: row,
+                        dateObj: dateObj,
+                        dateStr: dRaw,
+                        monthKey: `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2, '0')}`,
+                        valNum: valNum,
+                        descripcion: String(desc).trim(),
+                        numFlujo: String(numF).trim(),
+                        conciliado: false
+                    });
+                } else {
+                    // Push anyway but into a "Sin Fecha" basket
+                    cleanData.push({
+                        _originalIndex: idx,
+                        rawRow: row,
+                        dateObj: null,
+                        dateStr: dRaw,
+                        monthKey: `Sin Fecha`,
+                        valNum: valNum,
+                        descripcion: String(desc).trim(),
+                        numFlujo: String(numF).trim(),
+                        conciliado: false
+                    });
+                }
+            });
+
+            // Group by month
+            groupedData = {};
+            cleanData.forEach(item => {
+                if(!groupedData[item.monthKey]) groupedData[item.monthKey] = [];
+                groupedData[item.monthKey].push(item);
+            });
+
+            // Transition UI
+            mappingView.classList.add('hidden');
+            totalRowsTxt.innerText = `${cleanData.length} Registros`;
+            btnExportar.classList.remove('hidden');
+            renderSidebar();
+        }
+
+        const formatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 });
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+        function getFriendlyMonthName(key) {
+            if(key === 'Sin Fecha') return key;
+            const parts = key.split('-');
+            const m = parseInt(parts[1]) - 1;
+            return `${monthNames[m]} ${parts[0]}`;
+        }
+
+        function renderSidebar() {
+            const keys = Object.keys(groupedData).sort();
+            let html = '';
+            keys.forEach(k => {
+                const checkedCount = groupedData[k].filter(i => i.conciliado).length;
+                const total = groupedData[k].length;
+                html += `
+                    <button class="w-full text-left px-4 py-3 rounded-lg flex justify-between items-center transition-colors hover:bg-slate-800/50 ${currentMonthKey === k ? 'month-active' : 'text-slate-400'}" 
+                            onclick="selectMonth('${k}')">
+                        <div>
+                            <div class="font-semibold text-sm">${getFriendlyMonthName(k)}</div>
+                            <div class="text-[10px] uppercase tracking-wider opacity-70">${total} items</div>
+                        </div>
+                        <div class="w-6 h-6 rounded-full border ${checkedCount === total ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400' : 'border-slate-600 bg-slate-800 text-slate-400'} flex items-center justify-center text-[10px]">
+                            ${Math.round((checkedCount/total)*100)}%
+                        </div>
+                    </button>
+                `;
+            });
+            monthsList.innerHTML = html;
+        }
+
+        const busquedaInput = document.getElementById('busquedaInput');
+        
+        busquedaInput.addEventListener('input', (e) => {
+            renderWorkspace(e.target.value);
+        });
+
+        window.selectMonth = function(key) {
+            currentMonthKey = key;
+            busquedaInput.classList.remove('hidden');
+            busquedaInput.value = ''; // Reset filter
+            renderSidebar(); // update active state
+            currentMonthTitle.innerHTML = `<svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> ${getFriendlyMonthName(key)}`;
+            renderWorkspace();
+        };
+
+        function renderWorkspace(filterText = '') {
+            let items = groupedData[currentMonthKey] || [];
+            
+            if(filterText.trim() !== '') {
+                const q = filterText.toLowerCase().trim();
+                items = items.filter(i => {
+                    return String(i.valNum).includes(q) || 
+                           i.descripcion.toLowerCase().includes(q) || 
+                           i.numFlujo.toLowerCase().includes(q);
+                });
+            }
+
+            // Sort by date inside month
+            items.sort((a,b) => {
+                if(!a.dateObj) return 1; if(!b.dateObj) return -1;
+                return a.dateObj.getTime() - b.dateObj.getTime();
+            });
+
+            let html = '';
+            let valTotal = 0;
+            let checkedItems = 0;
+
+            const totalInMonth = groupedData[currentMonthKey]?.length || 0;
+
+            items.forEach((item) => {
+                valTotal += item.valNum;
+                if(item.conciliado) checkedItems++;
+
+                let shortDesc = item.descripcion.length > 50 ? item.descripcion.substring(0,50)+'...' : item.descripcion;
+
+                html += `
+                    <div class="grid grid-cols-[100px_minmax(120px,1fr)_minmax(200px,2fr)_120px_100px] gap-4 px-6 py-3 mb-1 rounded-lg border border-slate-700/30 transition-colors hover:border-slate-500/50 bg-slate-800/40 items-center overflow-hidden ${item.conciliado ? 'row-conciliado' : ''}" data-id="${item._originalIndex}">
+                        <div class="text-xs text-slate-300 truncate">${item.dateObj ? item.dateObj.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) : item.dateStr}</div>
+                        <div>
+                            <span class="inline-block px-3 py-1 bg-sky-900/40 border border-sky-500/50 text-sky-300 rounded font-bold text-sm tracking-widest shadow-inner">${item.numFlujo || 'N/A'}</span>
+                        </div>
+                        <div class="text-xs text-slate-300 truncate" title="${item.descripcion}">${shortDesc || '-'}</div>
+                        <div class="text-xs text-right font-medium ${item.valNum > 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatter.format(item.valNum)}</div>
+                        <div class="flex justify-center flex-col items-center gap-1">
+                            <label class="relative flex items-center justify-center cursor-pointer group">
+                                <input type="checkbox" ${item.conciliado ? 'checked' : ''} onchange="updateItem(${item._originalIndex}, 'check', this.checked)" class="opacity-0 absolute h-5 w-5 cursor-pointer z-20">
+                                <div class="h-5 w-5 border-2 ${item.conciliado ? 'border-emerald-500 bg-emerald-500' : 'border-slate-500'} rounded transition-colors group-hover:border-emerald-400 flex items-center justify-center z-10 shadow">
+                                    <svg class="w-3 h-3 text-white ${item.conciliado ? 'opacity-100' : 'opacity-0'} transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                            </label>
+                            <span class="text-[9px] text-slate-500 font-bold uppercase">Ubicado</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if(items.length === 0 && filterText !== '') {
+                html = `<div class="flex h-full items-center justify-center flex-col text-slate-500">
+                    <svg class="w-12 h-12 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <p>No se encontraron recibos por "${filterText}" en este mes.</p>
+                </div>`;
+            }
+
+            workspaceRows.innerHTML = html;
+            
+            // Recalculate checked items for the whole month, not just filtered
+            const allCheckedInMonth = (groupedData[currentMonthKey] || []).filter(i => i.conciliado).length;
+            monthProgress.innerText = totalInMonth ? `${Math.round((allCheckedInMonth/totalInMonth)*100)}%` : '0%';
+        }
+
+        window.updateItem = function(id, type, val) {
+            const item = cleanData.find(i => i._originalIndex === id);
+            if(item) {
+                if(type === 'check') item.conciliado = val;
+
+                // Update Row Visuals Live
+                const rowEl = document.querySelector(`div[data-id="${id}"]`);
+                if(type === 'check' && rowEl) {
+                    if(val) rowEl.classList.add('row-conciliado');
+                    else rowEl.classList.remove('row-conciliado');
+                }
+                
+                // Update header stats & sidebar
+                const items = groupedData[currentMonthKey];
+                const checkedItems = items.filter(i => i.conciliado).length;
+                monthProgress.innerText = items.length ? `${Math.round((checkedItems/items.length)*100)}%` : '0%';
+                
+                // Only re-render sidebar occasionally
+                if(type === 'check') renderSidebar();
+            }
+        };
+
+        btnExportar.addEventListener('click', () => {
+            // Append columns to the original data
+            const expData = JSON.parse(JSON.stringify(rawData)); // deep copy of 2D array
+            
+            // Re-apply values
+            cleanData.forEach(item => {
+                let row = expData[item._originalIndex];
+                if(row) {
+                    // Si ya tenía número de flujo en el original, lo mantenemos; solo añadimos el conciliado
+                    row.push(item.conciliado ? 'SI' : 'NO');
+                }
+            });
+
+            // Add Headers
+            let maxCol = 0;
+            expData.forEach(r => {if(r.length>maxCol) maxCol=r.length});
+            
+            if(expData[0]) {
+                expData[0][maxCol-1] = "UBICADO_FISICAMENTE";
+            }
+
+            const newWs = XLSX.utils.aoa_to_sheet(expData);
+            const newWb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(newWb, newWs, "Ubicados");
+            
+            XLSX.writeFile(newWb, "Flujos_Caja_Control_Fisico.xlsx");
+        });
+
+    </script>
+</body>
+</html>

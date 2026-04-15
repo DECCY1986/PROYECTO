@@ -707,6 +707,11 @@ function saveProgress() {
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
         updateSaveIndicator(data.timestamp);
+
+        // Integración con Nube DIMALCCO
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ type: 'sync_cloud' }, '*');
+        }
     } catch (err) {
         console.warn('No se pudo guardar progreso:', err);
         showToast('⚠️ No se pudo guardar el progreso (datos demasiado grandes)', 'error');

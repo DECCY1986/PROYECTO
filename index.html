@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="workspace.css">
+    <script src="cloud_sync.js"></script>
 </head>
 <body>
 
@@ -138,9 +139,13 @@
         </nav>
 
         <!-- Claude AI Card in Sidebar -->
-        <div class="ws-ai-card">
-            <div style="display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;margin-bottom:10px;color:rgba(255,255,255,0.7)">
-                <i class="ph ph-sparkle"></i> ASISTENTE CLAUDE
+        <div class="ws-card">
+            <div id="cloud-sync-status" class="cloud-indicator" onclick="pushToCloud()" style="cursor:pointer; display:flex; gap:10px; align-items:center; margin-bottom:12px; color:var(--text-muted); opacity:0.8;">
+                <i class="ph ph-cloud-slash" style="font-size:24px"></i>
+                <span style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em">Sincronización Nube</span>
+            </div>
+            <div style="font-weight:700; margin-bottom:6px; font-size:13px; color:var(--primary); display:flex; align-items:center; gap:8px;">
+                <i class="ph ph-sparkle" style="font-size:16px;"></i> Claude AI Assistant
             </div>
             <button class="ws-ai-btn" onclick="toggleAIChat()">
                 <i class="ph ph-chat-circle-dots"></i> <span>Abrir Asistente</span>
@@ -191,9 +196,15 @@
             <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px">ANTHROPIC API KEY</label>
             <input type="password" id="aiKeyInput" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px" placeholder="sk-ant-...">
         </div>
+        <div style="margin-bottom:16px">
+            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px">GITHUB ACCESS TOKEN</label>
+            <input type="password" id="aiGithubToken" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px" placeholder="ghp_...">
+            <p style="font-size:9px; color:#94a3b8; margin-top:4px">Necesario para la sincronización en la nube.</p>
+        </div>
         <div style="margin-bottom:24px">
-            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px">PROXY URL (OPCIONAL)</label>
-            <input type="text" id="aiProxyInput" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px" placeholder="https://...">
+            <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px">ID DE SINCRONIZACIÓN (GIST)</label>
+            <input type="text" id="aiGistInput" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:8px" placeholder="ID del Gist de datos...">
+            <p style="font-size:9px; color:#94a3b8; margin-top:4px">Comparte este ID con tu equipo para usar la misma base de datos.</p>
         </div>
         
         <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-bottom: 24px">
@@ -247,6 +258,8 @@ function toggleAIChat() {
 function openAIConfig() {
     document.getElementById('aiKeyInput').value = localStorage.getItem('ANTHROPIC_API_KEY') || '';
     document.getElementById('aiProxyInput').value = localStorage.getItem('AI_PROXY_URL') || '';
+    document.getElementById('aiGithubToken').value = localStorage.getItem('dim_cloud_token') || '';
+    document.getElementById('aiGistInput').value = localStorage.getItem('dim_cloud_gist_id') || '';
     document.getElementById('aiModalBk').style.display = 'flex';
 }
 
@@ -257,8 +270,24 @@ function closeAIConfig() {
 function saveAIConfig() {
     localStorage.setItem('ANTHROPIC_API_KEY', document.getElementById('aiKeyInput').value.trim());
     localStorage.setItem('AI_PROXY_URL', document.getElementById('aiProxyInput').value.trim());
-    window.DimalccoAI.apiKey = localStorage.getItem('ANTHROPIC_API_KEY');
-    window.DimalccoAI.proxyUrl = localStorage.getItem('AI_PROXY_URL');
+    localStorage.setItem('dim_cloud_token', document.getElementById('aiGithubToken').value.trim());
+    
+    const newGistId = document.getElementById('aiGistInput').value.trim();
+    const oldGistId = localStorage.getItem('dim_cloud_gist_id');
+    
+    if (newGistId && newGistId !== oldGistId) {
+        localStorage.setItem('dim_cloud_gist_id', newGistId);
+        if (confirm('ID de Sincronización actualizado. ¿Deseas descargar los datos de la nube ahora?')) {
+            pullFromCloud().then(() => location.reload());
+        }
+    } else {
+        localStorage.setItem('dim_cloud_gist_id', newGistId);
+    }
+
+    if (window.DimalccoAI) {
+        window.DimalccoAI.apiKey = localStorage.getItem('ANTHROPIC_API_KEY');
+        window.DimalccoAI.proxyUrl = localStorage.getItem('AI_PROXY_URL');
+    }
     closeAIConfig();
 }
 
@@ -313,6 +342,8 @@ function importData(event) {
                 Object.keys(data).forEach(key => {
                     localStorage.setItem(key, data[key]);
                 });
+                // Después de importar, sincronizamos con la nube
+                pushToCloud();
                 alert('Datos importados correctamente. Recargando workspace...');
                 location.reload();
             }

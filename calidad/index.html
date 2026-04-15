@@ -89,7 +89,7 @@
                 <p>Monitoreo de estándares, auditorías y cumplimiento normativo.</p>
             </div>
             <div style="display:flex; gap:12px">
-                <button onclick="alert('Control de Calidad guardado exitosamente')" style="background:var(--accent); color:white; border:none; padding:0.75rem 1.25rem; border-radius:10px; font-weight:600; cursor:pointer;"><i class="ph ph-floppy-disk"></i> Guardar</button>
+                <button id="btnSave" onclick="save()" style="background:var(--accent); color:white; border:none; padding:0.75rem 1.25rem; border-radius:10px; font-weight:600; cursor:pointer; min-width:140px; transition: all 0.3s;"><i class="ph ph-floppy-disk"></i> Guardar</button>
                 <button style="background:var(--accent); color:white; border:none; padding:0.75rem 1.25rem; border-radius:10px; font-weight:600; cursor:pointer;"><i class="ph ph-plus-circle"></i> Nueva Auditoría</button>
             </div>
         </header>
@@ -143,11 +143,11 @@
                 <h3>Estado General de Conformidad</h3>
                 <div class="audit-summary">
                     <div class="audit-badge" style="border-bottom: 4px solid var(--accent)">
-                        <span class="ab-val">96%</span>
+                        <span class="ab-val" id="score-val">96%</span>
                         <span class="ab-lbl">Aprobación</span>
                     </div>
                     <div class="audit-badge" style="border-bottom: 4px solid var(--warning)">
-                        <span class="ab-val">12</span>
+                        <span class="ab-val" id="score-review">12</span>
                         <span class="ab-lbl">En Revisión</span>
                     </div>
                     <div class="audit-badge" style="border-bottom: 4px solid var(--danger)">
@@ -158,21 +158,96 @@
 
                 <div style="margin-top: 2rem;">
                     <h4 style="font-size: 1rem; margin-bottom: 1rem;">Historial de Auditorías</h4>
-                    <div style="background:rgba(255,255,255,0.03); padding:1rem; border-radius:12px; margin-bottom:0.75rem; border:1px solid var(--border);">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-weight:600;">Auditoría ISO 9001 - Mar 2026</span>
-                            <span class="status" style="background:rgba(16, 185, 129, 0.1); color:var(--accent); padding:0.2rem 0.6rem; border-radius:4px; font-size:0.75rem;">PASÓ</span>
-                        </div>
-                    </div>
-                    <div style="background:rgba(255,255,255,0.03); padding:1rem; border-radius:12px; border:1px solid var(--border);">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-weight:600;">Control Interno Planta 1</span>
-                            <span class="status" style="background:rgba(245, 158, 11, 0.1); color:var(--warning); padding:0.2rem 0.6rem; border-radius:4px; font-size:0.75rem;">OBSERVACIONES</span>
-                        </div>
+                    <div id="audit-list">
+                        <!-- Se carga desde JS -->
                     </div>
                 </div>
             </div>
         </section>
     </main>
+    <script>
+        const DB_KEY = 'dimalcco_calidad_v1';
+        let state = {
+            checks: [true, true, false, true],
+            audits: [
+                { title: 'Auditoría ISO 9001 - Mar 2026', status: 'PASÓ', color: 'var(--accent)' },
+                { title: 'Control Interno Planta 1', status: 'OBSERVACIONES', color: 'var(--warning)' }
+            ]
+        };
+
+        function init() {
+            const saved = localStorage.getItem(DB_KEY);
+            if (saved) {
+                state = JSON.parse(saved);
+            }
+            render();
+        }
+
+        function toggleCheck(index) {
+            state.checks[index] = !state.checks[index];
+            render();
+            // Auto-save on change
+            save(false);
+        }
+
+        function render() {
+            // Render Checkboxes
+            const checkboxes = document.querySelectorAll('.toggle-switch');
+            checkboxes.forEach((cb, i) => {
+                cb.checked = state.checks[i];
+                cb.onchange = () => toggleCheck(i);
+            });
+
+            // Calculate Score
+            const total = state.checks.length;
+            const checked = state.checks.filter(c => c).length;
+            const score = Math.round((checked / total) * 100);
+            
+            document.getElementById('score-val').textContent = score + '%';
+            document.getElementById('score-review').textContent = total - checked;
+
+            // Render Audits (static for now but loaded from state)
+            const auditList = document.getElementById('audit-list');
+            auditList.innerHTML = state.audits.map(a => `
+                <div style="background:rgba(255,255,255,0.03); padding:1rem; border-radius:12px; margin-bottom:0.75rem; border:1px solid var(--border);">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:600;">${a.title}</span>
+                        <span class="status" style="background:rgba(255, 255, 255, 0.05); color:${a.color}; padding:0.2rem 0.6rem; border-radius:4px; font-size:0.75rem; border:1px solid ${a.color}44;">${a.status}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function save(showFeedback = true) {
+            localStorage.setItem(DB_KEY, JSON.stringify(state));
+            
+            // Sync with Cloud
+            if (window.parent && window.parent.postMessage) {
+                window.parent.postMessage({ type: 'sync_cloud' }, '*');
+            }
+
+            if (showFeedback) {
+                const btn = document.getElementById('btnSave');
+                const oldHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Sincronizando...';
+                btn.disabled = true;
+                btn.style.opacity = '0.7';
+
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="ph ph-check-circle"></i> Guardado';
+                    btn.style.background = '#059669';
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = oldHtml;
+                        btn.style.background = 'var(--accent)';
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                    }, 2000);
+                }, 800);
+            }
+        }
+
+        init();
+    </script>
 </body>
 </html>

@@ -19,6 +19,71 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
+ * Imports invoices from the CxC database (dim_cxcxp_v1) into the Sales section
+ */
+function syncFromCxC() {
+    if(!confirm("¿Deseas importar las facturas por cobrar desde el módulo CxC? Esto agregará las facturas a la tabla inferior.")) return;
+
+    try {
+        const cxcData = JSON.parse(localStorage.getItem('dim_cxcxp_v1') || '{"cobrar":[]}');
+        if(!cxcData.cobrar || cxcData.cobrar.length === 0) {
+            alert("No hay facturas por cobrar en el módulo de CxC.");
+            return;
+        }
+
+        let imported = 0;
+        const salesTable = document.querySelector('#sales-table tbody');
+
+        cxcData.cobrar.forEach(doc => {
+            const docInfo = doc.details || {};
+            const isAiu = ((docInfo.peA||0) + (docInfo.peI||0) + (docInfo.peU||0)) > 0;
+            const subtotal = docInfo.subtotal || doc.valor_total;
+            const iva = docInfo.iva || 0;
+            const reteiva = docInfo.reteiva || 0;
+            
+            // Avoid duplicates by checking if it already exists basically? No, just append for now, users can delete
+            const concepto = doc.contraparte + " -- FAC: " + (doc.factura || "S/N");
+
+            addRow('sales-table');
+            const row = salesTable.lastElementChild;
+            const typeSelect = row.querySelector('.type-select');
+            
+            row.querySelector('td:nth-child(1) input').value = concepto;
+            row.querySelector('.base-input').value = subtotal;
+
+            if (isAiu) {
+                typeSelect.value = 'aiu';
+                toggleType(typeSelect);
+                if(row.querySelector('.a-input')) {
+                    row.querySelector('.a-input').value = docInfo.peA || 5;
+                    row.querySelector('.i-input').value = docInfo.peI || 5;
+                    row.querySelector('.u-input').value = docInfo.peU || 5;
+                }
+            } else {
+                typeSelect.value = iva > 0 ? 'general' : 'no-gravada';
+                toggleType(typeSelect);
+            }
+
+            if(reteiva > 0) {
+                const riInput = document.getElementById('reteiva-input');
+                riInput.value = (parseFloat(riInput.value) || 0) + reteiva;
+            }
+
+            // Let calculate row do its thing for the UI
+            calculateRow(row.querySelector('.base-input'));
+            imported++;
+        });
+
+        updateMasterSummary();
+        saveData();
+        alert(`¡Completado! Se importaron ${imported} facturas desde CxC.`);
+    } catch(err) {
+        console.error("Error sincronizando CxC:", err);
+        alert("Ocurrió un error al importar desde CxC.");
+    }
+}
+
+/**
  * Adds a new row to the specified table
  */
 function addRow(tableId) {

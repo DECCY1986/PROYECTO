@@ -205,7 +205,11 @@
     <aside>
         <div class="card animate">
             <div class="input-group">
-                <label>Recibo de Caja</label>
+                <label>Recibo de Caja Número</label>
+                <input type="text" id="receipt-num" placeholder="Ej. RC-1045">
+            </div>
+            <div class="input-group">
+                <label>Valor del Ingreso</label>
                 <input type="number" id="receipt-val" value="0" step="1000" oninput="calculate()">
             </div>
             <div class="input-group">
@@ -272,6 +276,7 @@
 
 <script>
     let payments = [];
+    let currentEditId = null;
     const DB_KEY = 'dim_flujo_caja_legalizaciones';
 
     function init() {
@@ -380,24 +385,67 @@
     function saveLegalization() {
         const receiptVal = parseFloat(document.getElementById('receipt-val').value) || 0;
         const data = {
-            id: Date.now(),
+            id: currentEditId || Date.now(),
+            num: document.getElementById('receipt-num').value || '',
             date: document.getElementById('receipt-date').value,
             desc: document.getElementById('receipt-desc').value || 'Legalización',
             val: receiptVal,
             details: payments.filter(p => p.val > 0)
         };
 
-        const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
-        db.push(data);
+        let db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        if (currentEditId) {
+            const idx = db.findIndex(x => x.id === currentEditId);
+            if (idx >= 0) db[idx] = data;
+        } else {
+            db.push(data);
+        }
         localStorage.setItem(DB_KEY, JSON.stringify(db));
 
         alert("¡Legalización guardada!");
+        currentEditId = null;
         payments = [];
         addPayment();
+        document.getElementById('receipt-num').value = '';
         document.getElementById('receipt-val').value = 0;
         document.getElementById('receipt-desc').value = '';
         renderHistory();
         calculate();
+    }
+
+    function editLegalization(id) {
+        const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+        const data = db.find(x => x.id === id);
+        if (!data) return;
+        
+        currentEditId = data.id;
+        document.getElementById('receipt-num').value = data.num || '';
+        document.getElementById('receipt-val').value = data.val;
+        document.getElementById('receipt-desc').value = data.desc;
+        document.getElementById('receipt-date').value = data.date;
+        payments = data.details.length ? [...data.details] : [];
+        if (!payments.length) addPayment();
+        renderPayments();
+        calculate();
+    }
+
+    function deleteLegalization(event, id) {
+        event.stopPropagation();
+        if(confirm("¿Estás seguro de que deseas eliminar este flujo de caja del historial? Esta acción no se puede deshacer.")) {
+            let db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+            db = db.filter(x => x.id !== id);
+            localStorage.setItem(DB_KEY, JSON.stringify(db));
+            if (currentEditId === id) {
+                currentEditId = null;
+                document.getElementById('receipt-num').value = '';
+                document.getElementById('receipt-val').value = 0;
+                document.getElementById('receipt-desc').value = '';
+                payments = [];
+                addPayment();
+                calculate();
+            }
+            renderHistory();
+        }
     }
 
     function renderHistory() {
@@ -407,15 +455,23 @@
             list.innerHTML = '<p style="font-size:0.7rem; color:var(--text-muted); text-align:center;">Sin registros</p>';
             return;
         }
-        list.innerHTML = db.reverse().map(h => `
-            <div class="history-card">
-                <div class="history-info">
-                    <h4>${h.desc}</h4>
-                    <p>${h.date} • ${h.details.length} items</p>
+        list.innerHTML = db.reverse().map(h => {
+             const isBalanced = h.val > 0 && Math.abs(h.val - h.details.reduce((s,p)=>s+p.val,0)) < 1;
+             return `
+            <div class="history-card" style="border-left: 3px solid ${isBalanced ? 'var(--success)' : 'var(--warning)'}; flex-direction:column; align-items:stretch; gap:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="history-info">
+                        <h4>${h.num ? '<span style="color:var(--primary)">' + h.num + '</span> - ' : ''}${h.desc}</h4>
+                        <p>${h.date} • ${h.details.length} pagos registrados</p>
+                    </div>
+                    <div class="history-val">${fmt(h.val)}</div>
                 </div>
-                <div class="history-val">${fmt(h.val)}</div>
+                <div style="display:flex; gap:6px; justify-content:flex-end;">
+                    <button class="btn btn-outline" style="padding:0.2rem 0.6rem; font-size:0.75rem;" onclick="editLegalization(${h.id})"><i class="ph ph-pencil-simple"></i> Editar</button>
+                    <button class="btn btn-outline btn-danger" style="padding:0.2rem 0.6rem; font-size:0.75rem;" onclick="deleteLegalization(event, ${h.id})"><i class="ph ph-trash"></i> Eliminar</button>
+                </div>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     // --- IMPORT LOGIC ---
@@ -488,13 +544,36 @@
 
     async function importFromTesoreria() {
         const data = JSON.parse(localStorage.getItem('dim_tesoreria_v1') || '{"movimientos":[]}');
-        const movs = data.movimientos.filter(m => m.tipo === 'egreso' && m.fecha.startsWith('2026'));
-        if (!movs.length) return alert("Sin datos 2026 en Tesorería");
+        const ingresos = data.movimientos.filter(m => m.tipo === 'ingreso');
+        if (!ingresos.length) return alert("No se encontraron ingresos (Recibos de Caja) en Tesorería.");
 
-        if (confirm(`¿Cargar ${movs.length} egresos?`)) {
-            payments = movs.map(m => ({ id: Math.random(), desc: m.desc, val: m.valor, cat: m.cat || 'Operativos' }));
-            renderPayments();
-            calculate();
+        if (confirm(`Se detectaron ${ingresos.length} ingresos en Tesorería. ¿Deseas convertirlos todos en registros base de Legalización de Flujo de Caja en el historial?`)) {
+            const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+            let agregados = 0;
+            
+            ingresos.forEach(ingreso => {
+                // Evitar duplicados exactos analizando descripción y fecha
+                const exists = db.find(h => h.desc === ingreso.desc && h.date === ingreso.fecha);
+                if (!exists) {
+                    db.push({
+                        id: Date.now() + Math.random(),
+                        num: ingreso.ref || '',
+                        date: ingreso.fecha,
+                        desc: ingreso.desc,
+                        val: ingreso.valor,
+                        details: []
+                    });
+                    agregados++;
+                }
+            });
+            
+            if (agregados > 0) {
+                localStorage.setItem(DB_KEY, JSON.stringify(db));
+                renderHistory();
+                alert(`¡Éxito! Se generaron ${agregados} flujos de caja nuevos a partir de Tesorería. Haz clic en ellos en el historial para completar sus pagos asignados.`);
+            } else {
+                alert(`No se importaron nuevos flujos. Todos los recibos ya habían sido centralizados anteriormente.`);
+            }
         }
     }
 

@@ -411,12 +411,27 @@ function save(manual){
   localStorage.setItem(LS_EMP,JSON.stringify(empleados));
   localStorage.setItem(LS_NOV,JSON.stringify(novedades));
   localStorage.setItem(LS_EVAL,JSON.stringify(evaluaciones));
+
+  // Sincronización con Nube DIMALCCO
+  if (window.parent && window.parent.postMessage) {
+    window.parent.postMessage({ type: 'sync_cloud' }, '*');
+  }
+
   if(manual){
     const b=event.currentTarget;
     const old=b.innerHTML;
-    b.innerHTML='✅ Guardado';
+    b.innerHTML='⏳ Sincronizando...';
     b.style.pointerEvents='none';
-    setTimeout(()=>{b.innerHTML=old;b.style.pointerEvents='all';},2000);
+    b.style.opacity='0.8';
+    
+    setTimeout(()=>{
+      b.innerHTML='✅ Guardado';
+      b.style.opacity='1';
+      setTimeout(()=>{
+        b.innerHTML=old;
+        b.style.pointerEvents='all';
+      },1500);
+    },800);
   }
 }
 

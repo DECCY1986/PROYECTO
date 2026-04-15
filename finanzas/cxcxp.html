@@ -45,7 +45,7 @@ select:focus,input:focus{border-color:var(--ac)}
 .btn-sec{padding:7px 14px;background:none;border:1px solid var(--b);border-radius:var(--rsm);font-family:var(--fn);font-size:12px;cursor:pointer;color:var(--t2);transition:all .15s}
 .btn-sec:hover{border-color:var(--t3);color:var(--t)}
 .tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--b) transparent}
-table{width:100%;border-collapse:collapse;min-width:2000px}
+table{width:100%;border-collapse:collapse;min-width:2250px}
 thead{background:#f8fafc;border-bottom:1px solid var(--b)}
 th{padding:9px 12px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);white-space:nowrap}
 th.num{text-align:right}
@@ -128,10 +128,11 @@ tr:hover .btn-sm.del{opacity:1}
       <div class="toolbar">
         <select id="f-est-cob" onchange="render()">
           <option value="all">Todos los estados</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="parcial">Parcial</option>
-          <option value="vencido">Vencido</option>
-          <option value="cobrado">Cobrado</option>
+          <option value="pendientes_activas">Ver Todo lo Pendiente (Activos)</option>
+          <option value="pendiente">Solo Pendientes (Nuevos)</option>
+          <option value="parcial">Solo Abonos Parciales</option>
+          <option value="vencido">Solo Vencidos</option>
+          <option value="cobrado">Cobrados (Completados)</option>
         </select>
         <div class="spacer"></div>
         <div class="spacer"></div>
@@ -141,6 +142,7 @@ tr:hover .btn-sm.del{opacity:1}
         </button>
         <input type="file" id="file-cxc" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event, 'cobrar')">
         <button class="btn-pri" onclick="openModal('cobrar')">+ Nueva CxC</button>
+        <button class="btn-sec" onclick="recalculateAll()" title="Sincronizar y recalcular todos los saldos" style="border-color:var(--ac); color:var(--ac)">↻ Recalcular</button>
       </div>
       <div class="tbl-wrap">
         <table>
@@ -160,8 +162,9 @@ tr:hover .btn-sm.del{opacity:1}
             <th class="num" style="min-width:110px">Valor RICA</th>
             <th class="num" style="min-width:130px">Facturación Neto</th>
             <th class="num" style="min-width:110px">Garantías</th>
-            <th class="num" style="min-width:110px">Anticipo</th>
-            <th class="num" style="min-width:130px">Neto a Cobrar</th>
+            <th class="num" style="min-width:130px">Total Factura (c/ IVA)</th>
+            <th class="num" style="min-width:130px">Pagos Anticipo</th>
+            <th class="num" style="min-width:130px">Pagado (Abonos)</th>
             <th class="num" style="min-width:130px">Pendiente</th>
             <th>Estado</th>
             <th>Acciones</th>
@@ -176,10 +179,11 @@ tr:hover .btn-sm.del{opacity:1}
       <div class="toolbar">
         <select id="f-est-pag" onchange="render()">
           <option value="all">Todos los estados</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="parcial">Parcial</option>
-          <option value="vencido">Vencido</option>
-          <option value="pagado">Pagado</option>
+          <option value="pendientes_activas">Ver Todo lo Pendiente (Activos)</option>
+          <option value="pendiente">Solo Pendientes (Nuevos)</option>
+          <option value="parcial">Solo Abonos Parciales</option>
+          <option value="vencido">Solo Vencidos</option>
+          <option value="pagado">Pagados (Completados)</option>
         </select>
         <div class="spacer"></div>
         <button class="btn-pri" onclick="openModal('pagar')">+ Nueva CxP</button>
@@ -216,7 +220,8 @@ tr:hover .btn-sm.del{opacity:1}
     <div class="form-g2">
       <div class="form-row">
         <label class="form-lbl" id="lbl-contraparte">Cliente *</label>
-        <input type="text" id="f-contraparte" placeholder="Nombre cliente / proveedor">
+        <input type="text" id="f-contraparte" placeholder="Nombre cliente / proveedor" list="dl-contrapartes">
+        <datalist id="dl-contrapartes"></datalist>
       </div>
       <div class="form-row">
         <label class="form-lbl">NIT / CC</label>
@@ -328,6 +333,10 @@ tr:hover .btn-sm.del{opacity:1}
       <label class="form-lbl">Tarifa ICA (‰ por mil)</label>
       <input type="number" id="new-city-rate" step="0.01" placeholder="Ej. 11.04">
     </div>
+    <div class="form-row">
+      <label class="form-lbl">Actividad / Descripción (Opcional)</label>
+      <input type="text" id="new-city-desc" placeholder="Ej. Servicios, Comercio, etc.">
+    </div>
     <div class="modal-ftr">
       <button class="btn-sec" onclick="closeCityModal()">Cancelar</button>
       <button class="btn-pri" onclick="saveNewCity()">Añadir Ciudad</button>
@@ -374,6 +383,16 @@ const fmt=v=>'$ '+Math.abs(v).toLocaleString('es-CO');
 const ago=n=>{const d=new Date();d.setDate(d.getDate()-n);return d.toISOString().split('T')[0]};
 const fwd=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().split('T')[0]};
 
+const parseClean = (val) => {
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  // Eliminamos todo lo que no sea número, punto o coma (quita $, espacios, etc)
+  let s = val.toString().replace(/[^0-9,.-]/g, '');
+  // Quitar puntos de miles y cambiar coma por punto decimal
+  s = s.replace(/\./g, '').replace(/,/g, '.');
+  return parseFloat(s) || 0;
+};
+
 function diasVencimiento(vence){
   const diff=Math.ceil((new Date(vence+' 12:00')-new Date())/(1000*60*60*24));
   return diff;
@@ -418,7 +437,8 @@ function populateCitySelect() {
     if(!sel) return;
     sel.innerHTML = '<option value="ninguna">No aplica ReteICA</option>';
     CIT.forEach(c => {
-        sel.innerHTML += `<option value="${c.id}">${c.name} (${c.rate}‰)</option>`;
+        const desc = c.desc ? ` - ${c.desc}` : '';
+        sel.innerHTML += `<option value="${c.id}">${c.name}${desc} (${c.rate}‰)</option>`;
     });
 }
 
@@ -427,15 +447,18 @@ function closeCityModal() { document.getElementById('modal-city-bk').classList.r
 function saveNewCity() {
     const name = document.getElementById('new-city-name').value.trim();
     const rate = parseFloat(document.getElementById('new-city-rate').value);
-    if(!name || isNaN(rate)) return alert("Completa los datos de la ciudad.");
+    const desc = document.getElementById('new-city-desc').value.trim();
+    if(!name || isNaN(rate)) return alert("Completa los datos de la ciudad (nombre y tarifa).");
     
-    const cid = name.toLowerCase().replace(/\s+/g, '_');
-    if(CIT.find(c => c.id === cid)) return alert("Esta ciudad ya está registrada.");
+    // Usamos uid() para permitir múltiples tarifas para el mismo nombre de ciudad
+    const cid = uid();
     
-    CIT.push({ id: cid, name, rate });
+    CIT.push({ id: cid, name, rate, desc });
     saveCities();
+    
     document.getElementById('new-city-name').value = '';
     document.getElementById('new-city-rate').value = '';
+    document.getElementById('new-city-desc').value = '';
     closeCityModal();
 }
 
@@ -443,6 +466,36 @@ function init() {
     S = load();
     render();
     populateCitySelect();
+    updateClientDatalist();
+    setupContraparteListener();
+}
+
+function updateClientDatalist() {
+    const all = [...S.cobrar, ...S.pagar];
+    const unique = {};
+    all.forEach(d => {
+        if (d.contraparte) {
+            unique[d.contraparte.trim()] = d.nit || '';
+        }
+    });
+
+    const dl = document.getElementById('dl-contrapartes');
+    if (dl) {
+        dl.innerHTML = Object.keys(unique).sort().map(name => `<option value="${name}">`).join('');
+    }
+    window._nitMap = unique;
+}
+
+function setupContraparteListener() {
+    const input = document.getElementById('f-contraparte');
+    if (input) {
+        input.addEventListener('change', (e) => {
+            const name = e.target.value.trim();
+            if (window._nitMap && window._nitMap[name]) {
+                document.getElementById('f-nit').value = window._nitMap[name];
+            }
+        });
+    }
 }
 
 // Header
@@ -499,16 +552,25 @@ function renderAlerts(){
 // Table render
 function renderTable(docs, tbodyId, tipo){
   const estFilter=document.getElementById(`f-est-${tipo==='cobrar'?'cob':'pag'}`).value;
-  const filtered=docs.filter(d=>estFilter==='all'||calcEstado(d)===estFilter).sort((a,b)=>a.fecha_vencimiento.localeCompare(b.fecha_vencimiento));
+  const filtered=docs.filter(d=>{
+      const st = calcEstado(d);
+      if (estFilter === 'all') return true;
+      if (estFilter === 'pendientes_activas') return st === 'pendiente' || st === 'parcial' || st === 'vencido';
+      return st === estFilter;
+  }).sort((a,b)=>a.fecha_vencimiento.localeCompare(b.fecha_vencimiento));
   const stLabels={pendiente:'Pendiente',parcial:'Parcial',cobrado:'Cobrado',pagado:'Pagado',vencido:'Vencido'};
   const tbody=document.getElementById(tbodyId);
   if(!filtered.length){tbody.innerHTML=`<tr><td colspan="20" class="empty-state">No hay documentos</td></tr>`;return;}
   
   tbody.innerHTML=filtered.map(d=>{
-    const pend=d.valor_total-d.valor_aplicado;
-    const st=calcEstado(d);
     const det = d.details || {};
-    const isAiuRow = (det.peA + det.peI + det.peU) > 0;
+    const abonos = parseFloat(d.valor_aplicado || 0);
+    const anticipo = parseFloat(det.anticipos || 0);
+    const retenciones = (parseFloat(det.retefuente || 0) + parseFloat(det.reteica || 0) + parseFloat(det.reteiva || 0));
+    const garantias = parseFloat(det.garantias || 0);
+    const pend = d.valor_total - retenciones - garantias - anticipo - abonos;
+    const st=calcEstado(d);
+    const isAiuRow = (det.peA || 0) + (det.peI || 0) + (det.peU || 0) > 0;
     
     // Cálculos específicos para la tabla extendida
     const basePleno = !isAiuRow ? (det.subtotal || 0) : 0;
@@ -516,8 +578,8 @@ function renderTable(docs, tbodyId, tipo){
     const ivaPleno = !isAiuRow ? (det.iva || 0) : 0;
     const ivaAiu = isAiuRow ? (det.iva || 0) : 0;
     
-    const valAiuAbs = isAiuRow ? (det.subtotal * (det.peA + det.peI + det.peU) / 100) : 0;
-    const factConIva = det.subtotal + valAiuAbs + (det.iva || 0);
+    const valAiuAbs = isAiuRow ? (det.subtotal * ((det.peA||0) + (det.peI||0) + (det.peU||0)) / 100) : 0;
+    const factConIva = (det.subtotal||0) + valAiuAbs + (det.iva || 0);
     
     // Tarifas
     const pRfte = det.subtotal > 0 ? ((det.retefuente / det.subtotal) * 100).toFixed(1) : 0;
@@ -549,9 +611,9 @@ function renderTable(docs, tbodyId, tipo){
           <td class="num" style="font-weight:600">${fmt(factDespImp || d.valor_total)}</td>
           
           <td class="num" style="color:var(--y)">${det.garantias > 0 ? fmt(det.garantias) : '—'}</td>
-          <td class="num" style="color:var(--in)">${det.anticipos > 0 ? fmt(det.anticipos) : '—'}</td>
-          
           <td class="num" style="font-weight:700;color:var(--w)">${fmt(d.valor_total)}</td>
+          <td class="num" style="color:var(--in);font-weight:600">${anticipo > 0 ? fmt(anticipo) : '—'}</td>
+          <td class="num" style="color:var(--in);font-weight:600">${abonos > 0 ? fmt(abonos) : '—'}</td>
           <td class="num" style="font-weight:600;color:${pend>0?'var(--accent)':'var(--t3)'}">${pend>0?fmt(pend):'—'}</td>
           
           <td><span class="pill ${st}">${stLabels[st]||st}</span></td>
@@ -583,11 +645,22 @@ function renderTable(docs, tbodyId, tipo){
   }).join('');
   // Summary
   let tot=0,aplic=0,pend=0;
-  filtered.forEach(d=>{tot+=d.valor_total;aplic+=d.valor_aplicado;pend+=(d.valor_total-d.valor_aplicado);});
+  filtered.forEach(d=>{
+    const det = d.details || {};
+    const apl = parseFloat(d.valor_aplicado || 0);
+    const ant = parseFloat(det.anticipos || 0);
+    const ret = (parseFloat(det.retefuente || 0) + parseFloat(det.reteica || 0) + parseFloat(det.reteiva || 0));
+    const gar = parseFloat(det.garantias || 0);
+    
+    tot += d.valor_total;
+    const tLiquidado = apl + ant + ret + gar; 
+    aplic += tLiquidado; 
+    pend += (d.valor_total - tLiquidado);
+  });
   document.getElementById(`sum-${tipo==='cobrar'?'cob':'pag'}`).innerHTML=`
     <div class="sum-item"><div class="sum-lbl">Total documentos</div><div class="sum-val">${fmt(tot)}</div></div>
     <div class="sum-item"><div class="sum-lbl">${tipo==='cobrar'?'Cobrado':'Pagado'}</div><div class="sum-val" style="color:var(--in)">${fmt(aplic)}</div></div>
-    <div class="sum-item"><div class="sum-lbl">Pendiente</div><div class="sum-val" style="color:${pend>0?'var(--w)':'var(--in)'}">${fmt(pend)}</div></div>`;
+    <div class="sum-item" style="cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='var(--bs)'" onmouseout="this.style.background='transparent'" onclick="document.getElementById('f-est-${tipo==='cobrar'?'cob':'pag'}').value='pendientes_activas'; render();" title="Clic para filtrar todas las facturas pendientes"><div class="sum-lbl" style="color:var(--accent);">PENDIENTE 🔍</div><div class="sum-val" style="color:${pend>0?'var(--w)':'var(--in)'}">${fmt(pend)}</div></div>`;
 }
 
 function render(){
@@ -668,9 +741,14 @@ function closeModal(){document.getElementById('modal-bk').classList.remove('open
 function autoIca() {
     const cid = document.getElementById('f-ciudad').value;
     const sub = parseFloat(document.getElementById('f-subtotal').value) || 0;
+    const peA = parseFloat(document.getElementById('f-aiu-a').value) || 0;
+    const peI = parseFloat(document.getElementById('f-aiu-i').value) || 0;
+    const peU = parseFloat(document.getElementById('f-aiu-u').value) || 0;
+    const totalBase = sub + (sub * (peA/100)) + (sub * (peI/100)) + (sub * (peU/100));
+    
     const city = CIT.find(c => c.id === cid);
-    if(sub > 0 && city) {
-        document.getElementById('f-reteica').value = Math.round((sub * city.rate) / 1000);
+    if(totalBase > 0 && city) {
+        document.getElementById('f-reteica').value = Math.round((totalBase * city.rate) / 1000);
     } else {
         document.getElementById('f-reteica').value = '';
     }
@@ -686,6 +764,7 @@ function calcNeto(manualVal = false) {
     const peI = getVal('f-aiu-i');
     const peU = getVal('f-aiu-u');
     const isAiu = (peA + peI + peU) > 0;
+    const valAiuAbs = isAiu ? (subtotal * (peA/100)) + (subtotal * (peI/100)) + (subtotal * (peU/100)) : 0;
     
     // 1. Auto IVA logic
     if(!manualVal) {
@@ -699,13 +778,13 @@ function calcNeto(manualVal = false) {
 
         // 2. Auto Retefuente logic
         const peRfte = getVal('f-retefuente-pct');
-        if(subtotal > 0 && peRfte > 0) {
-            document.getElementById('f-retefuente').value = Math.round(subtotal * (peRfte/100));
+        const totalBaseRfte = subtotal + valAiuAbs;
+        if(totalBaseRfte > 0 && peRfte > 0) {
+            document.getElementById('f-retefuente').value = Math.round(totalBaseRfte * (peRfte/100));
         }
     }
     
     const iva = getVal('f-iva');
-    const valAiuAbs = isAiu ? (subtotal * (peA/100)) + (subtotal * (peI/100)) + (subtotal * (peU/100)) : 0;
     
     // Descuentos
     const retefuente = getVal('f-retefuente');
@@ -714,10 +793,12 @@ function calcNeto(manualVal = false) {
     const garantias = getVal('f-garantias');
     const anticipos = getVal('f-anticipos');
     
-    // Calculation: (Base + AIU absoluto + IVA) - Retenciones - Anticipos
+    // Cálculo: (Base + AIU absoluto + IVA)
     const bruto = subtotal + valAiuAbs + iva;
-    const desc = retefuente + reteica + reteiva + garantias + anticipos;
-    const neto = bruto - desc;
+    
+    // Ahora el Neto a Cobrar es el VALOR TOTAL BRUTO de la factura
+    // (Retenciones y garantías se descuentan del PEN DIENTE en la tabla)
+    const neto = bruto;
     
     document.getElementById('f-valor-neto').value = neto;
     document.getElementById('f-neto-calc').textContent = fmt(neto);
@@ -778,12 +859,16 @@ function saveDoc(){
   } else {
       S[curModalTipo].push(doc);
   }
+  save(); 
+  updateClientDatalist();
+  closeModal(); 
+  render();
+}
 
-  // Integracion ReteICA Automatica
+// Integracion ReteICA Automatica
+function processIca(doc, docInfo, emision, ciudad, contraparte, factura, nit) {
   if((ciudad === 'bogota' || ciudad === 'soacha') && docInfo.reteica > 0) {
     try {
-      // Nota: Si es edicion, el registro en ICA se duplicará o quedará desfasado. 
-      // Por simplicidad en este módulo offline, siempre agregamos (tipo log).
       const year = emision.split('-')[0];
       const month = parseInt(emision.split('-')[1], 10);
       let period = ciudad === 'soacha' ? month.toString() : Math.ceil(month / 2).toString();
@@ -881,11 +966,78 @@ function savePago(){
       const tipo_mov=curPagoTipo==='cobrar'?'ingreso':'egreso';
       const pago_fecha=document.getElementById('pago-fecha').value;
       const pago_ref=document.getElementById('pago-ref').value.trim();
-      ts.movimientos.push({id:uid(),fecha:pago_fecha,desc:`${curPagoTipo==='cobrar'?'Cobro':'Pago'} ${doc.factura||'S/N'} · ${doc.contraparte}`,cat:curPagoTipo==='cobrar'?'Cobros cartera':'Proveedores / Materiales',tipo:tipo_mov,valor:val,cuenta:ts.cuentas[0].id,ref:pago_ref||doc.factura||''});
+      ts.movimientos.push({
+        id:uid(),
+        fecha:pago_fecha,
+        desc:`${curPagoTipo==='cobrar'?'Cobro':'Pago'} ${doc.factura||'S/N'} · ${doc.contraparte}`,
+        cat:curPagoTipo==='cobrar'?'Cobros cartera':'Proveedores / Materiales',
+        tipo:tipo_mov,
+        valor:val,
+        cuenta:ts.cuentas[0].id,
+        ref:pago_ref||doc.factura||'',
+        linkedId: doc.id
+      });
       localStorage.setItem('dim_tesoreria_v1',JSON.stringify(ts));
     }
   }catch(e){}
   save();closeModalPago();render();
+}
+
+/**
+ * RECALCULO GLOBAL
+ * Normaliza los totales (Neto a Cobrar) y sincroniza pagos desde Tesorería
+ */
+function recalculateAll() {
+  if(!confirm("Esta acción recalculará los Netos a Cobrar de todas las facturas y sincronizará los pagos registrados en Tesorería independizando el anticipo. ¿Continuar?")) return;
+
+
+  // 1. Cargar tesorería para reconstruir pagos
+  let ts = {movimientos:[]};
+  try { ts = JSON.parse(localStorage.getItem('dim_tesoreria_v1') || '{"movimientos":[]}'); } catch(e){}
+  
+  const process = (lista) => {
+    lista.forEach(doc => {
+      const det = doc.details || {};
+      const sub = parseClean(det.subtotal);
+      const peA = parseClean(det.peA);
+      const peI = parseClean(det.peI);
+      const peU = parseClean(det.peU);
+      const valAiuAbs = (sub * (peA + peI + peU) / 100);
+      const iva = parseClean(det.iva);
+      
+      const rfte = parseClean(det.retefuente);
+      const rica = parseClean(det.reteica);
+      const riva = parseClean(det.reteiva);
+      const gar  = parseClean(det.garantias);
+      const ant  = parseClean(det.anticipos);
+      
+      // 1. VALOR TOTAL FACTURA (Bruto c/ IVA)
+      doc.valor_total = Math.round(sub + valAiuAbs + iva);
+
+      // 2. RE-CONSTRUIR ABONOS DESDE TESORERÍA
+      const totalEnTs = ts.movimientos
+        .filter(m => m.linkedId === doc.id)
+        .reduce((sum, m) => sum + parseClean(m.valor), 0);
+      
+      if (totalEnTs > 0) {
+        doc.valor_aplicado = Math.max(0, totalEnTs - ant);
+      } else {
+        const aplActual = parseClean(doc.valor_aplicado);
+        if (aplActual >= ant && ant > 0) {
+            doc.valor_aplicado = aplActual - ant;
+        } else {
+            doc.valor_aplicado = aplActual;
+        }
+      }
+    });
+  };
+
+  process(S.cobrar);
+  process(S.pagar);
+  
+  save();
+  render();
+  alert("¡Recálculo finalizado con éxito! Los saldos se han actualizado correctamente con el nuevo motor de precisión.");
 }
 
 function deleteDoc(id,tipo){
@@ -966,12 +1118,12 @@ function importExcel(e, tipo) {
 
         // Capturar "NETO" o "VALOR FACTURACION..."
         let rawNeto = norm['neto'] || norm['valor facturacion despues impuestos'] || norm['valor facturacion con iva'] || norm['valor total'] || 0;
-        let valorTotal = typeof rawNeto === 'number' ? rawNeto : parseFloat(rawNeto.toString().replace(/[^0-9.-]/g,'')) || 0;
+        let valorTotal = Math.abs(parseClean(rawNeto));
 
         let rawPago = norm['pago'] || norm['pagos'] || 0;
         let rawAnticipo = norm['anticipo'] || norm['anticipos'] || 0;
-        let p = typeof rawPago === 'number' ? rawPago : parseFloat(rawPago.toString().replace(/[^0-9.-]/g,'')) || 0;
-        let a = typeof rawAnticipo === 'number' ? rawAnticipo : parseFloat(rawAnticipo.toString().replace(/[^0-9.-]/g,'')) || 0;
+        let p = Math.abs(parseClean(rawPago));
+        let a = Math.abs(parseClean(rawAnticipo));
         let valorAplicado = p + a;
 
         if (contraparte.trim() && valorTotal > 0) {
@@ -983,8 +1135,17 @@ function importExcel(e, tipo) {
             fecha_emision: isoFecha,
             fecha_vencimiento: fwd(30), 
             valor_total: Math.abs(valorTotal),
-            valor_aplicado: Math.max(0, Math.min(valorAplicado, Math.abs(valorTotal))),
-            concepto: (norm['o.p'] || norm['op'] ? `O.P. ${norm['o.p']||norm['op']}` : 'Factura importada')
+            valor_aplicado: Math.max(0, Math.min(p, Math.abs(valorTotal))), // Solo pagos reales
+            concepto: (norm['o.p'] || norm['op'] ? `O.P. ${norm['o.p']||norm['op']}` : 'Factura importada'),
+            details: {
+                subtotal: Math.abs(valorTotal),
+                iva: 0,
+                retefuente: 0,
+                reteica: 0,
+                reteiva: 0,
+                anticipos: a, // Aquí guardamos el anticipo del Excel
+                garantias: 0
+            }
           });
           count++;
         }
@@ -1009,6 +1170,17 @@ function importExcel(e, tipo) {
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeModalPago();}});
 document.getElementById('modal-bk').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
 document.getElementById('modal-pago-bk').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModalPago();});
+
+// Cross-tab synchronization
+window.addEventListener('storage', function(e) {
+  if (e.key === DB || e.key === 'dim_tesoreria_v1' || e.key === 'dim_ica_cities') {
+    S = load();
+    CIT = JSON.parse(localStorage.getItem('dim_ica_cities') || '[{"id":"bogota","name":"Bogotá","rate":11.04},{"id":"soacha","name":"Soacha","rate":9.66}]');
+    populateCitySelect();
+    updateClientDatalist();
+    render();
+  }
+});
 
 init();
 </script>

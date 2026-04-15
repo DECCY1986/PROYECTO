@@ -17,51 +17,97 @@
                 <span>Personal</span>
             </div>
             <nav id="nav-menu">
-                <a href="#" class="nav-item active" onclick="showSection('directorio')"><i class="ph ph-identification-card"></i> Directorio</a>
+                <a href="#" id="nav-directorio" class="nav-item active" onclick="showSection('directorio')"><i class="ph ph-identification-card"></i> Directorio</a>
+                <a href="#" id="nav-prestamos" class="nav-item" onclick="showSection('prestamos')"><i class="ph ph-hand-coins"></i> Préstamos</a>
                 <a href="../index.html" class="nav-item"><i class="ph ph-house"></i> Hub Principal</a>
             </nav>
         </aside>
 
         <main class="main-content">
-            <header class="header">
-                <div>
-                    <h1>Directorio de Personal</h1>
-                    <p class="subtitle">Gestiona la base de datos maestra de tus colaboradores.</p>
-                </div>
-                <div class="actions">
-                    <button class="btn btn-secondary" id="sync-btn" onclick="megaSync()">
-                        <i class="ph ph-arrows-counter-clockwise"></i> Sincronización Inteligente
-                    </button>
-                    <button class="btn btn-primary" onclick="openModal()">
-                        <i class="ph ph-plus"></i> Nuevo Registro
-                    </button>
-                </div>
-            </header>
+            <!-- SECCIÓN: DIRECTORIO -->
+            <div id="section-directorio" class="section">
+                <header class="header">
+                    <div>
+                        <h1>Directorio de Personal</h1>
+                        <p class="subtitle">Gestiona la base de datos maestra de tus colaboradores.</p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-secondary" id="sync-btn" onclick="megaSync()">
+                            <i class="ph ph-arrows-counter-clockwise"></i> Sincronización Inteligente
+                        </button>
+                        <button class="btn btn-primary" onclick="openModal()">
+                            <i class="ph ph-plus"></i> Nuevo Registro
+                        </button>
+                    </div>
+                </header>
 
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <span class="label">Total Colaboradores</span>
-                    <span class="value" id="count-total">0</span>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="label">Total Colaboradores</span>
+                        <span class="value" id="count-total">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="label">Maestro Actualizado</span>
+                        <span class="value" id="sync-status">No</span>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <span class="label">Maestro Actualizado</span>
-                    <span class="value" id="sync-status">No</span>
+
+                <div class="card table-card">
+                    <table id="emp-table">
+                        <thead>
+                            <tr>
+                                <th>Colaborador</th>
+                                <th>Identificación</th>
+                                <th>Cargo</th>
+                                <th>Salario & Bonificación</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="emp-body"></tbody>
+                    </table>
                 </div>
             </div>
 
-            <div class="card table-card">
-                <table id="emp-table">
-                    <thead>
-                        <tr>
-                            <th>Colaborador</th>
-                            <th>Identificación</th>
-                            <th>Cargo</th>
-                            <th>Salario & Bonificación</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="emp-body"></tbody>
-                </table>
+            <!-- SECCIÓN: PRÉSTAMOS -->
+            <div id="section-prestamos" class="section" style="display:none">
+                <header class="header">
+                    <div>
+                        <h1>Novedades de Préstamos</h1>
+                        <p class="subtitle">Control de préstamos a empleados y deducciones.</p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="openLoanModal()">
+                            <i class="ph ph-hand-coins"></i> Registrar Préstamo
+                        </button>
+                    </div>
+                </header>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="label">Capital Prestado Acum.</span>
+                        <span class="value" id="loan-total-loaned">$ 0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="label">Saldo Pendiente de Cobro</span>
+                        <span class="value" id="loan-total-pending" style="color:#ef4444">$ 0</span>
+                    </div>
+                </div>
+
+                <div class="card table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Colaborador</th>
+                                <th>Fecha Inicio</th>
+                                <th>Monto Inicial</th>
+                                <th>Cuotas</th>
+                                <th>Saldo Pendiente</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="loan-body"></tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </div>
@@ -100,16 +146,70 @@
                 <button class="btn btn-primary" onclick="saveOne()">Guardar Registro</button>
             </div>
         </div>
+    <!-- MODAL PRÉSTAMOS -->
+    <div id="modal-loan" class="modal-backdrop">
+        <div class="card" style="width:450px; padding:32px; background:white">
+            <h2 style="margin-top:0; font-family:'Outfit'">Registro de Préstamo</h2>
+            <input type="hidden" id="pl-id">
+            <div style="display:flex; flex-direction:column; gap:16px">
+                <div>
+                    <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">COLABORADOR</label>
+                    <select id="pl-emp" class="form-input"></select>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">MONTO TOTAL</label>
+                        <input type="number" id="pl-monto" placeholder="Ej. 1000000" class="form-input">
+                    </div>
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">CUOTAS</label>
+                        <input type="number" id="pl-cuotas" placeholder="Ej. 4" class="form-input">
+                    </div>
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">FECHA DE DESEMBOLSO</label>
+                    <input type="date" id="pl-fecha" class="form-input">
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:32px">
+                <button class="btn btn-secondary" onclick="closeLoanModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="saveLoan()">Guardar Préstamo</button>
+            </div>
+        </div>
     </div>
 
     <script>
         const KEY_MAIN = 'dimalcco_emp_v2';
         const KEY_OLD_NOM = 'dim_nomina_v1';
+        const KEY_LOANS = 'dimalcco_loans_v1';
         let empleados = [];
+        let prestamos = [];
 
         function init() {
             loadFromMain();
+            loadLoans();
             if(empleados.length === 0) megaSync();
+            applyActiveSection();
+        }
+
+        function loadLoans() {
+            const raw = localStorage.getItem(KEY_LOANS);
+            prestamos = raw ? JSON.parse(raw) : [];
+            renderLoans();
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById('section-' + id).style.display = 'block';
+            document.getElementById('nav-' + id).classList.add('active');
+            
+            if(id === 'prestamos') renderLoans();
+        }
+
+        function applyActiveSection() {
+            showSection('directorio');
         }
 
         function loadFromMain() {
@@ -246,6 +346,108 @@
                 empleados.splice(idx, 1);
                 localStorage.setItem(KEY_MAIN, JSON.stringify(empleados));
                 render();
+            }
+        }
+
+        // --- Lógica de Préstamos ---
+        function openLoanModal() {
+            const sel = document.getElementById('pl-emp');
+            sel.innerHTML = '<option value="">Seleccione Colaborador...</option>';
+            empleados.forEach((e, idx) => {
+                const opt = document.createElement('option');
+                opt.value = e.cedula;
+                opt.textContent = e.nombre + ' (' + e.cedula + ')';
+                sel.appendChild(opt);
+            });
+            
+            document.getElementById('pl-id').value = -1;
+            document.getElementById('pl-monto').value = '';
+            document.getElementById('pl-cuotas').value = '';
+            document.getElementById('pl-fecha').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-loan').style.display = 'flex';
+        }
+
+        function closeLoanModal() { document.getElementById('modal-loan').style.display = 'none'; }
+
+        function saveLoan() {
+            const empCed = document.getElementById('pl-emp').value;
+            const monto = Number(document.getElementById('pl-monto').value);
+            const cuotas = Number(document.getElementById('pl-cuotas').value);
+            const fecha = document.getElementById('pl-fecha').value;
+            
+            if(!empCed || !monto || !cuotas || !fecha) return alert('Todos los campos son obligatorios');
+
+            const newLoan = {
+                id: Date.now(),
+                empCed,
+                montoTotal: monto,
+                cuotasTotal: cuotas,
+                fecha,
+                cuotasPagadas: 0,
+                saldo: monto
+            };
+
+            prestamos.push(newLoan);
+            localStorage.setItem(KEY_LOANS, JSON.stringify(prestamos));
+            closeLoanModal();
+            renderLoans();
+        }
+
+        function renderLoans() {
+            const body = document.getElementById('loan-body');
+            body.innerHTML = '';
+            let totalLoaned = 0;
+            let totalPending = 0;
+
+            prestamos.forEach((loan, idx) => {
+                const emp = empleados.find(e => e.cedula === loan.empCed) || { nombre: 'N/A' };
+                totalLoaned += loan.montoTotal;
+                totalPending += loan.saldo || 0;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <div style="font-weight:500">${emp.nombre}</div>
+                        <div style="font-size:10px; color:var(--text-muted)">CC: ${loan.empCed}</div>
+                    </td>
+                    <td class="mono">${loan.fecha}</td>
+                    <td class="mono">$ ${loan.montoTotal.toLocaleString('es-CO')}</td>
+                    <td>
+                        <div style="font-weight:600">${loan.cuotasPagadas} / ${loan.cuotasTotal}</div>
+                        <div style="font-size:10px; color:var(--text-muted)">$ ${(loan.montoTotal / loan.cuotasTotal).toLocaleString('es-CO')} x cuota</div>
+                    </td>
+                    <td class="mono" style="color:#ef4444">$ ${(loan.saldo || 0).toLocaleString('es-CO')}</td>
+                    <td>
+                        <button class="btn-icon" onclick="payQuota(${idx})" title="Abonar Cuota"><i class="ph-bold ph-hand-coins"></i></button>
+                        <button class="btn-icon danger" onclick="removeLoan(${idx})"><i class="ph-bold ph-trash"></i></button>
+                    </td>
+                `;
+                body.appendChild(tr);
+            });
+
+            document.getElementById('loan-total-loaned').textContent = '$ ' + totalLoaned.toLocaleString('es-CO');
+            document.getElementById('loan-total-pending').textContent = '$ ' + totalPending.toLocaleString('es-CO');
+        }
+
+        function payQuota(idx) {
+            const loan = prestamos[idx];
+            if(loan.cuotasPagadas >= loan.cuotasTotal) return alert('Este préstamo ya está totalmente pagado.');
+            
+            const cuotaValue = loan.montoTotal / loan.cuotasTotal;
+            loan.cuotasPagadas++;
+            loan.saldo = Math.max(0, loan.montoTotal - (loan.cuotasPagadas * cuotaValue));
+            
+            localStorage.setItem(KEY_LOANS, JSON.stringify(prestamos));
+            renderLoans();
+            
+            // Aquí se podría disparar un evento para la Tesorería/Nómina si existiera un hub centralizado
+        }
+
+        function removeLoan(idx) {
+            if(confirm('¿Eliminar registro de préstamo?')) {
+                prestamos.splice(idx, 1);
+                localStorage.setItem(KEY_LOANS, JSON.stringify(prestamos));
+                renderLoans();
             }
         }
 

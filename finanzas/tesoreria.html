@@ -85,10 +85,13 @@ td.num{text-align:right;font-family:var(--mono);font-size:11px}
 .pill.egreso{background:var(--expense-bg);color:var(--expense)}
 .c-in{color:var(--income)}.c-eg{color:var(--expense)}
 .bal-run{font-family:var(--mono);font-size:11px;font-weight:500}
-.tag{font-size:9px;color:var(--text-3);background:var(--bg);padding:1px 5px;border-radius:3px;margin-left:4px}
+.tag{font-size:10px;font-weight:700;color:#fff;background:var(--accent);padding:2px 7px;border-radius:4px;margin-left:6px;display:inline-block;box-shadow:0 1px 2px rgba(67,56,202,0.2)}
 .empty-state{text-align:center;padding:40px 20px;color:var(--text-3);font-size:13px}
 .btn-del{opacity:0;padding:3px 7px;border:1px solid #fecaca;border-radius:4px;background:none;color:var(--expense);font-size:10px;cursor:pointer;transition:all .15s}
-tr:hover .btn-del{opacity:1}.btn-del:hover{background:var(--expense-bg)}
+tr:hover .btn-del, tr:hover .btn-edit{opacity:1}
+.btn-del:hover{background:var(--expense-bg)}
+.btn-edit:hover{background:var(--accent-soft)}
+.btn-edit{opacity:0;padding:3px 7px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--accent);font-size:10px;cursor:pointer;transition:all .15s;margin-right:4px}
 .pagination{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-top:1px solid var(--border);background:#f8fafc}
 .pg-info{font-size:11px;color:var(--text-3)}
 .pg-btns{display:flex;gap:3px}
@@ -194,7 +197,7 @@ svg.chart{width:100%;height:200px;overflow:visible}
             <tr>
               <th>Fecha</th><th>Descripción</th><th>Categoría</th>
               <th>Cuenta</th><th>Tipo</th>
-              <th class="num">Valor</th><th class="num">Saldo acum.</th><th></th>
+              <th class="num">Valor</th><th class="num">Saldo acum.</th><th style="min-width:90px"></th>
             </tr>
           </thead>
           <tbody id="mov-tbody"></tbody>
@@ -240,12 +243,18 @@ svg.chart{width:100%;height:200px;overflow:visible}
 <div class="modal-backdrop" id="modal-bk">
   <div class="modal">
     <div class="modal-hdr">
-      <div class="modal-title">Nuevo movimiento</div>
+      <div class="modal-title" id="modal-title">Nuevo movimiento</div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="tipo-toggle">
       <button class="tipo-btn ingreso active" id="btn-in" onclick="setTipo('ingreso')">↑ Ingreso</button>
       <button class="tipo-btn egreso" id="btn-eg" onclick="setTipo('egreso')">↓ Egreso</button>
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">Vincular Factura Pendiente (CxC / CxP)</label>
+      <select id="f-vinculo" onchange="vincularFactura(this.value)">
+        <option value="">-- Sin vincular / Entrada manual --</option>
+      </select>
     </div>
     <div class="form-row">
       <label class="form-lbl">Descripción *</label>
@@ -375,7 +384,7 @@ function defaultState() {
 }
 
 /* ── STATE ── */
-let S, filtered=[];
+let S, filtered=[], curEditMovId=null;
 
 function load() {
   try { const s=localStorage.getItem(DB); if(s) return JSON.parse(s); } catch(e){}
@@ -384,6 +393,15 @@ function load() {
 function save() { localStorage.setItem(DB, JSON.stringify(S)); }
 
 /* ── BALANCES ── */
+function parseClean(val){
+    if(!val) return 0;
+    if(typeof val === 'number') return val;
+    // Eliminamos todo lo que no sea número, punto o coma
+    let s = val.toString().replace(/[^0-9,.-]/g, '');
+    // Manejo de formato latino: quitar puntos (miles) y cambiar coma a punto (decimal)
+    s = s.replace(/\./g,'').replace(',','.');
+    return parseFloat(s) || 0;
+}
 function balCuenta(cid) {
   const c = S.cuentas.find(x=>x.id===cid);
   if (!c) return 0;
@@ -525,6 +543,7 @@ function renderTable() {
       <td>
         <div style="font-weight:500;font-size:12px;color:var(--text)">${m.desc}</div>
         ${m.ref?`<span class="tag">${m.ref}</span>`:''}
+        ${m.linkedId?`<span class="tag" style="background:var(--accent);margin-left:4px;" title="Factura vinculada">🔗 VINCULADA</span>`:''}
       </td>
       <td style="color:var(--text-3);font-size:11px">${m.cat}</td>
       <td style="color:var(--text-3);font-size:11px;white-space:nowrap">${c?c.nombre:'—'}</td>
@@ -533,7 +552,10 @@ function renderTable() {
         ${m.tipo==='egreso'?'− ':''}${fmt(m.valor)}
       </td>
       <td class="num bal-run" style="color:${bal<0?'var(--expense)':'var(--text)'}">${fmt(bal)}</td>
-      <td><button class="btn-del" onclick="delMov('${m.id}')">Eliminar</button></td>
+      <td style="white-space:nowrap; text-align:right">
+        <button class="btn-edit" onclick="openModal('${m.id}')">✎</button>
+        <button class="btn-del" onclick="delMov('${m.id}')">×</button>
+      </td>
     </tr>`;
   }).join('');
 
@@ -558,7 +580,16 @@ function renderSummary(movs) {
 }
 
 function goPage(p){ S.pagina=p; renderTable(); }
-function delMov(id){ if(!confirm('¿Eliminar este movimiento?')) return; S.movimientos=S.movimientos.filter(m=>m.id!==id); save(); renderAll(); }
+function delMov(id){ 
+  if(!confirm('¿Eliminar este movimiento?')) return; 
+  const mov = S.movimientos.find(m => m.id === id);
+  if (mov && mov.linkedId) {
+    updateCxCBalance(mov.linkedId, mov.tipo === 'ingreso' ? 'cobrar' : 'pagar', mov.valor, true);
+  }
+  S.movimientos=S.movimientos.filter(m=>m.id!==id); 
+  save(); 
+  renderAll(); 
+}
 
 /* ── PROJECTION ── */
 function renderProjection() {
@@ -662,18 +693,103 @@ function drawChart() {
 /* ── MODAL MOVIMIENTO ── */
 let mTipo='ingreso', pTipo='ingreso';
 
-function openModal() {
-  mTipo='ingreso';
-  document.getElementById('btn-in').classList.add('active');
-  document.getElementById('btn-eg').classList.remove('active');
-  document.getElementById('f-fecha').value=todayISO();
-  ['f-desc','f-val','f-ref'].forEach(id=>document.getElementById(id).value='');
-  updateCats();
+function openModal(id = null) {
+  curEditMovId = id;
+  const title = document.getElementById('modal-title');
+  if(id) {
+    title.textContent = 'Editar movimiento';
+    const m = S.movimientos.find(x => x.id === id);
+    if (!m) return;
+    mTipo = m.tipo;
+    document.getElementById('f-desc').value = m.desc;
+    document.getElementById('f-val').value = m.valor;
+    document.getElementById('f-fecha').value = m.fecha;
+    document.getElementById('f-cuenta-modal').value = m.cuenta;
+    document.getElementById('f-ref').value = m.ref || '';
+    updateCats();
+    document.getElementById('f-cat').value = m.cat;
+    loadPendingInvoicesModal();
+    // Intentamos pre-seleccionar el vínculo si existe
+    if (m.linkedId) {
+      setTimeout(() => {
+        const sel = document.getElementById('f-vinculo');
+        const options = [...sel.options];
+        let foundVal = null;
+        
+        // Buscar si ya existe en las opciones cargadas
+        options.forEach(o => {
+          if (o.value) {
+            try { if (JSON.parse(o.value).id === m.linkedId) foundVal = o.value; } catch(e){}
+          }
+        });
+
+        if (foundVal) {
+          sel.value = foundVal;
+        } else {
+           // Si no aparece (ej. ya está pagada al 100%), agregamos la opción "Mantenida"
+           const opt = document.createElement('option');
+           opt.value = JSON.stringify({id: m.linkedId, alreadyLinked: true});
+           opt.textContent = `(Factura vinculada ID: ${m.linkedId.slice(0,5)}...)`;
+           sel.appendChild(opt);
+           sel.value = opt.value;
+        }
+      }, 80);
+    }
+  } else {
+    title.textContent = 'Nuevo movimiento';
+    mTipo = 'ingreso';
+    document.getElementById('f-fecha').value = todayISO();
+    ['f-desc','f-val','f-ref','f-vinculo'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-vinculo').disabled = false;
+    updateCats();
+    loadPendingInvoicesModal();
+  }
+  
+  document.getElementById('btn-in').classList.toggle('active', mTipo === 'ingreso');
+  document.getElementById('btn-eg').classList.toggle('active', mTipo === 'egreso');
   document.getElementById('modal-bk').classList.add('open');
   setTimeout(()=>document.getElementById('f-desc').focus(),100);
 }
-function closeModal(){ document.getElementById('modal-bk').classList.remove('open'); }
-function setTipo(t){ mTipo=t; document.getElementById('btn-in').classList.toggle('active',t==='ingreso'); document.getElementById('btn-eg').classList.toggle('active',t==='egreso'); updateCats(); }
+function closeModal(){ document.getElementById('modal-bk').classList.remove('open'); curEditMovId=null; }
+function setTipo(t){ 
+  mTipo=t; 
+  document.getElementById('btn-in').classList.toggle('active',t==='ingreso'); 
+  document.getElementById('btn-eg').classList.toggle('active',t==='egreso'); 
+  updateCats(); 
+  loadPendingInvoicesModal();
+}
+
+function loadPendingInvoicesModal() {
+  const sel = document.getElementById('f-vinculo');
+  sel.innerHTML = '<option value="">-- Sin vincular / Entrada manual --</option>';
+  
+  const cxcxp = JSON.parse(localStorage.getItem('dim_cxcxp_v1') || '{"cobrar":[],"pagar":[]}');
+  const target = mTipo === 'ingreso' ? cxcxp.cobrar : cxcxp.pagar;
+  
+  target.forEach(d => {
+    const aplicados = parseFloat(d.valor_aplicado || 0);
+    const pend = d.valor_total - aplicados;
+    if (pend > 0) {
+      const opt = document.createElement('option');
+      opt.value = JSON.stringify({
+        factura: d.factura,
+        contraparte: d.contraparte,
+        pend: pend,
+        id: d.id
+      });
+      opt.textContent = `${d.factura || 'S/N'} · ${d.contraparte} (Pend: ${fmt(pend)})`;
+      sel.appendChild(opt);
+    }
+  });
+}
+
+function vincularFactura(jsonStr) {
+  if (!jsonStr) return;
+  const data = JSON.parse(jsonStr);
+  document.getElementById('f-desc').value = `${mTipo==='ingreso'?'Cobro':'Pago'} Factura ${data.factura || 'S/N'} · ${data.contraparte}`;
+  document.getElementById('f-val').value = Math.round(data.pend);
+  document.getElementById('f-ref').value = data.factura || '';
+}
 function updateCats(){ document.getElementById('f-cat').innerHTML=CATS[mTipo].map(c=>`<option>${c}</option>`).join(''); }
 
 function saveMov() {
@@ -681,9 +797,97 @@ function saveMov() {
   const val=parseFloat(document.getElementById('f-val').value);
   const fecha=document.getElementById('f-fecha').value;
   const cuenta=document.getElementById('f-cuenta-modal').value;
+  const vinculoJson = document.getElementById('f-vinculo').value;
+  
   if(!desc||!val||!fecha||!cuenta){ alert('Completa los campos obligatorios.'); return; }
-  S.movimientos.push({id:uid(),fecha,desc,cat:document.getElementById('f-cat').value,tipo:mTipo,valor:Math.abs(val),cuenta,ref:document.getElementById('f-ref').value.trim()});
+  
+  if (curEditMovId) {
+    // Modo Edición
+    const idx = S.movimientos.findIndex(m => m.id === curEditMovId);
+    if (idx === -1) return;
+    const old = S.movimientos[idx];
+    
+    // Nueva vinculación desde el modal
+    let newLinkedId = null;
+    if (vinculoJson) {
+      const vData = JSON.parse(vinculoJson);
+      newLinkedId = vData.id;
+    }
+
+    // Caso 1: Estaba vinculado y ya no lo está, o cambió de vínculo
+    if (old.linkedId && old.linkedId !== newLinkedId) {
+       updateCxCBalance(old.linkedId, old.tipo === 'ingreso' ? 'cobrar' : 'pagar', old.valor, true);
+    }
+    
+    // Caso 2: Nuevo vínculo o cambio de valor en el mismo vínculo
+    if (newLinkedId) {
+       if (old.linkedId === newLinkedId) {
+          // Mismo vínculo: revertimos valor viejo y aplicamos el nuevo
+          updateCxCBalance(newLinkedId, old.tipo === 'ingreso' ? 'cobrar' : 'pagar', old.valor, true);
+          updateCxCBalance(newLinkedId, mTipo === 'ingreso' ? 'cobrar' : 'pagar', val);
+       } else {
+          // Nuevo vínculo diferente: solo aplicamos el nuevo valor
+          updateCxCBalance(newLinkedId, mTipo === 'ingreso' ? 'cobrar' : 'pagar', val);
+       }
+    }
+
+    // Actualizamos el movimiento
+    old.desc = desc;
+    old.valor = Math.abs(val);
+    old.fecha = fecha;
+    old.cuenta = cuenta;
+    old.cat = document.getElementById('f-cat').value;
+    old.ref = document.getElementById('f-ref').value.trim();
+    old.linkedId = newLinkedId;
+    
+  } else {
+    // Modo Nuevo
+    let linkedId = null;
+    if(vinculoJson) {
+      const vData = JSON.parse(vinculoJson);
+      linkedId = vData.id;
+      updateCxCBalance(linkedId, mTipo === 'ingreso' ? 'cobrar' : 'pagar', val);
+    }
+
+    const newMov = {
+      id:uid(),
+      fecha,
+      desc,
+      cat:document.getElementById('f-cat').value,
+      tipo:mTipo,
+      valor:Math.abs(val),
+      cuenta,
+      ref:document.getElementById('f-ref').value.trim(),
+      linkedId: linkedId
+    };
+    S.movimientos.push(newMov);
+  }
+  
   save(); closeModal(); renderAll();
+}
+
+/**
+ * Actualiza el valor_aplicado en el módulo CxC/CxP
+ */
+function updateCxCBalance(docId, tipo, monto, reverse = false) {
+  try {
+    const DB_CXC = 'dim_cxcxp_v1';
+    let data = JSON.parse(localStorage.getItem(DB_CXC) || '{"cobrar":[],"pagar":[]}');
+    let lista = tipo === 'cobrar' ? data.cobrar : data.pagar;
+    let doc = lista.find(d => d.id === docId);
+    
+    if(doc) {
+      const current = parseFloat(doc.valor_aplicado || 0);
+      if(reverse) {
+        doc.valor_aplicado = Math.max(0, current - monto);
+      } else {
+        doc.valor_aplicado = current + monto;
+      }
+      localStorage.setItem(DB_CXC, JSON.stringify(data));
+    }
+  } catch(e) {
+    console.error("Error actualizando CxC:", e);
+  }
 }
 
 /* ── MODAL PROYECCIÓN ── */
@@ -733,6 +937,14 @@ document.getElementById('modal-proj-bk').addEventListener('click',e=>{ if(e.targ
 
 /* ── INIT ── */
 function renderAll() { renderHeader(); renderSidebar(); applyFilters(); }
+
+/* ── CROSS-TAB SYNC ── */
+window.addEventListener('storage', function(e) {
+  if (e.key === DB || e.key === 'dim_cxcxp_v1') {
+    S = load();
+    renderAll();
+  }
+});
 
 S=load();
 renderAll();

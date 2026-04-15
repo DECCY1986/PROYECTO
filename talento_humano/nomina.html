@@ -239,7 +239,13 @@ function load(){
   }catch(e){ console.error("Sync Error:", e); }
   return state;
 }
-function save(){localStorage.setItem(DB,JSON.stringify(S));}
+    function save() {
+        localStorage.setItem(DB, JSON.stringify(S));
+        // Sincronización Automática
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage('sync_cloud', '*');
+        }
+    }
 
 function calculo(emp){
   const sal=emp.salario, arl_pct=parseFloat(emp.arl)/100;

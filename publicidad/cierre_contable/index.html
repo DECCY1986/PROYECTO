@@ -43,6 +43,7 @@ body {
   content:''; position:absolute; top:-60px; right:-60px;
   width:320px; height:320px;
   border:2px solid rgba(255,255,255,0.05); border-radius:50%;
+  pointer-events: none;
 }
 .masthead-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
 .firm-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--accent); margin-bottom:4px; }
@@ -235,6 +236,11 @@ body {
 
 <!-- MASTHEAD -->
 <header class="masthead">
+  <div style="margin-bottom: 20px;">
+    <a href="../index.html" style="color: white; text-decoration: none; font-size: 12px; display: flex; align-items: center; gap: 8px; opacity: 0.6; transition: opacity 0.2s;">
+      ← Volver al Hub
+    </a>
+  </div>
   <div class="masthead-top">
     <div>
       <div class="firm-label">Colombia · NIIF PYMES / Plenas · Estatuto Tributario</div>
@@ -242,7 +248,11 @@ body {
     </div>
     <div class="year-badge">
       <span class="y">2026</span>
-      <span class="sub">Feb — Dic</span>
+      <span class="sub" id="yearRange">Ene — Dic</span>
+      <button id="btnSave" style="margin-top:10px; background:var(--ink); border:1px solid var(--rule); color:white; padding:6px 10px; font-family:'DM Mono',monospace; font-size:10px; cursor:pointer; width:100%; border-radius:4px; display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s;">
+        <span id="saveIcon">💾</span> <span id="saveText">Guardar</span>
+      </button>
+      <div id="saveStatus" style="font-family:'DM Mono',monospace; font-size:8px; color:rgba(255,255,255,0.5); margin-top:6px; text-transform:uppercase; letter-spacing:1px;"></div>
     </div>
   </div>
   <div class="masthead-meta">
@@ -293,6 +303,19 @@ body {
    DATA
 ═══════════════════════════════════════════════════════════════ */
 const MONTHS = [
+  {
+    id:'ene', name:'Enero', short:'Ene', num:1, lastDay:31,
+    rte:'Diciembre 2025',
+    iva:null,
+    ica:{ label:'Según municipio', note:'Verificar calendario ICA local para la apertura del año.' },
+    hasPrima:false,
+    alerts:[
+      'RteFuente Diciembre 2025 (Form. 350): vence según dígito NIT en enero',
+      'Nómina electrónica diciembre: transmitir antes del día 10 hábil de enero',
+      'IVA Cuatrimestral Sep–Dic 2025: vence en enero 2026',
+      'Apertura de saldos contables 2026 y verificación de balance inicial'
+    ]
+  },
   {
     id:'feb', name:'Febrero', short:'Feb', num:2, lastDay:28,
     rte:'Enero 2026',
@@ -869,7 +892,7 @@ function tagName(t) {
 /* ═══════════════════════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════════════════════ */
-let activeMonth = 'feb';
+let activeMonth = 'ene';
 
 function buildApp() {
   // Build tabs
@@ -926,7 +949,74 @@ function updateProgress() {
   document.getElementById('progressCount').textContent = done.length + ' / ' + all.length + ' tareas';
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   PERSISTENCE
+═══════════════════════════════════════════════════════════════ */
+const DB_KEY = 'dimalcco_pub_cierre_2026';
+
+function saveState() {
+  const state = {};
+  document.querySelectorAll('.month-panel').forEach(panel => {
+    const monthId = panel.id.replace('panel-', '');
+    const tasks = panel.querySelectorAll('.task-item');
+    state[monthId] = Array.from(tasks).map(t => t.classList.contains('done'));
+  });
+  localStorage.setItem(DB_KEY, JSON.stringify(state));
+}
+
+function loadState() {
+  const saved = localStorage.getItem(DB_KEY);
+  if (!saved) return;
+  const state = JSON.parse(saved);
+  for (const monthId in state) {
+    const panel = document.getElementById(`panel-${monthId}`);
+    if (!panel) continue;
+    const tasks = panel.querySelectorAll('.task-item');
+    state[monthId].forEach((isDone, i) => {
+      if (isDone && tasks[i]) tasks[i].classList.add('done');
+    });
+  }
+}
+
 buildApp();
+loadState();
+updateProgress();
+
+function requestSync() {
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage('sync_cloud', '*');
+  }
+}
+
+document.getElementById('btnSave').addEventListener('click', async () => {
+  const btn = document.getElementById('btnSave');
+  const icon = document.getElementById('saveIcon');
+  const text = document.getElementById('saveText');
+  const status = document.getElementById('saveStatus');
+
+  // UI Feedback
+  btn.style.opacity = '0.7';
+  btn.disabled = true;
+  icon.textContent = '⏳';
+  text.textContent = 'Sincronizando...';
+
+  saveState();
+  requestSync();
+
+  // Simulación de delay para feedback visual premium
+  setTimeout(() => {
+    btn.style.opacity = '1';
+    btn.disabled = false;
+    icon.textContent = '✅';
+    text.textContent = 'Guardado';
+    status.textContent = 'Último cambio: ' + new Date().toLocaleTimeString();
+    
+    setTimeout(() => {
+      icon.textContent = '💾';
+      text.textContent = 'Guardar';
+    }, 2000);
+  }, 800);
+});
 </script>
 </body>
 </html>

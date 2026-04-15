@@ -28,7 +28,7 @@
     }
 
     * { margin:0; padding:0; box-sizing:border-box; font-family:'DM Sans',sans-serif; }
-    body { background: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow: hidden; }
+    body { background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
 
     /* SIDEBAR */
     .sidebar { width: 280px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 50; }
@@ -37,12 +37,12 @@
     .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.25rem; color: var(--text); letter-spacing: -0.5px; }
     .logo-sub { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: -2px; }
 
-    .nav { flex: 1; padding: 0.5rem 1rem; }
+    .nav { flex: 1; padding: 0.5rem 1rem; overflow-y: auto; }
     .nav-label { font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; padding: 1.5rem 1rem 0.5rem; }
-    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; border-radius: var(--radius); cursor: pointer; color: var(--text-muted); font-weight: 500; transition: all 0.2s; margin-bottom: 0.25rem; text-decoration: none; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; border-radius: var(--radius); cursor: pointer; color: var(--text-muted); font-weight: 500; transition: all 0.2s; margin-bottom: 0.25rem; text-decoration: none; font-size: 0.85rem; }
     .nav-item:hover { background: var(--primary-soft); color: var(--primary); }
     .nav-item.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
-    .nav-item i { font-size: 1.25rem; }
+    .nav-item i { font-size: 1.25rem; flex-shrink: 0; }
 
     .sidebar-footer { padding: 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-dim); }
 
@@ -143,18 +143,41 @@
     </div>
     
     <nav class="nav">
-      <div class="nav-label">General</div>
       <div class="nav-item active" onclick="switchView('dashboard', this)"><i class="ph-bold ph-chart-line-up"></i> Dashboard</div>
-      <div class="nav-item" onclick="switchView('ausentismo', this)"><i class="ph-bold ph-calendar-blank"></i> Ausentismo</div>
-      <div class="nav-item" onclick="switchView('plan', this)"><i class="ph-bold ph-list-checks"></i> Plan de Trabajo</div>
-      
-      <div class="nav-label">Seguridad</div>
-      <div class="nav-item" onclick="switchView('riesgos', this)"><i class="ph-bold ph-shield-warning"></i> Matriz de Riesgos</div>
-      <div class="nav-item" onclick="switchView('epp', this)"><i class="ph-bold ph-hard-hat"></i> Entrega de EPP</div>
-      
-      <div class="nav-label">Salud</div>
-      <div class="nav-item" onclick="switchView('examenes', this)"><i class="ph-bold ph-stethoscope"></i> Exámenes Médicos</div>
-      
+
+      <div class="nav-label">PLANEAR</div>
+      <div class="nav-item" onclick="switchView('estandares', this)"><i class="ph-bold ph-clipboard-text"></i> Evaluación Inicial</div>
+      <div class="nav-item" onclick="switchView('responsabilidades', this)"><i class="ph-bold ph-briefcase"></i> Responsabilidades SG-SST</div>
+      <div class="nav-item" onclick="switchView('plan', this)"><i class="ph-bold ph-list-checks"></i> Planes de Trabajo</div>
+      <div class="nav-item" onclick="switchView('afiliacion', this)"><i class="ph-bold ph-file-text"></i> Afiliación S.G.R.L.</div>
+      <div class="nav-item" onclick="switchView('copasst', this)"><i class="ph-bold ph-users-three"></i> Copasst, CCL y Comités</div>
+      <div class="nav-item" onclick="switchView('capacitacion', this)"><i class="ph-bold ph-chalkboard-teacher"></i> Plan de Capacitación</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-coins"></i> Presupuesto</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-calendar"></i> Planeación Estratégica</div>
+      <div class="nav-item" onclick="switchView('legal', this)"><i class="ph-bold ph-scales"></i> Matriz Legal</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-arrows-merge"></i> Gestión del Cambio</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-archive"></i> Conservación Documental</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-hard-hat"></i> Gestión de Contratistas</div>
+
+      <div class="nav-label">HACER</div>
+      <div class="nav-item" onclick="switchView('salud', this)"><i class="ph-bold ph-stethoscope"></i> Condiciones de Salud</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-user-list"></i> Profesiograma</div>
+      <div class="nav-item" onclick="switchView('ausentismo', this)"><i class="ph-bold ph-heartbeat"></i> Casos Médicos</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-magnifying-glass"></i> Investigación Accidentes</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-chart-line"></i> Caracterización 70 Var.</div>
+      <div class="nav-item" onclick="switchView('riesgos', this)"><i class="ph-bold ph-shield-warning"></i> Matriz IPERC</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-check-square"></i> Inspecciones Seguridad</div>
+      <div class="nav-item" onclick="switchView('epp', this)"><i class="ph-bold ph-mask"></i> Elementos de Protección</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-fire-extinguisher"></i> Extintores y Brigadistas</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-eye"></i> Análisis Vulnerabilidad</div>
+
+      <div class="nav-label">VERIFICAR</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-chart-bar"></i> Indicadores (EPR)</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-pencil-simple"></i> Auditorías</div>
+
+      <div class="nav-label">ACTUAR</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-prescription"></i> Acciones Correctivas/Mejora</div>
+
       <div class="nav-label">Hub</div>
       <a href="../../index.html" target="_top" class="nav-item"><i class="ph-bold ph-house"></i> Volver al Hub</a>
     </nav>
@@ -285,15 +308,187 @@
       </div>
     </div>
 
-    <!-- VIEW: EXAMENES -->
-    <div class="content" id="view-examenes" style="display:none">
+    <!-- VIEW: CONDICIONES DE SALUD -->
+    <div class="content" id="view-salud" style="display:none">
       <div class="section-card">
+        <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-heartbeat"></i> Condiciones de Salud en el Trabajo</div>
+            <button class="btn btn-primary btn-sm" onclick="openModalSalud()"><i class="ph-bold ph-plus"></i> Añadir Registro / Soporte</button>
+        </div>
         <div class="table-wrap">
-          <table>
-            <thead><tr><th>Empleado</th><th>Cargo</th><th>Último Examen</th><th>Curso Alturas</th><th>Estado General</th></tr></thead>
-            <tbody id="table-exams"></tbody>
+          <table style="min-width: 1000px;">
+            <thead><tr><th>Código</th><th>Requisito Normativo</th><th>Responsable</th><th>Soporte / Evidencia</th><th>Observaciones</th><th>Auditoría</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-salud"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- VIEW: ESTANDARES -->
+    <div class="content" id="view-estandares" style="display:none">
+      <div class="section-card">
+        <div class="card-header" style="justify-content:space-between">
+          <div class="card-title"><i class="ph-bold ph-clipboard-text"></i> Evaluación Inicial SG-SST (Estándares)</div>
+          <div style="font-size: 1.25rem; font-weight:700">Puntaje: <span id="est-score" style="color:var(--primary)">0</span> / 100</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:50%">Ítem del Estándar</th>
+                <th>Valor</th>
+                <th>Calificación</th>
+                <th>Justifica</th>
+              </tr>
+            </thead>
+            <tbody id="table-estandares"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: COPASST -->
+    <div class="content" id="view-copasst" style="display:none">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        
+        <!-- COPASST -->
+        <div class="section-card">
+          <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-users-three"></i> COPASST / Vigía</div>
+            <button class="btn btn-sm btn-ghost" onclick="addComite('COPASST')"><i class="ph-bold ph-plus"></i> Añadir</button>
+          </div>
+          <div class="card-body" id="list-copasst">
+            <div class="empty-state">No hay miembros registrados.</div>
+          </div>
+        </div>
+
+        <!-- COMITÉ DE CONVIVENCIA LABORAL (CCL) -->
+        <div class="section-card">
+          <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-handshake"></i> Comité de Convivencia</div>
+            <button class="btn btn-sm btn-ghost" onclick="addComite('CCL')"><i class="ph-bold ph-plus"></i> Añadir</button>
+          </div>
+          <div class="card-body" id="list-ccl">
+            <div class="empty-state">No hay miembros registrados.</div>
+          </div>
+        </div>
+
+        <!-- BRIGADA DE EMERGENCIAS -->
+        <div class="section-card">
+          <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-first-aid-kit"></i> Brigada Emergencias</div>
+            <button class="btn btn-sm btn-ghost" onclick="addComite('BRIGADA')"><i class="ph-bold ph-plus"></i> Añadir</button>
+          </div>
+          <div class="card-body" id="list-brigada">
+            <div class="empty-state">No hay miembros registrados.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card" style="margin-top:2rem;">
+         <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-folder-open"></i> Registro de Reuniones y Actas (Comités)</div>
+            <button class="btn btn-primary btn-sm" onclick="openModalActa()"><i class="ph-bold ph-plus"></i> Nueva Acta / Reunión</button>
+         </div>
+         <div class="table-wrap">
+            <table>
+               <thead><tr><th>Comité</th><th>Tipo de Actividad</th><th>Fecha</th><th>Tema Tratado</th><th>Ubicación Acta / Evidencia</th><th>Auditoría</th><th style="width:50px"></th></tr></thead>
+               <tbody id="table-actas"></tbody>
+            </table>
+         </div>
+      </div>
+    </div>
+
+    <!-- VIEW: CAPACITACIÓN -->
+    <div class="content" id="view-capacitacion" style="display:none">
+      <div class="section-card">
+        <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-chalkboard-teacher"></i> Plan de Capacitación SST</div>
+            <button class="btn btn-primary btn-sm" onclick="openModalCap()"><i class="ph-bold ph-plus"></i> Nueva Capacitación</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tema / Actividad</th><th>Modalidad</th><th>Responsable/Entidad</th><th>Fecha Prevista</th><th>Asistentes (Meta)</th><th>Estado</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-capacitacion"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: RESPONSABILIDADES SG-SST -->
+    <div class="content" id="view-responsabilidades" style="display:none">
+      <div class="section-card">
+        <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-briefcase"></i> Responsabilidades y Asignación SG-SST</div>
+            <button class="btn btn-primary btn-sm" onclick="openModalResp()"><i class="ph-bold ph-plus"></i> Añadir Registro / Acta</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Requisito Normativo</th><th>Responsable Asignado</th><th>Fecha de Acta / Asignación</th><th>Detalles / Valor</th><th>Estado</th><th>Ubicación Soporte / Acta</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-responsabilidades"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: AFILIACIÓN SG Y PAGOS -->
+    <div class="content" id="view-afiliacion" style="display:none">
+      <div class="section-card">
+        <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-file-text"></i> Afiliación S.G.R.L. y Pagos de Seguridad Social</div>
+            <button class="btn btn-primary btn-sm" onclick="openModalAfiliacion()"><i class="ph-bold ph-plus"></i> Registrar Pago</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Período Cobrado</th><th>Nº Planilla / Referencia</th><th>ARL</th><th>Valor Pagado</th><th>Fecha de Pago</th><th>Documento / Soporte</th><th>Auditoría</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-afiliacion"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: MATRIZ LEGAL -->
+    <div class="content" id="view-legal" style="display:none">
+      <div class="section-card">
+        <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-scales"></i> Matriz de Requisitos Legales</div>
+            <div style="display:flex; gap:0.5rem">
+                <input type="file" id="file-legal" style="display:none" accept=".xlsx, .xls" onchange="importarMatrizLegal(event)">
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('file-legal').click()"><i class="ph-bold ph-file-xls"></i> Importar Excel</button>
+                <button class="btn btn-primary btn-sm" onclick="openModalLegal()"><i class="ph-bold ph-plus"></i> Añadir Norma</button>
+            </div>
+        </div>
+        <div class="table-wrap" style="width: 100%; max-width: 100%; overflow-x: auto; display: block;">
+          <table style="min-width: 1800px; width: 100%;">
+            <thead style="font-size: 0.8rem; background: #f1f3f5; border-bottom: 2px solid #e9ecef;">
+                <tr>
+                    <th style="width:50px; text-align:center;">N°</th>
+                    <th style="width:120px;">Tipo de Norma</th>
+                    <th style="width:100px;">Número</th>
+                    <th style="width:100px;">Año de Pub.</th>
+                    <th style="width:150px;">Expedida Por</th>
+                    <th style="width:300px;">Descripción</th>
+                    <th style="width:150px;">Aplicabilidad (Art / Título)</th>
+                    <th style="width:120px;">Tipo Aplicabilidad</th>
+                    <th style="width:250px;">Método Cumplimiento</th>
+                    <th style="width:150px;">Responsable</th>
+                    <th style="width:150px;">Área Aplicación</th>
+                    <th style="width:120px; text-align:center;">Auditoría</th>
+                    <th style="width:80px">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="table-legal"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: UNDER CONSTRUCTION -->
+    <div class="content" id="view-uc" style="display:none">
+      <div class="empty-state">
+        <i class="ph-bold ph-cone" style="color:var(--warning)"></i>
+        <h2>Módulo en Construcción</h2>
+        <p>Esta sección forma parte de la estructura PDCA y estará disponible en una próxima actualización.</p>
       </div>
     </div>
 
@@ -343,6 +538,13 @@
     const LS_SST_PLAN = 'dimalcco_sst_plan_v2';
     const LS_SST_EPP = 'dimalcco_sst_epp_v2';
     const LS_SST_RIESGOS = 'dimalcco_sst_riesgos_v2';
+    const LS_SST_EST = 'dimalcco_sst_est_v2';
+    const LS_SST_COMITES = 'dimalcco_sst_comites_v2';
+    const LS_SST_CAPACITACION = 'dimalcco_sst_cap_v2';
+    const LS_SST_ACTAS = 'dimalcco_sst_actas_v2';
+    const LS_SST_PAGOS = 'dimalcco_sst_pagos_v2';
+    const LS_SST_RESP = 'dimalcco_sst_resp_v2';
+    const LS_SST_LEGAL = 'dimalcco_sst_legal_v2';
 
     let currentView = 'dashboard';
     let editIndex = -1;
@@ -350,6 +552,49 @@
     let plan = JSON.parse(localStorage.getItem(LS_SST_PLAN)) || [];
     let epp = JSON.parse(localStorage.getItem(LS_SST_EPP)) || [];
     let riesgos = JSON.parse(localStorage.getItem(LS_SST_RIESGOS)) || [];
+    let estData = JSON.parse(localStorage.getItem(LS_SST_EST)) || {};
+    let comites = JSON.parse(localStorage.getItem(LS_SST_COMITES)) || { COPASST: [], CCL: [], BRIGADA: [] };
+    let capacitaciones = JSON.parse(localStorage.getItem(LS_SST_CAPACITACION)) || [];
+    let actas = JSON.parse(localStorage.getItem(LS_SST_ACTAS)) || [];
+    let pagos = JSON.parse(localStorage.getItem(LS_SST_PAGOS)) || [];
+    let responsabilidades = JSON.parse(localStorage.getItem(LS_SST_RESP)) || [];
+    let matrizLegal = JSON.parse(localStorage.getItem(LS_SST_LEGAL)) || [];
+
+    const estItems = [
+      { id: '1.1.1', desc: 'Responsable del Sistema de Gestión de Seguridad y Salud en el Trabajo SG-SST', val: 0.5 },
+      { id: '1.1.2', desc: 'Responsabilidades en el Sistema de Gestión de Seguridad y Salud en el Trabajo – SG-SST', val: 0.5 },
+      { id: '1.1.3', desc: 'Asignación de recursos para el Sistema de Gestión en Seguridad y Salud en el Trabajo – SG-SST', val: 0.5 },
+      { id: '1.1.4', desc: 'Afiliación al Sistema General de Riesgos Laborales', val: 0.5 },
+      { id: '1.1.5', desc: 'Pago de pensión trabajadores alto riesgo', val: 0.5 },
+      { id: '1.1.6', desc: 'Conformación COPASST / Vigía', val: 0.5 },
+      { id: '1.1.7', desc: 'Capacitación COPASST / Vigía', val: 0.5 },
+      { id: '1.1.8', desc: 'Conformación Comité de Convivencia', val: 0.5 },
+      { id: '1.2.1', desc: 'Programa Capacitación promoción y prevención PyP', val: 2 },
+      { id: '1.2.2', desc: 'Capacitación, Inducción y Reinducción en Sistema de Gestión de Seguridad y Salud en el Trabajo SG-SST', val: 2 },
+      { id: '1.2.3', desc: 'Responsables del Sistema de Gestión de Seguridad y Salud en el Trabajo SG-SST', val: 2 },
+      { id: '2.1.1', desc: 'Política del Sistema de Gestión de Seguridad y Salud en el Trabajo SG-SST', val: 1 },
+      { id: '3.1.1', desc: 'Evaluación e Identificación de Peligros', val: 1 },
+      { id: '4.1.1', desc: 'Plan que identifica objetivos, metas', val: 2 },
+      { id: '5.1.1', desc: 'Archivo y retención documental', val: 2 },
+      { id: '8.1.1', desc: 'Reporte de los accidentes de trabajo y enfermedad laboral', val: 2 },
+      { id: '8.1.2', desc: 'Investigación de Accidentes, Incidentes', val: 2 },
+      { id: '9.1.1', desc: 'Identificación de peligros con participación', val: 4 },
+      { id: '10.1.1', desc: 'Plan de Prevención y Preparación ante emergencias', val: 5 },
+      { id: '10.1.2', desc: 'Brigada de prevención', val: 5 },
+      { id: '11.1.1', desc: 'Auditoría anual', val: 1.25 }
+    ];
+
+    const requisitosSalud = [
+      "3.1.1 Evaluación Médica Ocupacional",
+      "3.1.2 Actividades de Promoción y Prevención",
+      "3.1.3 Información al médico de los perfiles de cargo",
+      "3.1.4 Realización de los exámenes médicos",
+      "3.1.5 Custodia de Historias Clínicas",
+      "3.1.6 Restricciones y recomendaciones",
+      "3.1.7 Estilos de vida y entornos saludables",
+      "3.1.8 Agua potable, servicios sanitarios y recreativos",
+      "3.1.9 Eliminación adecuada de residuos"
+    ];
 
     function switchView(v, el) {
         currentView = v;
@@ -369,16 +614,23 @@
 
         switch(v) {
             case 'dashboard': title.textContent='Dashboard Operativo'; renderDashboard(); break;
-            case 'ausentismo': title.textContent='Control de Ausentismo'; renderAusentismo(); break;
+            case 'ausentismo': title.textContent='Casos Médicos (Ausentismo)'; renderAusentismo(); break;
             case 'plan': 
-                title.textContent='Plan de Trabajo SST'; 
+                title.textContent='Planes de Trabajo'; 
                 btnImp.style.display='flex'; 
                 btnTmp.style.display='flex'; 
                 renderPlan(); 
                 break;
-            case 'riesgos': title.textContent='Matriz de Riesgos'; btn.style.display='flex'; renderRiesgos(); break;
-            case 'epp': title.textContent='Entrega de EPP'; btn.style.display='flex'; renderEPP(); break;
-            case 'examenes': title.textContent='Exámenes Médicos'; renderExams(); break;
+            case 'riesgos': title.textContent='Matriz IPERC'; btn.style.display='flex'; renderRiesgos(); break;
+            case 'epp': title.textContent='Elementos de Protección Personal'; btn.style.display='flex'; renderEPP(); break;
+            case 'salud': title.textContent='Condiciones de Salud en el Trabajo'; renderSalud(); break;
+            case 'estandares': title.textContent='Evaluación Inicial (Estándares)'; renderEstandares(); break;
+            case 'responsabilidades': title.textContent='Responsabilidades SG-SST'; renderResponsabilidades(); break;
+            case 'afiliacion': title.textContent='Afiliación SGRL y Seguridad Social'; renderAfiliacion(); break;
+            case 'copasst': title.textContent='Conformación COPASST y Comités'; renderComites(); renderActas(); break;
+            case 'capacitacion': title.textContent='Plan de Capacitación'; renderCapacitacion(); break;
+            case 'legal': title.textContent='Matriz Legal'; renderLegal(); break;
+            case 'uc': title.textContent='En Construcción'; break;
         }
     }
 
@@ -521,6 +773,772 @@
         }).join('');
     }
 
+    function renderEstandares() {
+        let score = 0;
+        document.getElementById('table-estandares').innerHTML = estItems.map((item, i) => {
+            const val = estData[item.id] || { status: 'NO_CUMPLE', just: false };
+            let addedScore = 0;
+            if (val.status === 'CUMPLE' || (val.status === 'NO_APLICA' && val.just)) {
+                addedScore = item.val;
+            }
+            score += addedScore;
+            
+            return `
+                <tr>
+                    <td><b>${item.id}</b> - ${item.desc}</td>
+                    <td>${item.val}</td>
+                    <td>
+                        <select class="form-control" style="width:140px; padding:0.4rem" onchange="updEst('${item.id}', 'status', this.value)">
+                            <option value="NO_CUMPLE" ${val.status === 'NO_CUMPLE' ? 'selected' : ''}>No Cumple</option>
+                            <option value="CUMPLE" ${val.status === 'CUMPLE' ? 'selected' : ''}>Cumple Totalmente</option>
+                            <option value="NO_APLICA" ${val.status === 'NO_APLICA' ? 'selected' : ''}>No Aplica</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="checkbox" ${val.status !== 'NO_APLICA' ? 'disabled' : ''} ${val.just ? 'checked' : ''} onchange="updEst('${item.id}', 'just', this.checked)">
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        
+        document.getElementById('est-score').textContent = score.toFixed(2);
+    }
+    
+    function updEst(id, field, value) {
+        if (!estData[id]) estData[id] = { status: 'NO_CUMPLE', just: false };
+        estData[id][field] = value;
+        if (field === 'status' && value !== 'NO_APLICA') estData[id].just = false; // Reset just if not matching
+        saveSST(true);
+        renderEstandares();
+    }
+
+    function renderComites() {
+        ['COPASST', 'CCL', 'BRIGADA'].forEach(tipo => {
+            const list = comites[tipo] || [];
+            const container = document.getElementById('list-' + tipo.toLowerCase());
+            if (list.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding:1rem"><i class="ph-bold ph-users-three" style="font-size:2rem; opacity:0.3"></i><br>Sin registros</div>';
+            } else {
+                container.innerHTML = list.map((m, i) => `
+                    <div style="padding: 1rem; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.5rem; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-grow:1; margin-right:1rem">
+                            <div>
+                                <div style="font-weight:700">${m.nombre}</div>
+                                <div style="font-size:0.8rem; color:var(--text-muted)">${m.rol} (${m.rep})</div>
+                            </div>
+                            <button class="btn btn-sm ${m.cumple !== false ? 'btn-primary' : ''}" style="border-radius:20px; font-size:0.7rem; padding: 2px 8px; ${m.cumple === false ? 'background:var(--danger);color:white' : 'background:var(--teal);color:white' }" onclick="toggleCumple('comites', ${i}, '${tipo}')">
+                                ${m.cumple !== false ? '<i class="ph-bold ph-check"></i> OK' : '<i class="ph-bold ph-x"></i> NO'}
+                            </button>
+                        </div>
+                        <div style="display:flex; gap:0.25rem">
+                            <button class="btn btn-ghost btn-sm" onclick="editComite('${tipo}', ${i})"><i class="ph-bold ph-pencil-simple"></i></button>
+                            <button class="btn btn-ghost btn-sm" onclick="delComite('${tipo}', ${i})"><i class="ph-bold ph-trash" style="color:var(--danger)"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        });
+    }
+
+    function addComite(tipo, index) {
+        let titleMap = { 'COPASST': 'COPASST / Vigía', 'CCL': 'Comité Convivencia', 'BRIGADA': 'Brigada' };
+        
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        title.textContent = (index !== undefined && index >= 0 ? "Editar " : "Añadir a ") + titleMap[tipo];
+        const emps = JSON.parse(localStorage.getItem(LS_EMP)) || [];
+        
+        let repOptions = tipo === 'BRIGADA' 
+            ? `<option value="Brigadista">Brigadista</option><option value="Jefe Brigada">Jefe de Brigada</option>`
+            : `<option value="Representante Trabajadores">Rep. Trabajadores</option><option value="Representante Empleador">Rep. Empleador</option>`;
+            
+        let rolOptions = tipo === 'BRIGADA'
+            ? `<option value="Primeros Auxilios">Primeros Auxilios</option><option value="Evacuación">Evacuación</option><option value="Contra Incendios">Contra Incendios</option>`
+            : `<option value="Presidente">Presidente</option><option value="Secretario">Secretario</option><option value="Vocal/Suplente">Vocal/Suplente</option><option value="Vigía">Vigía (Empresas < 10)</option>`;
+            
+        body.innerHTML = `
+            <div class="form-group"><label class="form-label">Empleado</label>
+                <select id="c-nom" class="form-control">${emps.map(e=>`<option value="${e.nombre}">${e.nombre}</option>`).join('')}</select>
+            </div>
+            <div class="form-group"><label class="form-label">${tipo === 'BRIGADA' ? 'Especialidad' : 'Rol'}</label>
+                <select id="c-rol" class="form-control">${rolOptions}</select>
+            </div>
+            <div class="form-group"><label class="form-label">${tipo === 'BRIGADA' ? 'Cargo en Brigada' : 'Representación'}</label>
+                <select id="c-rep" class="form-control">${repOptions}</select>
+            </div>
+        `;
+        
+        if (index !== undefined && index >= 0) {
+            editIndex = index;
+            const m = comites[tipo][index];
+            setTimeout(() => {
+                document.getElementById('c-nom').value = m.nombre;
+                document.getElementById('c-rol').value = m.rol;
+                document.getElementById('c-rep').value = m.rep;
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+        
+        btn.onclick = () => {
+            if(!comites[tipo]) comites[tipo] = [];
+            const data = {
+                nombre: document.getElementById('c-nom').value,
+                rol: document.getElementById('c-rol').value,
+                rep: document.getElementById('c-rep').value,
+                cumple: editIndex >= 0 ? (comites[tipo][editIndex].cumple !== undefined ? comites[tipo][editIndex].cumple : true) : true
+            };
+            if(editIndex >= 0) comites[tipo][editIndex] = data;
+            else comites[tipo].push(data);
+            
+            saveSST(true);
+            renderComites();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function editComite(tipo, index) { addComite(tipo, index); }
+
+    function delComite(tipo, index) {
+        if(confirm('¿Eliminar integrante?')) {
+            comites[tipo].splice(index, 1);
+            saveSST(true);
+            renderComites();
+        }
+    }
+
+    // ── ACTAS Y REUNIONES ──
+    function renderActas() {
+        const container = document.getElementById('table-actas');
+        if (actas.length === 0) {
+            container.innerHTML = '<tr><td colspan="6" class="empty-state" style="padding:2rem">No hay actas registradas.</td></tr>';
+            return;
+        }
+        
+        container.innerHTML = actas.map((a, i) => {
+            let tipoBadge = 'badge-blue';
+            if(a.tipo === 'Capacitación' || a.tipo.includes('Capacitación')) tipoBadge = 'badge-amber';
+            if(a.tipo === 'Reunión Ordinaria') tipoBadge = 'badge-teal';
+            
+            return `
+            <tr>
+                <td style="font-weight:700">${a.comite}</td>
+                <td><span class="badge ${tipoBadge}">${a.tipo}</span></td>
+                <td style="font-family:'DM Mono'">${a.fecha}</td>
+                <td>${a.tema}</td>
+                <td style="font-size:0.8rem">${a.evidencia}</td>
+                <td>
+                    <button class="btn btn-sm ${a.cumple !== false ? 'btn-primary' : ''}" style="border-radius:20px; font-size:0.7rem; padding: 2px 8px; ${a.cumple === false ? 'background:var(--danger);color:white' : 'background:var(--teal);color:white' }" onclick="toggleCumple('actas', ${i})">
+                        ${a.cumple !== false ? '<i class="ph-bold ph-check"></i> Cumple' : '<i class="ph-bold ph-x"></i> NO'}
+                    </button>
+                </td>
+                <td>
+                    <div style="display:flex; gap:0.25rem">
+                        <button class="btn btn-ghost btn-sm" onclick="openModalActa(${i})"><i class="ph-bold ph-pencil-simple"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="delActa(${i})"><i class="ph-bold ph-trash" style="color:var(--danger)"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `}).join('');
+    }
+
+    function openModalActa(index) {
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        title.textContent = "Nueva Acta / Reunión";
+        body.innerHTML = `
+            <div class="form-group"><label class="form-label">Comité Asignado</label>
+                <select id="a-com" class="form-control"><option>COPASST / Vigía</option><option>Comité de Convivencia Laboral</option><option>Brigada de Emergencias</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Tipo de Actividad</label>
+                <select id="a-tipo" class="form-control"><option>Reunión Ordinaria</option><option>Reunión Extraordinaria</option><option>Capacitación / Formación</option><option>Inspección</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Fecha del Acta</label><input type="date" id="a-fecha" class="form-control"></div>
+            <div class="form-group"><label class="form-label">Tema Principal / Resumen</label><input type="text" id="a-tema" class="form-control" placeholder="Ej: Elección de representantes"></div>
+            <div class="form-group"><label class="form-label">Ruta Archivo / Evidencia</label><input type="text" id="a-evi" class="form-control" placeholder="Ej: C:/Actas/Acta_01.pdf - o URL"></div>
+        `;
+        document.getElementById('a-fecha').valueAsDate = new Date();
+        
+        if (index !== undefined && index >= 0) {
+            editIndex = index;
+            const a = actas[index];
+            setTimeout(() => {
+                document.getElementById('a-com').value = a.comite;
+                document.getElementById('a-tipo').value = a.tipo;
+                document.getElementById('a-fecha').value = a.fecha;
+                document.getElementById('a-tema').value = a.tema;
+                document.getElementById('a-evi').value = a.evidencia;
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+        
+        btn.onclick = () => {
+            const data = {
+                comite: document.getElementById('a-com').value,
+                tipo: document.getElementById('a-tipo').value,
+                fecha: document.getElementById('a-fecha').value,
+                tema: document.getElementById('a-tema').value || 'Sin descripción',
+                evidencia: document.getElementById('a-evi').value || 'Sin adjunto',
+                cumple: editIndex >= 0 ? (actas[editIndex].cumple !== undefined ? actas[editIndex].cumple : true) : true
+            };
+            if(editIndex >= 0) actas[editIndex] = data;
+            else actas.push(data);
+            
+            saveSST(true);
+            renderActas();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function delActa(index) {
+        if(confirm('¿Eliminar este registro de acta?')) {
+            actas.splice(index, 1);
+            saveSST(true);
+            renderActas();
+        }
+    }
+
+    function renderCapacitacion() {
+        const container = document.getElementById('table-capacitacion');
+        if (capacitaciones.length === 0) {
+            container.innerHTML = '<tr><td colspan="7" class="empty-state" style="padding:2rem">No hay capacitaciones programadas.</td></tr>';
+            return;
+        }
+        
+        container.innerHTML = capacitaciones.map((c, i) => `
+            <tr>
+                <td style="font-weight:600">${c.tema}</td>
+                <td><span class="badge ${c.mod === 'VIRTUAL' ? 'badge-blue' : 'badge-amber'}">${c.mod}</span></td>
+                <td>${c.resp}</td>
+                <td style="font-family:'DM Mono'">${c.fecha || 'N/A'}</td>
+                <td>${c.asistentes} ${c.target ? '(' + c.target + ')' : ''}</td>
+                <td>
+                    <div style="display:flex; flex-direction:column; gap:0.25rem">
+                        <span class="badge ${c.est === 'EVALUADO' ? 'badge-teal' : (c.est === 'POR EJECUTAR' ? 'badge-blue' : 'badge-amber')}">${c.est}</span>
+                        <button class="btn btn-sm ${c.cumple !== false ? 'btn-primary' : ''}" style="border-radius:20px; font-size:0.7rem; padding: 2px 8px; ${c.cumple === false ? 'background:var(--danger);color:white' : 'background:var(--teal);color:white' }" onclick="toggleCumple('capacitaciones', ${i})">
+                            ${c.cumple !== false ? '<i class="ph-bold ph-check"></i> Cumple' : '<i class="ph-bold ph-x"></i> NO'}
+                        </button>
+                    </div>
+                </td>
+                <td>
+                    <div style="display:flex; gap:0.25rem">
+                        <button class="btn btn-ghost btn-sm" onclick="openModalCap(${i})"><i class="ph-bold ph-pencil-simple"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="delCapacitacion(${i})"><i class="ph-bold ph-trash" style="color:var(--danger)"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openModalCap(index) {
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        title.textContent = "Nueva Capacitación";
+        body.innerHTML = `
+            <div class="form-group"><label class="form-label">Tema de Capacitación</label><input type="text" id="cap-tema" class="form-control" placeholder="Ej: Capacitación COPASST / Vigía"></div>
+            <div class="form-group"><label class="form-label">Modalidad</label>
+                <select id="cap-mod" class="form-control"><option>PRESENCIAL</option><option>VIRTUAL</option><option>MIXTURA</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Responsable / Entidad</label><input type="text" id="cap-resp" class="form-control" placeholder="Ej: ARL, Externo, Coord. SST"></div>
+            <div class="form-group"><label class="form-label">Fecha Prevista / Ejecución</label><input type="date" id="cap-fecha" class="form-control"></div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+               <div class="form-group"><label class="form-label">Dirigido A (Meta)</label><input type="text" id="cap-target" class="form-control" placeholder="Ej: Todo el personal"></div>
+               <div class="form-group"><label class="form-label">Cant. Asistentes</label><input type="number" id="cap-asist" class="form-control" value="0"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Estado</label>
+                <select id="cap-est" class="form-control"><option>POR EJECUTAR</option><option>EJECUTADO</option><option>EVALUADO</option><option>REPROGRAMADO</option></select>
+            </div>
+        `;
+        
+        if (index !== undefined && index >= 0) {
+            editIndex = index;
+            const c = capacitaciones[index];
+            setTimeout(() => {
+                document.getElementById('cap-tema').value = c.tema;
+                document.getElementById('cap-mod').value = c.mod;
+                document.getElementById('cap-resp').value = c.resp;
+                document.getElementById('cap-fecha').value = c.fecha;
+                document.getElementById('cap-target').value = c.target || '';
+                document.getElementById('cap-asist').value = c.asistentes || 0;
+                document.getElementById('cap-est').value = c.est;
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+
+        btn.onclick = () => {
+            const data = {
+                tema: document.getElementById('cap-tema').value || 'Sin tema',
+                mod: document.getElementById('cap-mod').value,
+                resp: document.getElementById('cap-resp').value || 'N/D',
+                fecha: document.getElementById('cap-fecha').value,
+                target: document.getElementById('cap-target').value,
+                asistentes: document.getElementById('cap-asist').value,
+                est: document.getElementById('cap-est').value,
+                cumple: editIndex >= 0 ? (capacitaciones[editIndex].cumple !== undefined ? capacitaciones[editIndex].cumple : true) : true
+            };
+            if(editIndex >= 0) capacitaciones[editIndex] = data;
+            else capacitaciones.push(data);
+            
+            saveSST(true);
+            renderCapacitacion();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function delCapacitacion(index) {
+        if(confirm('¿Eliminar capacitación?')) {
+            capacitaciones.splice(index, 1);
+            saveSST(true);
+            renderCapacitacion();
+        }
+    }
+
+    // ── PAGOS SEGURIDAD SOCIAL ──
+    function renderAfiliacion() {
+        const container = document.getElementById('table-afiliacion');
+        if (pagos.length === 0) {
+            container.innerHTML = '<tr><td colspan="7" class="empty-state" style="padding:2rem">No hay pagos de seguridad social registrados.</td></tr>';
+            return;
+        }
+        
+        container.innerHTML = pagos.map((p, i) => `
+            <tr>
+                <td style="font-weight:700; text-transform:capitalize">${p.periodo}</td>
+                <td style="font-family:'DM Mono'">${p.planilla}</td>
+                <td>${p.arl}</td>
+                <td style="font-weight:600; color:var(--success)">$ ${parseFloat(p.valor).toLocaleString('es-CO')}</td>
+                <td style="font-family:'DM Mono'">${p.fecha}</td>
+                <td style="font-size:0.8rem">${p.soporte}</td>
+                <td>
+                    <button class="btn btn-sm ${p.cumple !== false ? 'btn-primary' : ''}" style="border-radius:20px; font-size:0.7rem; padding: 2px 8px; ${p.cumple === false ? 'background:var(--danger);color:white' : 'background:var(--teal);color:white' }" onclick="toggleCumple('pagos', ${i})">
+                        ${p.cumple !== false ? '<i class="ph-bold ph-check"></i> Cumple' : '<i class="ph-bold ph-x"></i> NO'}
+                    </button>
+                </td>
+                <td>
+                    <div style="display:flex; gap:0.25rem">
+                        <button class="btn btn-ghost btn-sm" onclick="openModalAfiliacion(${i})"><i class="ph-bold ph-pencil-simple"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="delPago(${i})"><i class="ph-bold ph-trash" style="color:var(--danger)"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openModalAfiliacion(index) {
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        title.textContent = "Registrar Pago de Seguridad Social";
+        body.innerHTML = `
+            <div class="form-group"><label class="form-label">Período Cobrado (Mes / Año)</label><input type="text" id="p-per" class="form-control" placeholder="Ej: Mayo 2026"></div>
+            <div class="form-group"><label class="form-label">Número de Planilla</label><input type="text" id="p-pla" class="form-control" placeholder="Ej: 123456789"></div>
+            <div class="form-group"><label class="form-label">Aseguradora (ARL)</label><input type="text" id="p-arl" class="form-control" value="SURA"></div>
+            <div class="form-group"><label class="form-label">Valor Total Pagado ($)</label><input type="number" id="p-val" class="form-control" value="0"></div>
+            <div class="form-group"><label class="form-label">Fecha del Pago</label><input type="date" id="p-fec" class="form-control"></div>
+            <div class="form-group"><label class="form-label">Ruta Archivo / Soporte</label><input type="text" id="p-sop" class="form-control" placeholder="Ej: C:/Pagos/Planilla_Mayo.pdf"></div>
+        `;
+        document.getElementById('p-fec').valueAsDate = new Date();
+        
+        if (index !== undefined && index >= 0) {
+            editIndex = index;
+            const p = pagos[index];
+            setTimeout(() => {
+                document.getElementById('p-per').value = p.periodo;
+                document.getElementById('p-pla').value = p.planilla;
+                document.getElementById('p-arl').value = p.arl;
+                document.getElementById('p-val').value = p.valor;
+                document.getElementById('p-fec').value = p.fecha;
+                document.getElementById('p-sop').value = p.soporte;
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+
+        btn.onclick = () => {
+            const data = {
+                periodo: document.getElementById('p-per').value || 'Sin periodo',
+                planilla: document.getElementById('p-pla').value || 'N/A',
+                arl: document.getElementById('p-arl').value || 'SURA',
+                valor: document.getElementById('p-val').value || 0,
+                fecha: document.getElementById('p-fec').value,
+                soporte: document.getElementById('p-sop').value || 'Sin adjunto',
+                cumple: editIndex >= 0 ? (pagos[editIndex].cumple !== undefined ? pagos[editIndex].cumple : true) : true
+            };
+            if(editIndex >= 0) pagos[editIndex] = data;
+            else pagos.push(data);
+            
+            saveSST(true);
+            renderAfiliacion();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function delPago(index) {
+        if(confirm('¿Eliminar este registro de pago?')) {
+            pagos.splice(index, 1);
+            saveSST(true);
+            renderAfiliacion();
+        }
+    }
+
+    // ── RESPONSABILIDADES SG-SST ──
+    function renderResponsabilidades() {
+        const container = document.getElementById('table-responsabilidades');
+        if (responsabilidades.length === 0) {
+            container.innerHTML = '<tr><td colspan="6" class="empty-state" style="padding:2rem">No hay registros de responsabilidades o actas subidas.</td></tr>';
+            return;
+        }
+        
+        container.innerHTML = responsabilidades.map((r, i) => `
+            <tr>
+                <td style="font-weight:700">${r.requisito}</td>
+                <td><div class="emp-name">${r.responsable}</div></td>
+                <td style="font-family:'DM Mono'">${r.fecha || 'N/A'}</td>
+                <td style="font-size:0.85rem">${r.detalles}</td>
+                <td>
+                    <button class="btn btn-sm ${r.cumple ? 'btn-primary' : ''}" style="border-radius:20px; font-size:0.75rem; padding: 4px 10px; ${!r.cumple ? 'background:var(--danger);color:white' : 'background:var(--teal);color:white' }" onclick="toggleRespCumple(${i})">
+                        ${r.cumple ? '<i class="ph-bold ph-check"></i> Cumple' : '<i class="ph-bold ph-x"></i> No Cumple'}
+                    </button>
+                </td>
+                <td style="font-size:0.8rem; color:var(--primary)">${r.acta}</td>
+                <td>
+                    <div style="display:flex; gap:0.25rem">
+                        <button class="btn btn-ghost btn-sm" onclick="openModalResp(${i})"><i class="ph-bold ph-pencil-simple"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="delResponsabilidad(${i})"><i class="ph-bold ph-trash" style="color:var(--danger)"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function toggleRespCumple(index) {
+        responsabilidades[index].cumple = !responsabilidades[index].cumple;
+        saveSST(true);
+        renderResponsabilidades();
+    }
+
+    function openModalResp(index) {
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        const emps = JSON.parse(localStorage.getItem(LS_EMP)) || [];
+        title.textContent = "Añadir Acta de Responsabilidad / Asignación";
+        
+        body.innerHTML = `
+            <div class="form-group"><label class="form-label">Requisito Normativo</label>
+                <select id="res-req" class="form-control">
+                    <option>Responsable del SG-SST</option>
+                    <option>Responsabilidades en el SG-SST</option>
+                    <option>Asignación de Recursos para el SG-SST</option>
+                    <option>Responsables SG-SST con curso (50 / 20 horas)</option>
+                    <option>Otro Documento Normativo</option>
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">Responsable Asignado / Encargado</label>
+                <select id="res-resp" class="form-control">
+                    <option value="Gerencia General">Gerencia General</option>
+                    ${emps.map(e=>`<option value="${e.nombre}">${e.nombre}</option>`).join('')}
+                    <option value="Otro / Asesor Externo">Otro / Asesor Externo</option>
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">Fecha de Acta / Certificado</label><input type="date" id="res-fec" class="form-control"></div>
+            <div class="form-group"><label class="form-label">Detalles de Asignación / Presupuesto</label><input type="text" id="res-det" class="form-control" placeholder="Ej: Se asignan $5.000.000 COP, o 'Aprobación gerente'"></div>
+            <div class="form-group"><label class="form-label">Ubicación del Acta / Evidencia</label><input type="text" id="res-acta" class="form-control" placeholder="Ej: C:/SG-SST/Acta_Asignacion_Recursos.pdf"></div>
+        `;
+        document.getElementById('res-fec').valueAsDate = new Date();
+        
+        if (index !== undefined && index >= 0) {
+            editIndex = index;
+            const r = responsabilidades[index];
+            setTimeout(() => {
+                document.getElementById('res-req').value = r.requisito;
+                document.getElementById('res-resp').value = r.responsable;
+                document.getElementById('res-fec').value = r.fecha;
+                document.getElementById('res-det').value = r.detalles;
+                document.getElementById('res-acta').value = r.acta;
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+        
+        btn.onclick = () => {
+            const data = {
+                requisito: document.getElementById('res-req').value,
+                responsable: document.getElementById('res-resp').value,
+                fecha: document.getElementById('res-fec').value,
+                detalles: document.getElementById('res-det').value || 'Sin destalles',
+                acta: document.getElementById('res-acta').value || 'Sin adjunto',
+                cumple: editIndex >= 0 ? responsabilidades[editIndex].cumple : true // default to cumple if new
+            };
+            if(editIndex >= 0) responsabilidades[editIndex] = data;
+            else responsabilidades.push(data);
+            
+            saveSST(true);
+            renderResponsabilidades();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function delResponsabilidad(index) {
+        if(confirm('¿Seguro que deseas eliminar esta acta de asignación?')) {
+            responsabilidades.splice(index, 1);
+            saveSST(true);
+            renderResponsabilidades();
+        }
+    }
+
+    // ── AUDITORIA UNIVERSAL ──
+    function toggleCumple(modulo, index) {
+        if (modulo === 'legal') {
+            matrizLegal[index].cumple = (matrizLegal[index].cumple === false);
+            saveSST(true);
+            renderLegal();
+        } else if (modulo === 'salud') {
+            let saludData = JSON.parse(localStorage.getItem('dimalcco_sst_salud_v2')) || [];
+            saludData[index].cumple = !saludData[index].cumple;
+            localStorage.setItem('dimalcco_sst_salud_v2', JSON.stringify(saludData));
+            renderSalud();
+        }
+    }
+
+    // ── MATRIZ LEGAL ──
+    function renderLegal() {
+        const container = document.getElementById('table-legal');
+        if (matrizLegal.length === 0) {
+            container.innerHTML = '<tr><td colspan="13" class="empty-state" style="padding:4rem 2rem; background: #fafafa; border-radius: 8px;">No hay normas registradas en la Matriz Legal. Carga un Excel o añade manualmente.</td></tr>';
+            return;
+        }
+        
+        container.innerHTML = matrizLegal.map((m, i) => `
+            <tr style="border-bottom: 1px solid #eee; transition: background 0.2s; hover:background:#fbfcff; font-size: 0.85rem;">
+                <td style="font-weight:700; text-align:center; color: var(--text-muted);">${m.num || (i+1)}</td>
+                <td style="font-weight:700; color: #333; text-transform: uppercase;">${m.tipoNorma || '-'}</td>
+                <td style="font-weight:800; color:var(--primary);">${m.numero || '-'}</td>
+                <td><div style="font-weight:600; color:#555; background: #eef2f6; display:inline-block; padding: 2px 8px; border-radius: 12px;"><i class="ph-bold ph-calendar-blank" style="margin-right:2px;"></i> ${m.anio || '-'}</div></td>
+                <td style="color:var(--text-muted)"><i class="ph-fill ph-buildings" style="margin-right:4px;"></i> ${m.emisor || '-'}</td>
+                <td style="max-width:300px; white-space:normal; line-height:1.4; color: #444;">${m.descripcion || '-'}</td>
+                <td style="color:#0056b3; background:#e6f0fa; padding:4px 8px; border-radius:4px; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${m.articulos || '-'}"><b>Aplica:</b> ${m.articulos || '-'}</td>
+                <td><span class="badge ${m.aplicabilidad === 'CONOC. GENERAL' ? 'badge-amber' : 'badge-primary'}" style="font-size:0.7rem; padding:4px 6px;">${m.aplicabilidad || 'CUMPLIMIENTO'}</span></td>
+                <td style="max-width:250px; white-space:normal; color:#555;"><i class="ph-bold ph-file-text" style="color:var(--text-muted); margin-right:4px;"></i> ${m.metodo || '-'}</td>
+                <td style="font-weight:700; color:#333;">${m.responsable || '-'}</td>
+                <td style="color:var(--text-muted);"><i class="ph-bold ph-briefcase" style="margin-right:4px;"></i> ${m.area || '-'}</td>
+                <td style="text-align: center;">
+                    <button class="btn btn-sm ${m.cumple !== false ? 'btn-primary' : ''}" style="border-radius:20px; font-size:0.75rem; padding: 6px 12px; width: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); ${m.cumple === false ? 'background:#dc3545;color:white' : 'background:#198754;color:white' }" onclick="toggleCumple('legal', ${i})">
+                        ${m.cumple !== false ? '<i class="ph-bold ph-check-circle" style="font-size:1rem; margin-right:4px;"></i> Cumple' : '<i class="ph-bold ph-x-circle" style="font-size:1rem; margin-right:4px;"></i> No Cumple'}
+                    </button>
+                </td>
+                <td>
+                    <div style="display:flex; gap:0.25rem; justify-content: center;">
+                        <button class="btn btn-ghost btn-sm" onclick="openModalLegal(${i})" title="Editar"><i class="ph-bold ph-pencil-simple" style="color:#0d6efd; font-size:1.1rem;"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="delLegal(${i})" title="Eliminar"><i class="ph-bold ph-trash" style="color:#dc3545; font-size:1.1rem;"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openModalLegal(index) {
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        title.textContent = "Añadir/Editar Norma Legal";
+        body.innerHTML = `
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                <div class="form-group"><label class="form-label">N° / Ítem</label><input type="text" id="ml-num" class="form-control"></div>
+                <div class="form-group"><label class="form-label">Tipo de Norma</label><input type="text" id="ml-tipo" class="form-control" placeholder="Ej: Ley, Decreto, Resolución"></div>
+                <div class="form-group"><label class="form-label">Número</label><input type="text" id="ml-numero" class="form-control" placeholder="Ej: 1072"></div>
+                <div class="form-group"><label class="form-label">Año de Publicación</label><input type="text" id="ml-anio" class="form-control" placeholder="Ej: 2015"></div>
+                <div class="form-group"><label class="form-label">Expedida por (Emisor)</label><input type="text" id="ml-emisor" class="form-control" placeholder="Ej: MinTrabajo"></div>
+                <div class="form-group"><label class="form-label">Tipo Aplicabilidad</label><input type="text" id="ml-aplica" class="form-control" placeholder="Ej: Cumplimiento"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Descripción</label><textarea id="ml-desc" class="form-control" rows="2"></textarea></div>
+            <div class="form-group"><label class="form-label">Parágrafo, Artículo o Título que Aplica</label><textarea id="ml-art" class="form-control" rows="2"></textarea></div>
+            <div class="form-group"><label class="form-label">Método de Cumplimiento (Evidencia)</label><textarea id="ml-metodo" class="form-control" rows="2"></textarea></div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                <div class="form-group"><label class="form-label">Responsable del Cumplimiento</label><input type="text" id="ml-resp" class="form-control"></div>
+                <div class="form-group"><label class="form-label">Área de Aplicación</label><input type="text" id="ml-area" class="form-control"></div>
+            </div>
+        `;
+        
+        if (index !== undefined && index >= 0) {
+            editIndex = index;
+            const m = matrizLegal[index];
+            setTimeout(() => {
+                document.getElementById('ml-num').value = m.num || '';
+                document.getElementById('ml-tipo').value = m.tipoNorma || '';
+                document.getElementById('ml-numero').value = m.numero || '';
+                document.getElementById('ml-anio').value = m.anio || '';
+                document.getElementById('ml-emisor').value = m.emisor || '';
+                document.getElementById('ml-desc').value = m.descripcion || '';
+                document.getElementById('ml-art').value = m.articulos || '';
+                document.getElementById('ml-aplica').value = m.aplicabilidad || '';
+                document.getElementById('ml-metodo').value = m.metodo || '';
+                document.getElementById('ml-resp').value = m.responsable || '';
+                document.getElementById('ml-area').value = m.area || '';
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+
+        btn.onclick = () => {
+            const data = {
+                num: document.getElementById('ml-num').value,
+                tipoNorma: document.getElementById('ml-tipo').value,
+                numero: document.getElementById('ml-numero').value,
+                anio: document.getElementById('ml-anio').value,
+                emisor: document.getElementById('ml-emisor').value,
+                descripcion: document.getElementById('ml-desc').value,
+                articulos: document.getElementById('ml-art').value,
+                aplicabilidad: document.getElementById('ml-aplica').value,
+                metodo: document.getElementById('ml-metodo').value,
+                responsable: document.getElementById('ml-resp').value,
+                area: document.getElementById('ml-area').value,
+                cumple: editIndex >= 0 ? (matrizLegal[editIndex].cumple !== undefined ? matrizLegal[editIndex].cumple : true) : true
+            };
+            if(editIndex >= 0) matrizLegal[editIndex] = data;
+            else matrizLegal.push(data);
+            
+            saveSST(true);
+            renderLegal();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function delLegal(index) {
+        if(confirm('¿Seguro quieres borrar este requerimiento legal?')) {
+            matrizLegal.splice(index, 1);
+            saveSST(true);
+            renderLegal();
+        }
+    }
+
+    function importarMatrizLegal(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            try {
+                if(typeof XLSX === 'undefined') {
+                    alert('Librería SheetJS (XLSX) no detectada.');
+                    return;
+                }
+                const data = evt.target.result;
+                const workbook = XLSX.read(data, { type: 'binary' });
+                const firstSheet = workbook.SheetNames[0];
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { defval: "" });
+
+                let adds = 0;
+                rows.forEach(row => {
+                    const keys = Object.keys(row);
+                    const getVal = (searchVals) => {
+                        for(let k of keys) {
+                            const kl = k.toLowerCase().replace(/\s+/g, '');
+                            for(let sv of searchVals) {
+                                if(kl.includes(sv)) return row[k];
+                            }
+                        }
+                        return '';
+                    };
+
+                    const num = getVal(['n°', 'nº', 'numerodeorden']);
+                    const tipoNorma = getVal(['tipodenorma', 'tiponorma', 'normatipo']);
+                    const numero = getVal(['numero', 'número', 'n°norma']);
+                    const anio = getVal(['añodepubli', 'año', 'fecha']);
+                    const emisor = getVal(['expedidapor', 'emisor', 'entidad']);
+                    
+                    const desc = getVal(['descripci', 'requisito']);
+                    const parag = getVal(['parágrafo', 'numeral', 'literal', 'articulo', 'sección']);
+                    
+                    const metodo = getVal(['metododecumpl', 'evidencia', 'métodode']);
+                    const responsable = getVal(['responsabledelcumpl', 'responsable']);
+                    const area = getVal(['áreadeaplic', 'area', 'aplicación']);
+                    
+                    // Manejar TIPO DE APLICABILIDAD si está separado
+                    let aplicaVal = getVal(['tipodeaplic', 'aplicabilidad']);
+                    if(!aplicaVal) {
+                        if(getVal(['cumplimiento', 'x'])) aplicaVal = 'CUMPLIMIENTO';
+                        else if(getVal(['conocimientogeneral'])) aplicaVal = 'CONOC. GENERAL';
+                    }
+
+                    if ((numero && String(numero).trim() !== '') || (desc && String(desc).trim() !== '') || (tipoNorma && String(tipoNorma).trim() !== '')) {
+                        matrizLegal.push({
+                            num: num,
+                            tipoNorma: tipoNorma,
+                            numero: numero,
+                            anio: anio,
+                            emisor: emisor,
+                            descripcion: desc,
+                            articulos: parag,
+                            aplicabilidad: aplicaVal || 'CUMPLIMIENTO',
+                            metodo: metodo,
+                            responsable: responsable,
+                            area: area,
+                            cumple: true
+                        });
+                        adds++;
+                    }
+                });
+
+                if(adds > 0) {
+                    saveSST(false);
+                    renderLegal();
+                    alert(`Se han importado ${adds} normas a la matriz legal exitosamente.`);
+                } else {
+                    alert('No se detectaron columnas válidas (Norma, Requisito) en el archivo Excel.');
+                }
+            } catch(err) {
+                console.error(err);
+                alert("Error al procesar el archivo Excel. Asegúrate de que el formato sea texto o tabla básica.");
+            }
+        };
+        reader.readAsBinaryString(file);
+        e.target.value = ''; // reset
+    }
+
+    // ── AUDITORIA GLOBAL TOGGLE ──
+    function toggleCumple(arrayName, index, tipo) {
+        let arr = null;
+        if(arrayName === 'actas') arr = actas;
+        if(arrayName === 'capacitaciones') arr = capacitaciones;
+        if(arrayName === 'pagos') arr = pagos;
+        if(arrayName === 'comites') arr = comites[tipo];
+        if(arrayName === 'legal') arr = matrizLegal;
+        
+        if(arr) {
+           arr[index].cumple = arr[index].cumple === false ? true : false;
+           saveSST(true);
+           if(arrayName === 'actas') renderActas();
+           if(arrayName === 'capacitaciones') renderCapacitacion();
+           if(arrayName === 'pagos') renderAfiliacion();
+           if(arrayName === 'comites') renderComites();
+           if(arrayName === 'legal') renderLegal();
+        }
+    }
+
     // ── ACTIONS ──
     function openModalPlan() { 
         editIndex = -1;
@@ -635,7 +1653,20 @@
         localStorage.setItem(LS_SST_PLAN, JSON.stringify(plan));
         localStorage.setItem(LS_SST_EPP, JSON.stringify(epp));
         localStorage.setItem(LS_SST_RIESGOS, JSON.stringify(riesgos));
-        if(!silent) alert('Datos de SST guardados localmente.');
+        localStorage.setItem(LS_SST_EST, JSON.stringify(estData));
+        localStorage.setItem(LS_SST_COMITES, JSON.stringify(comites));
+        localStorage.setItem(LS_SST_CAPACITACION, JSON.stringify(capacitaciones));
+        localStorage.setItem(LS_SST_ACTAS, JSON.stringify(actas));
+        localStorage.setItem(LS_SST_PAGOS, JSON.stringify(pagos));
+        localStorage.setItem(LS_SST_RESP, JSON.stringify(responsabilidades));
+        localStorage.setItem(LS_SST_LEGAL, JSON.stringify(matrizLegal));
+        
+        // Cloud Sync Integration
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ type: 'sync_cloud' }, '*');
+        }
+
+        if(!silent) alert('Datos de SST guardados localmente y sincronizados con la nube.');
     }
 
     function exportSST() {
@@ -710,6 +1741,100 @@
             e.target.value = ''; // Reset input
         };
         reader.readAsArrayBuffer(file);
+    }
+
+    // --- CONDICIONES DE SALUD ---
+    function renderSalud() {
+        const container = document.getElementById('table-salud');
+        
+        let saludData = JSON.parse(localStorage.getItem('dimalcco_sst_salud_v2'));
+        if (!saludData || saludData.length === 0) {
+            saludData = requisitosSalud.map(req => {
+                const parts = req.split(' ');
+                return {
+                    codigo: parts[0],
+                    requisito: parts.slice(1).join(' '),
+                    responsable: '',
+                    soporte: '',
+                    obs: '',
+                    cumple: false
+                };
+            });
+            localStorage.setItem('dimalcco_sst_salud_v2', JSON.stringify(saludData));
+        }
+
+        container.innerHTML = saludData.map((m, i) => `
+            <tr>
+                <td style="font-weight:700; color:var(--text-muted); font-size: 0.8rem;">${m.codigo}</td>
+                <td style="font-weight:600; font-size: 0.9rem;">${m.requisito}</td>
+                <td>${m.responsable || '<span style="color:#ccc">Sin asignar</span>'}</td>
+                <td style="font-size:0.85rem; color:var(--primary); font-family:monospace">${m.soporte || '-'}</td>
+                <td style="font-size:0.85rem; color:#666">${m.obs || '-'}</td>
+                <td>
+                    <button class="btn btn-sm" style="border-radius:20px; font-size:0.75rem; padding: 4px 10px; ${m.cumple ? 'background:var(--teal);color:white' : 'background:#e2e8f0;color:#64748b' }" onclick="toggleCumple('salud', ${i})">
+                        ${m.cumple ? '<i class="ph-bold ph-check"></i> Cumple' : '<i class="ph-bold ph-minus"></i> Pendiente'}
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-ghost btn-sm" onclick="openModalSalud(${i})"><i class="ph-bold ph-pencil-simple"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openModalSalud(index) {
+        let saludData = JSON.parse(localStorage.getItem('dimalcco_sst_salud_v2')) || [];
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        let m = index >= 0 ? saludData[index] : null;
+
+        title.textContent = "Editar Condición de Salud";
+        body.innerHTML = `
+            <div class="form-group"><label class="form-label">Requisito Normativo</label>
+                <select id="sa-req" class="form-control" ${m ? 'disabled' : ''}>
+                    ${requisitosSalud.map(r => `<option ${m && m.codigo === r.split(' ')[0] ? 'selected' : ''}>${r}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">Responsable</label><input type="text" id="sa-res" class="form-control" placeholder="Ej: Seguridad y Salud / Recursos Humanos"></div>
+            <div class="form-group"><label class="form-label">Enlace a Soporte / Evidencia</label><input type="text" id="sa-sop" class="form-control" placeholder="Ej: Link Drive, URL..."></div>
+            <div class="form-group"><label class="form-label">Observaciones</label><textarea id="sa-obs" class="form-control" rows="2"></textarea></div>
+        `;
+        
+        if (m) {
+            editIndex = index;
+            setTimeout(() => {
+                document.getElementById('sa-res').value = m.responsable || '';
+                document.getElementById('sa-sop').value = m.soporte || '';
+                document.getElementById('sa-obs').value = m.obs || '';
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+
+        btn.onclick = () => {
+            const reqVal = document.getElementById('sa-req').value;
+            const parts = reqVal.split(' ');
+            
+            const data = {
+                codigo: m ? m.codigo : parts[0],
+                requisito: m ? m.requisito : parts.slice(1).join(' '),
+                responsable: document.getElementById('sa-res').value,
+                soporte: document.getElementById('sa-sop').value,
+                obs: document.getElementById('sa-obs').value,
+                cumple: m ? m.cumple : false
+            };
+            
+            if(editIndex >= 0) saludData[editIndex] = data;
+            else saludData.push(data);
+            
+            localStorage.setItem('dimalcco_sst_salud_v2', JSON.stringify(saludData));
+            renderSalud();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
     }
 
     window.onload = () => switchView('dashboard');

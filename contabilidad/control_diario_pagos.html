@@ -504,6 +504,10 @@
             const db = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
             db[currentDay] = state;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+            // Sincronización Automática
+            if (window.parent && window.parent.postMessage) {
+                window.parent.postMessage('sync_cloud', '*');
+            }
         }
 
         function saveData() {

@@ -64,7 +64,10 @@
                     <div id="sales" class="glass-card">
                         <div class="card-header">
                             <h3><i class="ph ph-trend-up"></i> Ventas e Ingresos</h3>
-                            <button class="add-btn" onclick="addRow('sales-table')"><i class="ph ph-plus"></i></button>
+                            <div>
+                                <button class="add-btn" onclick="syncFromCxC()" title="Importar desde CxC" style="margin-right: 8px; background:var(--primary); color:white"><i class="ph ph-arrows-clockwise"></i> Importar CxC</button>
+                                <button class="add-btn" onclick="addRow('sales-table')" title="Añadir Fila Manual"><i class="ph ph-plus"></i></button>
+                            </div>
                         </div>
                         <table id="sales-table">
                             <thead>
