@@ -109,6 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveRecords = () => {
         localStorage.setItem('shiftRecords', JSON.stringify(records));
         updateDatalists();
+        
+        // Disparar sincronización con la nube si el dashboard maestro está presente
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage('sync_cloud', '*');
+        }
     };
 
     const updateDatalists = () => {
