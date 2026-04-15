@@ -105,7 +105,9 @@ document.addEventListener('DOMContentLoaded', () => {
     updateWorkerSelects();
 
     window.records = JSON.parse(localStorage.getItem('shiftRecords')) || [];
-    window.shiftBalances = JSON.parse(localStorage.getItem('shiftBalances')) || {}; // { "NAME": hoursQty } (Negative means debt)
+    window.shiftBalances = JSON.parse(localStorage.getItem('shiftBalances')) || {}; 
+    window.manualCrossHoursVal = 0; // Para el modo parcial
+    window.lastRenderedWorker = "";
 
     const saveRecords = () => {
         localStorage.setItem('shiftRecords', JSON.stringify(records));
@@ -326,8 +328,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const quincenaBase = (workerRates[worker] && workerRates[worker].quincena) ? workerRates[worker].quincena : (1750905 / 2);
         const rates = calculateDynamicRates(quincenaBase, equivalentDays || 1); 
 
-        const PAYROLL_MODE = payrollModeSelect ? payrollModeSelect.value : 'cross'; // 'cross', 'immediate', 'defer'
-        const currentBalance = shiftBalances[worker] || 0; // Saldo que viene de quincenas anteriores
+        const PAYROLL_MODE = payrollModeSelect ? payrollModeSelect.value : 'cross'; // 'cross', 'partial', 'immediate', 'defer'
+        const currentBalance = shiftBalances[worker] || 0; 
+
+        // Reset manual cross if worker changed
+        if (window.lastRenderedWorker !== worker) {
+            window.manualCrossHoursVal = 0;
+            window.lastRenderedWorker = worker;
+        }
 
         let aggregate = {
             totalDays: new Set(workerRecords.filter(r => !r.isTravelRecord).map(r => r.date)).size,
@@ -396,6 +404,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 crossingDetailHtml = `<div style="color: var(--color-danger); font-size: 0.8rem; margin-top: 4px;">⚠️ Saldo pendiente: ${remainingMissing.toFixed(1)}h tras cruzar con extras hoy.</div>`;
             }
         } 
+        else if (PAYROLL_MODE === 'partial') {
+            // Cruce manual definido por el usuario
+            const manualQty = parseFloat(window.manualCrossHoursVal) || 0;
+            // No podemos cruzar más de lo que hay de extras o de lo que se debe
+            const compQty = Math.min(manualQty, totalExtrasThisPeriod, totalMissingThisPeriod);
+            
+            // Valor de las horas compensadas (extra diurna como base)
+            const compVal = compQty * rates.extDia;
+            
+            finalExtraPay = Math.max(0, aggregate.totalExtraMoney - compVal);
+            finalDeduction = (totalMissingThisPeriod - compQty) * rates.extDia;
+            
+            crossingDetailHtml = `
+                <div style="color: var(--color-accent-primary); font-size: 0.8rem; margin-top: 4px;">
+                    🔢 Cruzar manualmente: 
+                    <input type="number" id="inputManualQty" value="${manualQty}" step="0.5" min="0" 
+                           style="width: 60px; font-weight: 700; border: 1px solid #94a3b8; border-radius: 4px; padding: 2px 4px; color: var(--color-accent-primary);"
+                           onfocus="this.select()"
+                           onchange="window.manualCrossHoursVal = this.value; renderSummary();"> <strong>h</strong>
+                    <br><small>✅ Compensadas: ${compQty.toFixed(1)}h | ❌ Sin cruzar: ${(totalMissingThisPeriod - compQty).toFixed(1)}h</small>
+                </div>`;
+        }
         else if (PAYROLL_MODE === 'immediate') {
             // Se paga todo lo extra y se descuenta todo lo faltante (Sin cruce)
             finalExtraPay = aggregate.totalExtraMoney;
