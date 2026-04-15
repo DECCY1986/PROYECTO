@@ -236,8 +236,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         if (totalHours === 0) {
-            const pending = isTravelRecord ? 0 : ordHours;
-            const pendingVal = pending * (ratesForCalcs.extDia || 0);
+            const pending = record.isTravelRecord ? 0 : ordHours;
+            const pendingVal = pending * (safeRates.extDia || 0);
             details.totalShift = details.rawPay - pendingVal;
             return details;
         }
