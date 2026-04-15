@@ -118,16 +118,42 @@ document.addEventListener('DOMContentLoaded', () => {
         if (opList) opList.innerHTML = ops.map(o => `<option value="${o}">`).join('');
     };
 
+    const HOLIDAYS_2026 = {
+        "2026-01-01": "Año Nuevo",
+        "2026-01-06": "Día de los Reyes Magos",
+        "2026-03-23": "Día de San José",
+        "2026-04-09": "Jueves Santo",
+        "2026-04-10": "Viernes Santo",
+        "2026-05-01": "Día del Trabajo",
+        "2026-05-18": "Día de la Ascensión",
+        "2026-06-08": "Corpus Christi",
+        "2026-06-15": "Sagrado Corazón",
+        "2026-07-20": "Día de la Independencia",
+        "2026-08-07": "Batalla de Boyacá",
+        "2026-08-17": "La Asunción de la Virgen",
+        "2026-10-12": "Día de la Raza",
+        "2026-11-02": "Todos los Santos",
+        "2026-11-16": "Independencia de Cartagena",
+        "2026-12-08": "Inmaculada Concepción",
+        "2026-12-25": "Navidad"
+    };
+
     const getDayInfo = (dateStr) => {
         const date = new Date(dateStr + 'T00:00:00');
         const day = date.getDay();
         const isSunday = (day === 0);
+        const holidayName = HOLIDAYS_2026[dateStr];
+        const isHoliday = !!holidayName;
         const dayName = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'][day];
-        return { day, dayName, isSunday };
+        return { day, dayName, isSunday, isHoliday, holidayName };
     };
 
     const getOrdinaryHours = (dateStr, location, esMedioDia = false) => {
-        const { day } = getDayInfo(dateStr);
+        const { day, isHoliday } = getDayInfo(dateStr);
+        
+        // En días festivos la jornada ordinaria es 0 (se paga todo como extra/recargo)
+        if (isHoliday) return 0;
+
         let hours = 0;
         if (location === 'obra') {
             if (day >= 1 && day <= 5) hours = 10;
@@ -154,7 +180,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const totalHours = parseFloat(record.totalHours) || 0;
         const ordHours = parseFloat(record.ordinaryHours) || 0;
-        const { isSunday } = getDayInfo(record.date);
+        const { isSunday, isHoliday } = getDayInfo(record.date);
+        const isSunOrHol = isSunday || isHoliday;
         const esMedioDia = record.esMedioDia === true;
         
         // El pago ordinario base será 1 día completo (o medio si es medio día).
@@ -196,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (hourCount < ordHours) {
                     // Horas Ordinarias
-                    if (currentDayInfo.isSunday) {
+                    if (isSunOrHol) {
                         details.recDomQty++;
                         details.recDomVal += ratesForCalcs.rDom;
                     } else if (isNight) {
@@ -205,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 } else {
                     // Horas Extras
-                    if (currentDayInfo.isSunday) {
+                    if (isSunOrHol) {
                         details.extDomQty++;
                         details.extDomVal += ratesForCalcs.extDom;
                     } else if (isNight) {
@@ -454,7 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const diffDisplay = extras > 0 ? `<span style="color: var(--color-success)">+${extras}h</span>` :
                 pending > 0 ? `<span style="color: var(--color-danger)">-${pending}h</span>` : '-';
 
-            const { dayName } = getDayInfo(rec.date);
+            const { dayName, isHoliday, holidayName } = getDayInfo(rec.date);
             const detail = getDetailedShiftPay(rec) || { recNoctQty: 0, totalShift: 0, ordPay: 0, extDiaQty: 0, extDiaVal: 0, recNoctVal: 0, extNoctQty: 0, extNoctVal: 0, recDomQty: 0, recDomVal: 0, extDomQty: 0, extDomVal: 0 };
 
             const isFalta = (parseFloat(rec.totalHours) === 0 && !rec.isTravelRecord);
@@ -466,7 +493,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div style="font-size: 0.75rem; color: var(--color-accent-primary);">OP: ${rec.opNumber || '-'}</div>
                 </td>
                 <td>${dayName}</td>
-                <td>${rec.date}</td>
+                <td>
+                    <div style="font-weight: 600;">${rec.date}</div>
+                    ${isHoliday ? `<span class="badge" style="background:#fef08a; color:#854d0e; font-size:0.6rem; padding: 1px 4px; margin-top: 2px; display: inline-block;">FESTIVO: ${holidayName}</span>` : ''}
+                </td>
                 <td>
                     <span class="badge badge-${rec.location}">${(rec.location || '').toUpperCase()}</span>
                     <div style="font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 4px;">${rec.projectName || '-'}</div>
@@ -1053,10 +1083,14 @@ document.addEventListener('DOMContentLoaded', () => {
             let html = '';
             for (let d = startDay; d <= endDay; d++) {
                 const dateStr = `${year}-${month}-${d.toString().padStart(2, '0')}`;
+                const { dayName, isHoliday, holidayName } = getDayInfo(dateStr);
                 
                 html += `
                     <tr data-date="${dateStr}" style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 8px;">${dateStr}</td>
+                        <td style="padding: 8px;">
+                            <div style="font-weight: 600;">${dateStr}</div>
+                            <div style="font-size: 0.75rem; color: var(--color-text-secondary);">${dayName}${isHoliday ? ` - 🚩 ${holidayName}` : ''}</div>
+                        </td>
                         <td style="padding: 8px;">
                             <select class="b-loc" style="width:100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;">
                                 <option value="obra" ${glLoc==='obra'?'selected':''}>Obra</option>
