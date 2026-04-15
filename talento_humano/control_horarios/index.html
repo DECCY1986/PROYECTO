@@ -201,9 +201,13 @@
                         <select id="workerFilter" class="custom-select" style="min-width: 200px; padding: 0.5rem; border-radius: 6px; border: 1px solid #e2e8f0;">
                             <option value="">Seleccionar Trabajador...</option>
                         </select>
-                        <div style="display: flex; align-items: center; gap: 0.5rem; background: #fef2f2; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #fee2e2;">
-                            <input type="checkbox" id="crossPendingHours" checked style="width: 1.1rem; height: 1.1rem; accent-color: #dc2626;">
-                            <label for="crossPendingHours" style="font-size: 0.8rem; font-weight: 600; color: #991b1b; cursor: pointer;">Cruzar Extras con Faltantes</label>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; background: #f8fafc; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <label for="payrollMode" style="font-size: 0.8rem; font-weight: 600; color: var(--color-text-secondary); cursor: pointer;">Gestión de Saldo:</label>
+                            <select id="payrollMode" class="custom-select" style="padding: 0.2rem; border: none; background: transparent; font-weight: 700; color: var(--color-accent-primary);">
+                                <option value="cross">Cruzar en esta Quincena</option>
+                                <option value="immediate">Descontar/Pagar Todo Ya</option>
+                                <option value="defer">Diferir Faltantes (Guardar para Futuro)</option>
+                            </select>
                         </div>
                         <button id="exportSummary" class="btn-primary" style="background: #107c41; padding: 0.5rem 1rem; font-size: 0.8rem; box-shadow: none;">
                             <i class="ph ph-file-xls"></i> Excel
@@ -304,7 +308,7 @@
         </div>
     </div>
 
-    <script src="script.js?v=27"></script>
+    <script src="script.js?v=28"></script>
     <script>
         // Debug: confirm that the latest script version loaded
         window.addEventListener('load', () => {

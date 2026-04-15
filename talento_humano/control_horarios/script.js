@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const payrollSummaryArea = document.getElementById('payrollSummaryArea');
     const workerFilter = document.getElementById('workerFilter');
     const tableWorkerFilter = document.getElementById('tableWorkerFilter');
-    const crossPendingCheckbox = document.getElementById('crossPendingHours');
+    const payrollModeSelect = document.getElementById('payrollMode');
     const clearDataBtn = document.getElementById('clearData');
     const inputDate = document.getElementById('date');
     const exportPdfBtn = document.getElementById('exportPdf');
@@ -105,9 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updateWorkerSelects();
 
     window.records = JSON.parse(localStorage.getItem('shiftRecords')) || [];
+    window.shiftBalances = JSON.parse(localStorage.getItem('shiftBalances')) || {}; // { "NAME": hoursQty } (Negative means debt)
 
     const saveRecords = () => {
         localStorage.setItem('shiftRecords', JSON.stringify(records));
+        localStorage.setItem('shiftBalances', JSON.stringify(shiftBalances));
         updateDatalists();
         
         // Disparar sincronización con la nube si el dashboard maestro está presente
@@ -324,13 +326,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const quincenaBase = (workerRates[worker] && workerRates[worker].quincena) ? workerRates[worker].quincena : (1750905 / 2);
         const rates = calculateDynamicRates(quincenaBase, equivalentDays || 1); 
 
-        const IS_CROSSING_ACTIVE = crossPendingCheckbox ? crossPendingCheckbox.checked : false;
+        const PAYROLL_MODE = payrollModeSelect ? payrollModeSelect.value : 'cross'; // 'cross', 'immediate', 'defer'
+        const currentBalance = shiftBalances[worker] || 0; // Saldo que viene de quincenas anteriores
 
         let aggregate = {
             totalDays: new Set(workerRecords.filter(r => !r.isTravelRecord).map(r => r.date)).size,
             extDia: { q: 0, v: 0 }, rNoct: { q: 0, v: 0 }, extNoct: { q: 0, v: 0 },
             rDom: { q: 0, v: 0 }, extDom: { q: 0, v: 0 }, travel: { q: 0, v: 0 },
-            totalExtraMoney: 0, // Suma de todos los valores de extras/recargos
+            totalExtraMoney: 0,
             totalPendingHours: { q: 0, v: 0 },
             ops: {}
         };
@@ -353,8 +356,6 @@ document.addEventListener('DOMContentLoaded', () => {
             aggregate.totalPendingHours.q += pending;
             aggregate.totalPendingHours.v += pendingVal;
 
-            const dailyAdjustment = r.isTravelRecord ? 0 : (r.esMedioDia ? rates.dia / 2 : rates.dia);
-
             const opKey = `${r.opNumber || 'S/N'} | ${r.projectName}`;
             if (!aggregate.ops[opKey]) aggregate.ops[opKey] = { days: 0, extra: 0, location: r.location, pending: 0 };
             aggregate.ops[opKey].days += r.isTravelRecord ? 0 : (r.esMedioDia ? 0.5 : 1);
@@ -364,36 +365,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const baseAsignada = rates.quincena;
         
-        // --- Lógica de Cruce ---
+        // --- Lógica de Cobro y Saldos ---
         let finalExtraPay = 0;
         let finalDeduction = 0;
         let crossingDetailHtml = '';
+        let balanceOutcomeQty = 0;
+        let newAccruedBalance = 0;
 
-        if (IS_CROSSING_ACTIVE) {
-            // El usuario quiere cruzar tiempo por tiempo (1:1)
-            // Priorizamos cruzar con Extra Diurna, que es la más común.
-            const totalExtraQty = aggregate.extDia.q + aggregate.extNoct.q + aggregate.extDom.q;
-            const balanceQty = totalExtraQty - aggregate.totalPendingHours.q;
+        const totalMissingThisPeriod = aggregate.totalPendingHours.q; // Lo que debe hoy
+        const totalExtrasThisPeriod = aggregate.extDia.q + aggregate.extNoct.q + aggregate.extDom.q; // Lo que tiene hoy
+        
+        // Consideramos la deuda que viene de atrás para el cruce
+        const globalDebtQty = totalMissingThisPeriod + Math.max(0, -currentBalance);
+        const globalCreditQty = totalExtrasThisPeriod + Math.max(0, currentBalance);
 
-            if (balanceQty >= 0) {
-                // Hay más extras que faltantes. Se compensan todas las faltantes.
-                // Estimamos el valor de las extras restantes. 
-                // Por simplicidad en el "cruce de tiempo", restamos el valor de la deuda del total de extras.
+        if (PAYROLL_MODE === 'cross') {
+            // Cruce 1:1 Tiempo recordado + hoy
+            balanceOutcomeQty = totalExtrasThisPeriod - totalMissingThisPeriod;
+            
+            if (balanceOutcomeQty >= 0) {
+                // Sobran extras. Se compensan todas las faltas de hoy.
                 finalExtraPay = Math.max(0, aggregate.totalExtraMoney - aggregate.totalPendingHours.v);
                 finalDeduction = 0;
-                crossingDetailHtml = `<div style="color: var(--color-success); font-size: 0.8rem; margin-top: 4px;">✅ Se compensaron ${aggregate.totalPendingHours.q.toFixed(1)}h faltantes con tiempo extra.</div>`;
+                crossingDetailHtml = `<div style="color: var(--color-success); font-size: 0.8rem; margin-top: 4px;">✅ Se compensaron ${totalMissingThisPeriod.toFixed(1)}h faltantes con tiempo extra.</div>`;
             } else {
-                // Las extras no alcanzan para cubrir los faltantes.
-                finalExtraPay = 0; // Se usaron todas para compensar
-                // El saldo negativo se deduce como dinero (horas pendientes netas).
-                const remainingPendingQty = aggregate.totalPendingHours.q - totalExtraQty;
-                finalDeduction = remainingPendingQty * rates.extDia;
-                crossingDetailHtml = `<div style="color: var(--color-danger); font-size: 0.8rem; margin-top: 4px;">⚠️ Saldo pendiente: ${remainingPendingQty.toFixed(1)}h tras cruzar con extras.</div>`;
+                // No alcanzan las extras de hoy.
+                finalExtraPay = 0; 
+                const remainingMissing = totalMissingThisPeriod - totalExtrasThisPeriod;
+                finalDeduction = remainingMissing * rates.extDia;
+                crossingDetailHtml = `<div style="color: var(--color-danger); font-size: 0.8rem; margin-top: 4px;">⚠️ Saldo pendiente: ${remainingMissing.toFixed(1)}h tras cruzar con extras hoy.</div>`;
             }
-        } else {
-            // Sin cruce: Se pagan todas las extras y se descuentan todos los faltantes.
+        } 
+        else if (PAYROLL_MODE === 'immediate') {
+            // Se paga todo lo extra y se descuenta todo lo faltante (Sin cruce)
             finalExtraPay = aggregate.totalExtraMoney;
             finalDeduction = aggregate.totalPendingHours.v;
+            crossingDetailHtml = `<div style="color: var(--color-text-secondary); font-size: 0.8rem; margin-top: 4px;">ℹ️ Pago y descuento total aplicado sin cruce de tiempo.</div>`;
+        }
+        else if (PAYROLL_MODE === 'defer') {
+            // Diferir: Se pagan todas las extras, y las faltantes NO se descuentan, se guardan como deuda.
+            finalExtraPay = aggregate.totalExtraMoney;
+            finalDeduction = 0;
+            newAccruedBalance = currentBalance - totalMissingThisPeriod; 
+            crossingDetailHtml = `
+                <div style="color: #854d0e; font-size: 0.8rem; margin-top: 4px; font-weight: 600;">
+                    📌 ${totalMissingThisPeriod.toFixed(1)}h guardadas para el futuro. 
+                    <button onclick="applyNewBalance('${worker}', ${newAccruedBalance})" style="background: var(--color-warning); color: black; border:none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; margin-left: 5px;">Anotar en Cuenta</button>
+                </div>`;
         }
 
         const finalTotalToPay = baseAsignada + finalExtraPay - finalDeduction;
@@ -402,7 +420,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="payroll-card" id="summaryCapture">
                 <div class="payroll-header">
                     <div>Resumen de Nómina: ${worker}</div>
-                    <div style="font-size: 0.8rem; font-weight: normal; opacity: 0.8;">Cruce de Horas: ${IS_CROSSING_ACTIVE ? 'ACTIVADO' : 'DESACTIVADO'}</div>
+                    <div style="font-size: 0.8rem; font-weight: normal; opacity: 0.8;">Modo: ${PAYROLL_MODE.toUpperCase()}</div>
+                </div>
+                
+                <div style="display: flex; gap: 10px; padding: 10px 1.5rem; background: #fffbeb; border-bottom: 1px solid #fef3c7;">
+                    <div style="font-size: 0.85rem;"><strong>Saldo en Cuenta:</strong> <span style="color: ${currentBalance < 0 ? 'var(--color-danger)' : 'var(--color-success)'}">${currentBalance.toFixed(1)}h</span></div>
+                    <div style="font-size: 0.85rem; border-left: 1px solid #fde68a; padding-left: 10px;"><strong>Deuda hoy:</strong> ${totalMissingThisPeriod.toFixed(1)}h</div>
                 </div>
                 
                 <div class="payroll-row" style="background: #fdfdfd; font-weight: 700;">
@@ -433,19 +456,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="payroll-cell value">-$${aggregate.totalPendingHours.v.toLocaleString()}</div>
                 </div>
 
-                ${IS_CROSSING_ACTIVE ? `
-                <div class="payroll-row" style="background: #fffbeb; border-left: 4px solid var(--color-warning);">
-                    <div class="payroll-cell" style="font-weight: 700;">RESULTADO DEL CRUCE (TIEMPO x TIEMPO)</div>
+                <div class="payroll-row" style="background: #fdfdfd; font-weight: 700;">
+                    <div class="payroll-cell label">RESULTADO GESTIÓN DE TIEMPO</div>
                     <div class="payroll-cell" colspan="2">${crossingDetailHtml}</div>
                     <div class="payroll-cell value" style="font-weight: 700;">$${(finalExtraPay - finalDeduction).toLocaleString()}</div>
                 </div>
-                ` : `
-                <div class="payroll-row payroll-total-row">
-                    <div class="payroll-cell">TOTAL TRABAJO EXTRA NETO</div>
-                    <div class="payroll-cell"></div><div class="payroll-cell"></div>
-                    <div class="payroll-cell value">$${(finalExtraPay - finalDeduction).toLocaleString()}</div>
-                </div>
-                `}
 
                 <div class="payroll-row payroll-total-row" style="background: #e2e8f0; font-size: 1.1rem;">
                     <div class="payroll-cell">TOTAL A PAGAR TOTAL</div>
@@ -744,11 +759,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (crossPendingCheckbox) {
-        crossPendingCheckbox.addEventListener('change', () => {
+    if (payrollModeSelect) {
+        payrollModeSelect.addEventListener('change', () => {
             renderSummary();
         });
     }
+
+    window.applyNewBalance = (worker, newVal) => {
+        if (confirm(`¿Mandar ${Math.abs(newVal - (shiftBalances[worker] || 0)).toFixed(1)}h a la cuenta de ${worker}? (Saldo final: ${newVal.toFixed(1)}h)`)) {
+            shiftBalances[worker] = newVal;
+            saveRecords();
+            renderSummary();
+        }
+    };
 
     if (filterMonth) {
         filterMonth.addEventListener('change', () => {
