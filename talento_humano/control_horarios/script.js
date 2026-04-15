@@ -298,6 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const workerRecords = records.filter(r => {
+            if (typeof r.workerName !== 'string' || typeof r.date !== 'string') return false;
             const sameWorker = (r.workerName || "").trim().toUpperCase() === worker;
             if (!sameWorker) return false;
             
@@ -498,6 +499,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedFortnight = filterFortnight.value;
 
         const recordsToDisplay = records.filter(r => {
+            // Protección contra datos corruptos (si se guardó un objeto DOM por error)
+            if (typeof r.workerName !== 'string' || typeof r.date !== 'string') return false;
+
             const sameWorker = workerToFilter ? (r.workerName || '').trim().toUpperCase() === workerToFilter.trim().toUpperCase() : true;
             if (!sameWorker) return false;
 
@@ -610,6 +614,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     hourForm.onsubmit = (e) => {
         e.preventDefault();
+        const workerName = document.getElementById('workerName').value;
+        const date = document.getElementById('date').value;
+        const location = document.getElementById('location').value;
+        const projectName = document.getElementById('projectName').value;
+        const opNumber = document.getElementById('opNumber').value;
         const timeIn = document.getElementById('timeIn').value;
         const timeOut = document.getElementById('timeOut').value;
         const observations = document.getElementById('observations').value;
@@ -637,8 +646,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             let diff = (hOut * 60 + mOut) - (hIn * 60 + mIn);
-            // Solo cruza la medianoche asumiendo 24h si la hora de salida es estrictamente < 24.
-            // Si ponen 26:00, la diferencia ya es correcta y no necesitamos sumar 24h
             if (diff < 0 && hOut < 24) diff += 24 * 60;
             
             if (isTravelRecord) {
@@ -659,7 +666,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (editIdInput.value) {
             const index = records.findIndex(r => r.id === parseInt(editIdInput.value));
-            records[index] = recordData;
+            if (index !== -1) {
+                records[index] = recordData;
+            }
             editIdInput.value = '';
             btnSubmit.innerHTML = '<i class="ph ph-plus-circle"></i> Registrar Turno';
             btnSubmit.style.background = 'var(--color-accent-primary)';
