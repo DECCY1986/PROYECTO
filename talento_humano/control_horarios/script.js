@@ -404,6 +404,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 crossingDetailHtml = `<div style="color: var(--color-danger); font-size: 0.8rem; margin-top: 4px;">⚠️ Saldo pendiente: ${remainingMissing.toFixed(1)}h tras cruzar con extras hoy.</div>`;
             }
         } 
+        else if (PAYROLL_MODE === 'cross_defer') {
+            // CRUZAR Y DIFERIR: Cruza lo que puede hoy, y lo que sobra lo guarda para después (sin descontar dinero)
+            const compQty = Math.min(totalExtrasThisPeriod, totalMissingThisPeriod);
+            const remainingDebt = totalMissingThisPeriod - compQty;
+            
+            finalExtraPay = Math.max(0, aggregate.totalExtraMoney - (compQty * rates.extDia)); 
+            finalDeduction = 0; // NO se descuenta dinero
+            newAccruedBalance = currentBalance - remainingDebt;
+
+            crossingDetailHtml = `
+                <div style="color: #854d0e; font-size: 0.8rem; margin-top: 4px; font-weight: 600;">
+                    🔄 Cruzado: ${compQty.toFixed(1)}h | 📌 Diferido a cuenta: ${remainingDebt.toFixed(1)}h
+                    <button onclick="applyNewBalance('${worker}', ${newAccruedBalance})" style="background: var(--color-warning); color: black; border:none; padding: 2px 6px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; margin-left: 5px;">Anotar en Cuenta</button>
+                </div>`;
+        }
         else if (PAYROLL_MODE === 'partial') {
             // Cruce manual definido por el usuario
             const manualQty = parseFloat(window.manualCrossHoursVal) || 0;
