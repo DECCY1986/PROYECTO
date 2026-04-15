@@ -52,7 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
         "JULIO PIERNAGORDA": 1000000,
         "DIEGO VELANDIA": 1265000,
         "JORGE GILBERTO RODRIGUEZ AGUILERA": 1350000,
-        "HENRY GONZALES": 1320000
+        "HENRY GONZALES": 1320000,
+        "JOSE MANUEL FORERO": 1210000
     };
 
     let workerRates = {};
