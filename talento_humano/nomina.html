@@ -81,6 +81,9 @@ td.num{text-align:right;font-family:var(--mo);font-size:11px}
 .info-box{background:var(--bg);border-radius:8px;padding:12px;font-size:12px;line-height:1.8;margin-bottom:14px;color:var(--t2)}
 .back-link{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);text-decoration:none;margin-bottom:16px;transition:color .15s}
 .back-link:hover{color:var(--ac)}
+.grid-in{width:100%; border:none; background:transparent; font-family:var(--mo); font-size:12px; text-align:right; padding:4px; outline:1px solid transparent; transition:all 0.2s;}
+.grid-in:focus{outline:1px solid var(--ac); background:#fff; border-radius:4px;}
+.grid-in::-webkit-inner-spin-button, .grid-in::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 </style>
 </head>
 <body>
@@ -91,6 +94,7 @@ td.num{text-align:right;font-family:var(--mo);font-size:11px}
       <div class="hdr-ti">Nómina & Carga Laboral</div>
     </div>
     <div style="display:flex; align-items:center; gap:16px">
+      <button class="btn-pri" style="background:#dc2626" onclick="diagnostico()">🔍 Diagnóstico</button>
       <button class="btn-pri" onclick="save(); alert('Nómina guardada correctamente')">Guardar Todo</button>
     </div>
   </div>
@@ -112,20 +116,54 @@ td.num{text-align:right;font-family:var(--mo);font-size:11px}
     </div>
 
     <div id="tab-liquidar">
-      <div class="toolbar">
-        <span style="font-size:12px;color:var(--t2)">Período:</span>
-        <select id="liq-mes">
-          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-        </select>
-        <select id="liq-anio"><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option></select>
+      <div class="toolbar" style="background:#fff; padding:12px; border-radius:10px; border:1px solid var(--b); margin-bottom:15px;">
+        <div style="display:flex; align-items:center; gap:15px;">
+          <div>
+            <span style="font-size:11px; font-weight:700; color:var(--t3); display:block; text-transform:uppercase; margin-bottom:4px;">Mes</span>
+            <select id="liq-mes" onchange="renderGrid()">
+              <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+              <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+              <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+              <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div>
+            <span style="font-size:11px; font-weight:700; color:var(--t3); display:block; text-transform:uppercase; margin-bottom:4px;">Año</span>
+            <select id="liq-anio" onchange="renderGrid()"><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option></select>
+          </div>
+          <div>
+            <span style="font-size:11px; font-weight:700; color:var(--t3); display:block; text-transform:uppercase; margin-bottom:4px;">Periodo</span>
+            <select id="liq-quincena" onchange="renderGrid()">
+              <option value="1">1ª Quincena (Días 1-15)</option>
+              <option value="2">2ª Quincena (Días 16-30)</option>
+            </select>
+          </div>
+        </div>
         <div class="spacer"></div>
-        <button class="btn-pri" onclick="calcLiquidacion()">Calcular nómina</button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-pri" style="background:#10b981" onclick="guardarNominaGrid()">💾 Guardar Nómina</button>
+          <button class="btn-sec" onclick="exportarExcelGrid()">📥 Exportar Excel</button>
+        </div>
       </div>
-      <div id="liq-content">
-        <div style="text-align:center;padding:60px;color:var(--t3);font-size:13px">Selecciona el período y presiona <strong>Calcular nómina</strong></div>
+
+      <div class="tbl-wrap">
+        <table id="grid-nomina">
+          <thead>
+            <tr>
+              <th style="width:250px">Empleado</th>
+              <th class="num">Sueldo Base</th>
+              <th class="num" style="width:80px">Días</th>
+              <th class="num">Sueldo Q.</th>
+              <th class="num">Aux. Transp.</th>
+              <th class="num" style="width:110px">H. Extra / Ads</th>
+              <th class="num">Seg. Social</th>
+              <th class="num" style="width:110px">Otras Ded.</th>
+              <th class="num" style="background:#f1f5f9; width:130px">Neto a Pagar</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-grid"></tbody>
+          <tfoot id="tfoot-grid" style="background:#f8fafc; font-weight:700"></tfoot>
+        </table>
       </div>
     </div>
 
@@ -139,6 +177,65 @@ td.num{text-align:right;font-family:var(--mo);font-size:11px}
           </tr></thead>
           <tbody id="tbody-hist"></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- MODAL: Consolidado Quincenal -->
+    <div class="modal-backdrop" id="modal-consolidado">
+      <div class="modal" style="width:1100px; max-width:95vw">
+        <div class="modal-hdr"><div class="modal-title">📊 Consolidado de Nómina Quincenal</div><button class="modal-close" onclick="document.getElementById('modal-consolidado').classList.remove('open')">✕</button></div>
+        <div class="tbl-wrap" style="max-height:60vh; overflow-y:auto">
+          <table id="tbl-cons">
+            <thead>
+              <tr>
+                <th>Empleado</th>
+                <th class="num">Básico Q.</th>
+                <th class="num">Aux. Transp.</th>
+                <th class="num">Adiciones</th>
+                <th class="num">Deducciones</th>
+                <th class="num" style="background:#f1f5f9">Neto a Pagar</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-cons"></tbody>
+            <tfoot id="tfoot-cons" style="background:#f8fafc; font-weight:700"></tfoot>
+          </table>
+        </div>
+
+    <!-- MODAL: Registrar Novedad -->
+    <div class="modal-backdrop" id="modal-nov-bk">
+      <div class="modal" style="width:400px">
+        <div class="modal-hdr"><div class="modal-title">➕ Registrar Novedad</div><button class="modal-close" onclick="document.getElementById('modal-nov-bk').classList.remove('open')">✕</button></div>
+        <div class="form-row">
+          <label class="form-lbl">Empleado</label>
+          <input type="text" id="n-emp-nombre" readonly style="background:#f8fafc">
+          <input type="hidden" id="n-emp-id">
+        </div>
+        <div class="form-row">
+          <label class="form-lbl">Tipo de Novedad</label>
+          <select id="n-tipo">
+            <option value="Bonificación">➕ Bonificación / Adición</option>
+            <option value="Deducción">➖ Deducción / Descuento</option>
+            <option value="Horas Extra">⏰ Horas Extra</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-lbl">Concepto</label>
+          <input type="text" id="n-concepto" placeholder="Ej: Bono cumplimiento, Préstamo...">
+        </div>
+        <div class="form-row">
+          <label class="form-lbl">Valor ($)</label>
+          <input type="number" id="n-valor" placeholder="0">
+        </div>
+        <div class="modal-ftr">
+          <button class="btn-sec" onclick="document.getElementById('modal-nov-bk').classList.remove('open')">Cancelar</button>
+          <button class="btn-pri" onclick="guardarNovedadRapida()">Guardar Novedad</button>
+        </div>
+      </div>
+    </div>
+        <div class="modal-ftr">
+          <button class="btn-sec" onclick="document.getElementById('modal-consolidado').classList.remove('open')">Cerrar</button>
+          <button class="btn-pri" onclick="guardarLiquidacion()">Guardar y Cerrar Periodo</button>
+        </div>
       </div>
     </div>
   </main>
@@ -198,27 +295,45 @@ function defaultState(){
   };
 }
 
+function diagnostico() {
+  const e = localStorage.getItem('dimalcco_emp_v2');
+  const n = localStorage.getItem('dimalcco_nov_v2');
+  const ev = localStorage.getItem('dimalcco_eval_v1');
+  const h = localStorage.getItem(DB);
+  
+  const ce = e ? JSON.parse(e).length : 0;
+  const cn = n ? JSON.parse(n).length : 0;
+  const cev = ev ? JSON.parse(ev).length : 0;
+  const ch = h ? JSON.parse(h).liquidaciones.length : 0;
+
+  alert(`📊 DIAGNÓSTICO DE DATOS:\n\n` +
+        `• Empleados en Base Central: ${ce}\n` +
+        `• Novedades registradas: ${cn}\n` +
+        `• Evaluaciones: ${cev}\n` +
+        `• Liquidaciones guardadas: ${ch}\n\n` +
+        `Si los números son mayores a 0, tus datos están a salvo y es un error de visualización.`);
+  console.log("DEBUG STORAGE:", {ce, cn, cev, ch, raw_emp: e, raw_nov: n});
+}
+
 let S;
 function load(){
   let state = defaultState();
-  try{
+  try {
     const s = localStorage.getItem(DB);
     if(s) state = JSON.parse(s);
     
-    // SINCRONIZACIÓN CON MAESTRO DE PERSONAL (19 EMPLEADOS)
+    // FORZAR SINCRONIZACIÓN CON MAESTRO DE PERSONAL (Central)
     const rawP = localStorage.getItem('dimalcco_emp_v2');
     if(rawP) {
       const pEmps = JSON.parse(rawP);
       if(pEmps && pEmps.length > 0) {
-        // Mapear al formato del módulo Nómina
         state.empleados = pEmps.map(e => {
-          // Normalizar Riesgo ARL (Texto a Tasa)
           let rate = '0.522';
           if(e.arl === 'II') rate = '1.044';
           else if(e.arl === 'III') rate = '2.436';
           else if(e.arl === 'IV') rate = '4.350';
           else if(e.arl === 'V') rate = '6.960';
-          else if(e.arl && e.arl.includes('.')) rate = e.arl; // Si ya es tasa
+          else if(e.arl && e.arl.includes('.')) rate = e.arl;
 
           return {
             id: e.cedula || uid(),
@@ -229,15 +344,26 @@ function load(){
             salario: Number(e.salario || 0),
             bono: Number(e.bono || 0),
             tipo: 'indefinido',
-            inicio: e.fechaIngreso || '2026-01-01',
+            inicio: e.fechaIngreso || e.inicio || '2020-01-01',
             arl: rate,
-            activo: true
+            activo: true // FORZAR VISIBILIDAD TOTAL
           };
         });
       }
     }
-  }catch(e){ console.error("Sync Error:", e); }
+  } catch(e) { console.error("Sync Error:", e); }
+  
+  if(!state.empleados || state.empleados.length === 0) {
+    state.empleados = defaultState().empleados;
+  }
   return state;
+}
+
+function getFiltrados() {
+  try {
+    if(!S || !S.empleados) return [];
+    return S.empleados.filter(e => e.activo !== false);
+  } catch(e) { return []; }
 }
     function save() {
         localStorage.setItem(DB, JSON.stringify(S));
@@ -247,168 +373,244 @@ function load(){
         }
     }
 
-function calculo(emp){
-  const sal=emp.salario, arl_pct=parseFloat(emp.arl)/100;
-  const bono_total = Number(emp.bono || 0);
-  const limite_40_smmlv = SMMLV * 0.4;
+// ── LOGICA DE GRID (EXCEL STYLE) ─────────────────────────────────────────────
+function renderGrid() {
+  const tbody = document.getElementById('tbody-grid');
+  if(!tbody) return;
+  tbody.innerHTML = '';
   
-  let bono_nomina = bono_total;
-  let bono_servicio = 0;
-  let alerta_bono = false;
+  const activos = getFiltrados();
+  console.log("Visualizando grid para", activos.length, "empleados");
 
-  if (bono_total > limite_40_smmlv) {
-      bono_nomina = limite_40_smmlv;
-      bono_servicio = bono_total - limite_40_smmlv;
-      alerta_bono = true;
+  if(activos.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:40px; color:var(--t3)">No se encontraron empleados activos para este periodo. Revisa el maestro de personal.</td></tr>`;
+    updateTotals();
+    return;
   }
+  
+  activos.forEach(e => {
+    // ── CARGAR NOVEDADES EXISTENTES ──
+    let adsPre = 0, dedPre = 0;
+    try {
+      const rawNovs = localStorage.getItem('dimalcco_nov_v2') || localStorage.getItem('dimalcco_nov_v1') || '[]';
+      const novs = JSON.parse(rawNovs);
+      novs.forEach(n => {
+        if(n.cedula === e.cedula) {
+          const v = parseFloat(n.valor || 0);
+          if(['Bonificación','Adición','Horas Extra'].includes(n.tipo)) adsPre += v;
+          if(['Deducción','Préstamo'].includes(n.tipo)) dedPre += v;
+        }
+      });
+    } catch(err) {}
 
-  // Auxilio transporte: solo si salario ≤ 2 SMMLV
-  const aux=sal<=2*SMMLV?AUX_TRANS:0;
-  // Devengado base (Incluye la parte salarial/nomina del bono)
-  const devengado=sal+aux+bono_nomina;
-  // Deducciones empleado
-  const ded_salud=Math.round(sal*0.04);
-  const ded_pension=Math.round(sal*0.04);
-  const total_ded=ded_salud+ded_pension;
-  const neto=devengado-total_ded;
-  // Aportes empleador (sobre salario, sin aux transporte)
-  const isExempt = sal < (10 * SMMLV);
-  const ap_salud = isExempt ? 0 : Math.round(sal * 0.085);
-  const ap_pension = Math.round(sal * 0.12);
-  const ap_arl = Math.round(sal * arl_pct);
-  const sena = isExempt ? 0 : Math.round(sal * 0.02);
-  const icbf = isExempt ? 0 : Math.round(sal * 0.03);
-  const caja = Math.round(sal * 0.04);
-  const total_emp = ap_salud + ap_pension + ap_arl + sena + icbf + caja;
-  // Provisiones (sobre salario + aux, sin incluir auxilio en vacaciones)
-  const base_prov=sal+aux;
-  const prov_ces=Math.round(base_prov/12);
-  const prov_int=Math.round(prov_ces*0.12/12);
-  const prov_prima=Math.round(base_prov/12);
-  const prov_vac=Math.round(sal/24);
-  const total_prov=prov_ces+prov_int+prov_prima+prov_vac;
-  const costo_total=devengado+total_emp+total_prov;
-  return{sal,aux,devengado,ded_salud,ded_pension,total_ded,neto,ap_salud,ap_pension,ap_arl,sena,icbf,caja,total_emp,prov_ces,prov_int,prov_prima,prov_vac,total_prov,costo_total,bono_nomina,bono_servicio,alerta_bono};
+    const tr = document.createElement('tr');
+    tr.id = `row-${e.cedula}`;
+    tr.innerHTML = `
+      <td>
+        <div style="font-weight:600">${e.nombre}</div>
+        <div style="font-size:10px; color:var(--t3)">${e.cargo}</div>
+      </td>
+      <td class="num">${fmt(e.salario)}</td>
+      <td class="num"><input type="number" class="grid-in" value="15" min="0" max="15" oninput="updateRow('${e.cedula}')" id="dias-${e.cedula}"></td>
+      <td class="num" id="val-sueldo-${e.cedula}">$ 0</td>
+      <td class="num" id="val-aux-${e.cedula}">$ 0</td>
+      <td class="num"><input type="number" class="grid-in" value="${adsPre}" oninput="updateRow('${e.cedula}')" id="ads-${e.cedula}"></td>
+      <td class="num" id="val-ss-${e.cedula}" style="color:var(--ex)">$ 0</td>
+      <td class="num"><input type="number" class="grid-in" value="${dedPre}" oninput="updateRow('${e.cedula}')" id="ded-${e.cedula}"></td>
+      <td class="num" id="val-neto-${e.cedula}" style="font-weight:700; background:#f0f9ff">$ 0</td>
+    `;
+    tbody.appendChild(tr);
+    updateRow(e.cedula);
+  });
+  updateTotals();
 }
 
-function renderHeader(){
-  const activos=S.empleados.filter(e=>e.activo);
-  let totalSal=0,totalCosto=0;
-  activos.forEach(e=>{const c=calculo(e);totalSal+=e.salario;totalCosto+=c.costo_total;});
-  const prov=activos.reduce((s,e)=>{const c=calculo(e);return s+c.total_prov;},0);
-  document.getElementById('metrics').innerHTML=`
-    <div class="metric"><div class="metric-lbl">Empleados activos</div><div class="metric-val">${activos.length}</div><div class="metric-sub">Planta de personal</div></div>
-    <div class="metric"><div class="metric-lbl">Nómina base / mes</div><div class="metric-val y">${fmt(totalSal)}</div><div class="metric-sub">Suma salarios básicos</div></div>
-    <div class="metric"><div class="metric-lbl">Costo total empleador</div><div class="metric-val r">${fmt(totalCosto)}</div><div class="metric-sub">Incluye aportes y provisiones</div></div>
-    <div class="metric"><div class="metric-lbl">Provisiones mensuales</div><div class="metric-val">${fmt(prov)}</div><div class="metric-sub">Ces.+Int.+Prima+Vac.</div></div>`;
+function updateRow(cedula) {
+  const emp = S.empleados.find(e => e.cedula === cedula);
+  if(!emp) return;
+
+  const dias = parseFloat(document.getElementById(`dias-${cedula}`).value) || 0;
+  const ads = parseFloat(document.getElementById(`ads-${cedula}`).value) || 0;
+  const ded_ext = parseFloat(document.getElementById(`ded-${cedula}`).value) || 0;
+
+  // Cálculos proporcionales
+  const sueldoQ = (emp.salario / 30) * dias;
+  const auxQ = emp.salario <= 2 * SMMLV ? (AUX_TRANS / 30) * dias : 0;
+  
+  // Seguridad Social (Sobre el proporcional o SMMLV según política)
+  const base_ss = Math.max(sueldoQ, (SMMLV / 30) * dias);
+  const salud = Math.round(base_ss * 0.04);
+  const pension = Math.round(base_ss * 0.04);
+  const total_ss = salud + pension;
+
+  const neto = sueldoQ + auxQ + ads - total_ss - ded_ext;
+
+  document.getElementById(`val-sueldo-${cedula}`).textContent = fmt(sueldoQ);
+  document.getElementById(`val-aux-${cedula}`).textContent = fmt(auxQ);
+  document.getElementById(`val-ss-${cedula}`).textContent = `- ${fmt(total_ss)}`;
+  document.getElementById(`val-neto-${cedula}`).textContent = fmt(neto);
+  
+  updateTotals();
 }
 
-function renderEmployees(){
-  const CC_CLR={'Producción':'#4338ca','Administración':'#d97706','Comercial':'#059669'};
-  document.getElementById('emp-list').innerHTML=S.empleados.filter(e=>e.activo).map(e=>`
-    <div class="emp-card">
-      <div class="emp-name">${e.nombre}</div>
-      <div class="emp-cargo">${e.cargo}</div>
-      <div class="emp-sal">${fmt(e.salario)}</div>
-      <div class="emp-cc" style="color:${CC_CLR[e.cc]||'var(--t3)'}">${e.cc}</div>
-    </div>`).join('');
-}
+function updateTotals() {
+  const tfoot = document.getElementById('tfoot-grid');
+  const activos = getFiltrados();
+  let totalNeto = 0;
 
-function calcLiquidacion(){
-  const mes=parseInt(document.getElementById('liq-mes').value);
-  const anio=parseInt(document.getElementById('liq-anio').value);
-  const periodo=`${MESES_NOM[mes]} ${anio}`;
-  const activos=S.empleados.filter(e=>e.activo);
-  if(!activos.length){document.getElementById('liq-content').innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">No hay empleados activos.</div>';return;}
-
-  let html='';
-  // Grid totales
-  let totDev=0,totDed=0,totNeto=0,totEmp=0,totProv=0,totCosto=0;
-  activos.forEach(e=>{const c=calculo(e);totDev+=c.devengado;totDed+=c.total_ded;totNeto+=c.neto;totEmp+=c.total_emp;totProv+=c.total_prov;totCosto+=c.costo_total;});
-
-  html+=`<div class="liq-grid">
-    <div class="stat-mini"><div class="stat-mini-lbl">Total neto a pagar</div><div class="stat-mini-val" style="color:var(--in)">${fmt(totNeto)}</div></div>
-    <div class="stat-mini"><div class="stat-mini-lbl">Aportes empleador</div><div class="stat-mini-val" style="color:var(--ex)">${fmt(totEmp)}</div></div>
-    <div class="stat-mini"><div class="stat-mini-lbl">Provisiones del mes</div><div class="stat-mini-val" style="color:var(--w)">${fmt(totProv)}</div></div>
-  </div>`;
-
-  activos.forEach(e=>{
-    const c = calculo(e);
-    const hasSvc = c.bono_servicio > 0;
-    html+=`<div class="liq-card" ${c.alerta_bono ? 'style="border:1px solid var(--ex)"' : ''}>
-      <div class="liq-card-hdr">
-        <div>
-            <span class="liq-card-ti" ${c.alerta_bono ? 'style="color:var(--ex)"' : ''}>${e.nombre}</span> 
-            ${c.alerta_bono ? '<span style="font-size:10px; color:var(--ex); font-weight:700; margin-left:8px">⚠️ BONO > 40% SMMLV</span>' : ''}
-            <span style="font-size:11px;color:var(--t3);font-weight:400">· ${e.cargo} · ${e.cc}</span>
-        </div>
-        <span style="font-family:var(--mo);font-size:12px;color:var(--in);font-weight:600">Neto Nómina: ${fmt(c.neto)}</span>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0">
-        <div style="border-right:1px solid var(--b)">
-          <div style="padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);border-bottom:1px solid var(--bs)">Devengados Nómina</div>
-          <div class="liq-row"><span class="liq-lbl">Salario básico</span><span class="liq-val">${fmt(c.sal)}</span></div>
-          ${c.aux>0?`<div class="liq-row"><span class="liq-lbl">Auxilio transporte</span><span class="liq-val">${fmt(c.aux)}</span></div>`:''}
-          ${c.bono_nomina>0?`<div class="liq-row"><span class="liq-lbl">Bonificación (Límite)</span><span class="liq-val">${fmt(c.bono_nomina)}</span></div>`:''}
-          <div class="liq-row total"><span class="liq-lbl">Total devengado</span><span class="liq-val">${fmt(c.devengado)}</span></div>
-          <div class="liq-row"><span class="liq-lbl">— Salud (4%)</span><span class="liq-val" style="color:var(--ex)">- ${fmt(c.ded_salud)}</span></div>
-          <div class="liq-row"><span class="liq-lbl">— Pensión (4%)</span><span class="liq-val" style="color:var(--ex)">- ${fmt(c.ded_pension)}</span></div>
-          <div class="liq-row total" style="background:var(--as)"><span class="liq-lbl" style="color:var(--ac)">Neto a pagar</span><span class="liq-val" style="color:var(--ac)">${fmt(c.neto)}</span></div>
-          ${hasSvc?`<div class="liq-row" style="background:var(--eb);border-top:1px dashed var(--b)"><span class="liq-lbl" style="color:var(--ex)">+ Servicio (Exceso)</span><span class="liq-val" style="color:var(--ex)">${fmt(c.bono_servicio)}</span></div>`:''}
-        </div>
-        <div style="border-right:1px solid var(--b)">
-          <div style="padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);border-bottom:1px solid var(--bs)">Aportes Empleador</div>
-          <div class="liq-row"><span class="liq-lbl">Salud (Exent.?)</span><span class="liq-val">${fmt(c.ap_salud)}</span></div>
-          <div class="liq-row"><span class="liq-lbl">Pensión (12%)</span><span class="liq-val">${fmt(c.ap_pension)}</span></div>
-          <div class="liq-row"><span class="liq-lbl">ARL (${e.arl}%)</span><span class="liq-val">${fmt(c.ap_arl)}</span></div>
-          <div class="liq-row"><span class="liq-lbl">Caja (4%)</span><span class="liq-val">${fmt(c.caja)}</span></div>
-          <div class="liq-row"><span class="liq-lbl">SENA / ICBF</span><span class="liq-val">${fmt(c.sena + c.icbf)}</span></div>
-          <div class="liq-row total"><span class="liq-lbl">Total Aportes</span><span class="liq-val" style="color:var(--ex)">${fmt(c.total_emp)}</span></div>
-        </div>
-        <div>
-          <div style="padding:8px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);border-bottom:1px solid var(--bs)">Provisiones Prestac.</div>
-          <div class="liq-row"><span class="liq-lbl">Cesantías (8.33%)</span><span class="liq-val">${fmt(c.prov_ces)}</span></div>
-          <div class="liq-row"><span class="liq-lbl">Int. Cesantías (1%)</span><span class="liq-val">${fmt(c.prov_int)}</span></div>
-          <div class="liq-row"><span class="liq-lbl">Prima (8.33%)</span><span class="liq-val">${fmt(c.prov_prima)}</span></div>
-          <div class="liq-row"><span class="liq-lbl">Vacaciones (4.17%)</span><span class="liq-val">${fmt(c.prov_vac)}</span></div>
-          <div class="liq-row total"><span class="liq-lbl">Total Provision.</span><span class="liq-val" style="color:var(--w)">${fmt(c.total_prov)}</span></div>
-          <div class="liq-row" style="background:#f8fafc"><span class="liq-lbl" style="font-weight:600">Costo Empresa</span><span class="liq-val" style="color:var(--ex);font-weight:600">${fmt(c.costo_total)}</span></div>
-        </div>
-      </div>
-    </div>`;
+  activos.forEach(e => {
+    const netoStr = document.getElementById(`val-neto-${e.cedula}`).textContent;
+    const neto = parseFloat(netoStr.replace(/[^0-9.-]+/g,"")) || 0;
+    totalNeto += neto;
   });
 
-  html+=`<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px">
-    <button class="btn-sec" onclick="guardarLiquidacion(${mes},${anio})">Guardar liquidación en historial</button>
-  </div>`;
-
-  document.getElementById('liq-content').innerHTML=html;
-
-  // Sync to Tesorería
-  try{
-    const ts=JSON.parse(localStorage.getItem('dim_tesoreria_v1')||'null');
-    if(ts&&ts.movimientos&&ts.cuentas&&ts.cuentas.length>0){
-      // Check if nómina for this period already in tesorería
-    }
-  }catch(e){}
+  tfoot.innerHTML = `
+    <tr>
+      <td colspan="8" style="text-align:right">TOTAL NETO A PAGAR:</td>
+      <td class="num" style="background:#bae6fd; color:var(--ac); font-size:14px">${fmt(totalNeto)}</td>
+    </tr>
+  `;
 }
 
-function guardarLiquidacion(mes, anio){
-  const activos=S.empleados.filter(e=>e.activo);
-  let totDev=0,totDed=0,totNeto=0,totEmp=0,totProv=0;
-  activos.forEach(e=>{const c=calculo(e);totDev+=c.devengado;totDed+=c.total_ded;totNeto+=c.neto;totEmp+=c.total_emp;totProv+=c.total_prov;});
-  S.liquidaciones.push({id:uid(),mes,anio,periodo:`${MESES_NOM[mes]} ${anio}`,empleados:activos.length,total_devengado:totDev,total_ded:totDed,neto:totNeto,costo_empleador:totEmp,provisiones:totProv});
+function guardarNominaGrid() {
+  const mes = parseInt(document.getElementById('liq-mes').value);
+  const anio = parseInt(document.getElementById('liq-anio').value);
+  const q = document.getElementById('liq-quincena').value;
+  const qText = q === '1' ? '1Q' : '2Q';
+  
+  const activos = getFiltrados();
+  let tNeto = 0;
+  
+  // Recopilar datos de la tabla
+  const registros = activos.map(e => {
+    const netoStr = document.getElementById(`val-neto-${e.cedula}`).textContent;
+    const neto = parseFloat(netoStr.replace(/[^0-9.-]+/g,"")) || 0;
+    tNeto += neto;
+    return {
+      cedula: e.cedula,
+      nombre: e.nombre,
+      neto: neto,
+      dias: document.getElementById(`dias-${e.cedula}`).value,
+      ads: document.getElementById(`ads-${e.cedula}`).value,
+      ded: document.getElementById(`ded-${e.cedula}`).value
+    };
+  });
+
+  S.liquidaciones.push({
+    id: uid(), 
+    mes, anio, 
+    periodo: `${MESES_NOM[mes]} ${anio} (${qText})`,
+    empleados: activos.length,
+    neto: tNeto,
+    detalles: registros
+  });
+
   save();
-  // Sync egreso to Tesorería
-  try{
-    const ts=JSON.parse(localStorage.getItem('dim_tesoreria_v1')||'null');
-    if(ts&&ts.movimientos&&ts.cuentas&&ts.cuentas.length>0){
-      const fecha=`${anio}-${String(mes).padStart(2,'0')}-30`;
-      ts.movimientos.push({id:uid(),fecha,desc:`Nómina ${MESES_NOM[mes]} ${anio} · ${activos.length} empleados`,cat:'Nómina',tipo:'egreso',valor:totNeto,cuenta:ts.cuentas[0].id,ref:`NOM-${String(mes).padStart(2,'0')}${anio}`});
-      localStorage.setItem('dim_tesoreria_v1',JSON.stringify(ts));
-    }
-  }catch(e){}
-  alert(`Liquidación ${MESES_NOM[mes]} ${anio} guardada en historial.`);
+  alert(`✅ Nómina ${qText} de ${MESES_NOM[mes]} guardada exitosamente.`);
+  setTab('historial', document.querySelectorAll('.tab')[1]);
+}
+
+function exportarExcelGrid() {
+  const mes = document.getElementById('liq-mes').value;
+  const q = document.getElementById('liq-quincena').value;
+  const data = [['Empleado', 'Cédula', 'Sueldo Base', 'Días', 'Sueldo Q', 'Aux Transp', 'Adiciones', 'Seg Social', 'Deducciones', 'Neto']];
+  
+  const activos = getFiltrados();
+  activos.forEach(e => {
+    const row = [
+      e.nombre, e.cedula, e.salario,
+      document.getElementById(`dias-${e.cedula}`).value,
+      document.getElementById(`val-sueldo-${e.cedula}`).textContent,
+      document.getElementById(`val-aux-${e.cedula}`).textContent,
+      document.getElementById(`ads-${e.cedula}`).value,
+      document.getElementById(`val-ss-${e.cedula}`).textContent,
+      document.getElementById(`ded-${e.cedula}`).value,
+      document.getElementById(`val-neto-${e.cedula}`).textContent
+    ];
+    data.push(row);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Nomina");
+  XLSX.writeFile(wb, `Nomina_DIMALCCO_${MESES_NOM[mes]}_Q${q}.xlsx`);
+}
+
+function renderConsolidado() {
+  const tbody = document.getElementById('tbody-cons');
+  const tfoot = document.getElementById('tfoot-cons');
+  tbody.innerHTML = '';
+  
+  const activos = getFiltrados();
+  let tots = { sal:0, aux:0, ads:0, ded:0, neto:0 };
+
+  activos.forEach(e => {
+    const c = calculo(e);
+    tots.sal += c.sal;
+    tots.aux += c.aux;
+    tots.ads += c.bono_nomina;
+    tots.ded += c.total_ded;
+    tots.neto += c.neto;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>
+          <strong>${e.nombre}</strong><br>
+          <small style="color:var(--t3)">${e.cargo}</small><br>
+          <button class="btn-sm" style="margin-top:4px; color:var(--ac); border-color:var(--ac)" onclick="openModalNov('${e.cedula}', '${e.nombre}')">➕ Novedad</button>
+        </td>
+        <td class="num">${fmt(c.sal)}</td>
+        <td class="num">${fmt(c.aux)}</td>
+        <td class="num" style="color:var(--in)">${fmt(c.bono_nomina)}</td>
+        <td class="num" style="color:var(--ex)">${fmt(c.total_ded)}</td>
+        <td class="num" style="font-weight:600; background:#f8fafc">${fmt(c.neto)}</td>
+      </tr>
+    `;
+  });
+
+  tfoot.innerHTML = `
+    <tr>
+      <td>TOTALES (${activos.length} empleados)</td>
+      <td class="num">${fmt(tots.sal)}</td>
+      <td class="num">${fmt(tots.aux)}</td>
+      <td class="num">${fmt(tots.ads)}</td>
+      <td class="num">${fmt(tots.ded)}</td>
+      <td class="num" style="color:var(--ac)">${fmt(tots.neto)}</td>
+    </tr>
+  `;
+
+  document.getElementById('modal-consolidado').classList.add('open');
+}
+
+function guardarLiquidacion() {
+  const mes = parseInt(document.getElementById('liq-mes').value);
+  const anio = parseInt(document.getElementById('liq-anio').value);
+  const q = document.getElementById('liq-quincena').value;
+  const qText = q === '1' ? '1Q' : (q === '2' ? '2Q' : 'MES');
+  
+  const activos = getFiltrados();
+  let tDev=0, tDed=0, tNeto=0, tEmp=0, tProv=0;
+  activos.forEach(e => {
+    const c = calculo(e);
+    tDev += c.devengado; tDed += c.total_ded; tNeto += c.neto;
+    tEmp += c.total_emp; tProv += c.total_prov;
+  });
+
+  S.liquidaciones.push({
+    id: uid(), 
+    mes, anio, 
+    periodo: `${MESES_NOM[mes]} ${anio} (${qText})`,
+    empleados: activos.length,
+    total_devengado: tDev,
+    total_ded: tDed,
+    neto: tNeto,
+    costo_empleador: tEmp,
+    provisiones: tProv
+  });
+
+  save();
+  document.getElementById('modal-consolidado').classList.remove('open');
+  alert(`Nómina ${qText} de ${MESES_NOM[mes]} guardada en historial.`);
   renderHistorial();
 }
 
@@ -439,11 +641,15 @@ function setTab(tab,btn){
 
 function renderEmployees(){
   const CC_CLR={'Producción':'#4338ca','Administración':'#d97706','Comercial':'#059669'};
-  document.getElementById('emp-list').innerHTML=S.empleados.filter(e=>e.activo).map((e,idx)=>`
-    <div class="emp-card" onclick="openModalEmp(${idx})">
+  const filtrados = getFiltrados();
+  document.getElementById('emp-list').innerHTML = filtrados.map((e, idx) => `
+    <div class="emp-card" onclick="openModalEmp(${S.empleados.indexOf(e)})">
       <div style="display:flex; justify-content:space-between">
         <div class="emp-name">${e.nombre}</div>
-        <div style="font-size:10px; color:var(--ac)">✏️</div>
+        <div style="display:flex; gap:6px">
+          <button class="btn-sm" style="padding:2px 5px; font-size:9px" onclick="event.stopPropagation(); openModalNov('${e.cedula}', '${e.nombre}')">➕ Nov.</button>
+          <div style="font-size:10px; color:var(--ac)">✏️</div>
+        </div>
       </div>
       <div class="emp-cargo">${e.cargo}</div>
       <div class="emp-sal">${fmt(e.salario)} ${e.bono?` (+${fmt(e.bono)})`:''}</div>
@@ -513,9 +719,23 @@ function renderAll(){renderHeader();renderEmployees();}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalEmp();});
 document.getElementById('modal-emp-bk').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModalEmp();});
 
-S=load();
-document.getElementById('liq-mes').value=new Date().getMonth()+1;
-renderAll();
+try {
+  S = load();
+  console.log("Estado cargado:", S);
+  
+  if(document.getElementById('liq-mes')) {
+    document.getElementById('liq-mes').value = new Date().getMonth() + 1;
+  }
+  
+  // Renderizado por pasos para evitar que un error en uno bloquee al otro
+  try { renderHeader(); } catch(e) { console.error("Error Header:", e); }
+  try { renderEmployees(); } catch(e) { console.error("Error Emps:", e); }
+  try { renderGrid(); } catch(e) { console.error("Error Grid:", e); }
+  
+} catch(e) {
+  console.error("CRITICAL LOAD ERROR:", e);
+  alert("Error al cargar datos. Pulsa F12 para ver la consola.");
+}
 </script>
 </body>
 </html>

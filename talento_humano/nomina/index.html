@@ -65,12 +65,12 @@
                 <a href="../index.html" class="btn btn-outline" style="text-decoration: none; padding: 0.5rem;"
                     title="Volver al Hub Espacio de Trabajo">🏠 Hub</a>
                 <button class="btn btn-primary" id="btn-guardar-global" style="background: #10b981; border-color: #10b981;" title="Guardar cambios actuales">💾 Guardar</button>
-                <button class="btn btn-primary" id="btn-archivar" style="background: var(--success, #10b981); border-color: var(--success, #10b981);" title="Cerrar y guardar esta nómina en el histórico">📁 Archivar</button>
+                <button class="btn btn-primary" id="btn-consolidado" style="background: #6366f1; border-color: #6366f1;" title="Ver tabla resumen de toda la quincena">📊 Consolidado</button>
+                <button class="btn btn-primary" id="btn-archivar" style="background: #f59e0b; border-color: #f59e0b;" title="Finalizar y archivar esta quincena">🔒 Cerrar Periodo</button>
                 <button class="btn btn-outline" id="btn-export-pdf">⬇️ PDF</button>
                 <button class="btn btn-outline" id="btn-export-excel">⬇️ Excel</button>
-                <button class="btn btn-outline btn-para" id="btn-export-para">📊 Parafiscales</button>
-                <button class="btn btn-outline btn-prest" id="btn-export-prest">📄 Prestaciones</button>
-                <button class="btn btn-danger" id="btn-limpiar">🗑️ Limpiar</button>
+                <button class="btn btn-outline btn-para" id="btn-export-para" title="Exportar Parafiscales">📊 Paraf.</button>
+                <button class="btn btn-outline btn-prest" id="btn-export-prest" title="Exportar Prestaciones">📄 Prest.</button>
             </div>
         </header>
 
@@ -148,6 +148,39 @@
         </div>
     </div>
 
+    <!-- ── Modal: Consolidado Quincenal ────────────────────────────────────── -->
+    <div class="modal-overlay" id="modal-consolidado" role="dialog" aria-modal="true" style="display:none; z-index: 9999;">
+        <div class="modal" style="max-width: 95%; width: 1200px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 2px solid #eee; padding-bottom: 1rem;">
+                <h2 style="margin:0">📊 Consolidado Quincenal de Nómina</h2>
+                <button class="btn btn-ghost" onclick="$('modal-consolidado').style.display='none'">✖ Cerrar</button>
+            </div>
+
+            <div style="overflow-x: auto; max-height: 60vh;">
+                <table class="novedades-tabla" style="width: 100%; border-collapse: collapse;">
+                    <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 10;">
+                        <tr>
+                            <th>Empleado</th>
+                            <th class="num">Sueldo Q.</th>
+                            <th class="num">Aux. Transp.</th>
+                            <th class="num">Adiciones</th>
+                            <th class="num">Salud + Pens.</th>
+                            <th class="num">Otras Ded.</th>
+                            <th class="num" style="background: #e0f2fe;">Neto a Pagar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-consolidado"></tbody>
+                    <tfoot id="tfoot-consolidado" style="font-weight: bold; background: #f1f5f9;"></tfoot>
+                </table>
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button class="btn btn-outline" onclick="exportarExcel()">📥 Bajar Excel</button>
+                <button class="btn btn-primary" onclick="$('modal-consolidado').style.display='none'" style="background: #10b981; border-color: #10b981;">Confirmar y Volver</button>
+            </div>
+        </div>
+    </div>
+    
     <!-- ── Modal: Nueva Novedad ─────────────────────────────────────────────── -->
     <div class="modal-overlay" id="modal-novedad" role="dialog" aria-modal="true">
         <div class="modal">

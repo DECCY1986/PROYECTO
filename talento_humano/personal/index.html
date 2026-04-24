@@ -21,6 +21,7 @@
     <div class="nav-label">Personal</div>
     <div class="nav-item active" onclick="switchView('novedades',this)"><span class="icon">📋</span>Novedades <span class="nav-badge" id="badgePendientes">0</span></div>
     <div class="nav-item" onclick="switchView('empleados',this)"><span class="icon">🧑‍💼</span>Empleados</div>
+    <div class="nav-item" onclick="switchView('prestamos',this)"><span class="icon">💰</span>Préstamos</div>
     <div class="nav-item" onclick="switchView('evaluaciones',this)"><span class="icon">📈</span>Evaluaciones</div>
     <div class="nav-item"><span class="icon">📄</span>Contratos</div>
     <div class="nav-item"><span class="icon">📊</span>Organigrama</div>
@@ -28,9 +29,9 @@
 
   <div class="nav-section">
     <div class="nav-label">Bienestar</div>
-    <div class="nav-item"><span class="icon">🏖️</span>Vacaciones</div>
-    <div class="nav-item"><span class="icon">🩺</span>Incapacidades</div>
-    <div class="nav-item"><span class="icon">🎓</span>Capacitaciones</div>
+    <div class="nav-item" onclick="switchView('vacaciones',this)"><span class="icon">🏖️</span>Vacaciones</div>
+    <div class="nav-item" onclick="switchView('incapacidades',this)"><span class="icon">🩺</span>Incapacidades</div>
+    <div class="nav-item" onclick="switchView('capacitaciones',this)"><span class="icon">🎓</span>Capacitaciones</div>
   </div>
   <div class="nav-section">
     <div class="nav-label">General</div>
@@ -73,6 +74,28 @@
       <button class="btn btn-ghost btn-sm" onclick="exportarEvaluaciones()">⬇ Exportar</button>
       <button class="btn btn-success" onclick="save(true)">💾 Guardar</button>
       <button class="btn btn-primary" onclick="openModalEval()">＋ Nueva Evaluación</button>
+    </div>
+  </div>
+
+  <!-- TOPBAR PRÉSTAMOS -->
+  <div class="topbar" id="topbarPrestamos" style="display:none">
+    <div><div class="topbar-title">Módulo de Personal</div><span class="topbar-breadcrumb">Gestión de Préstamos</span></div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="exportarPrestamos()">⬇ Exportar</button>
+      <button class="btn btn-success" onclick="save(true)">💾 Guardar</button>
+      <button class="btn btn-primary" onclick="openLoanModal()">＋ Nuevo Préstamo</button>
+    </div>
+  </div>
+
+  <!-- TOPBAR CAPACITACIONES -->
+  <div class="topbar" id="topbarCapacitaciones" style="display:none">
+    <div><div class="topbar-title">Módulo de Personal</div><span class="topbar-breadcrumb">Plan de Capacitación</span></div>
+    <div class="topbar-actions">
+      <input type="file" id="importTrainFile" style="display:none" accept=".xlsx, .xls" onchange="handleTrainImport(this)">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importTrainFile').click()">📥 Importar Cronograma</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportarTrain()">⬇ Exportar</button>
+      <button class="btn btn-success" onclick="save(true)">💾 Guardar</button>
+      <button class="btn btn-primary" onclick="openTrainModal()">＋ Nueva Sesión</button>
     </div>
   </div>
 
@@ -174,6 +197,51 @@
       <table><thead><tr><th>Empleado</th><th>Periodo</th><th>Calificación</th><th>Eficiencia</th><th>Bono</th><th style="text-align:center">Acciones</th></tr></thead>
       <tbody id="tableBodyEval"></tbody></table>
       <div id="emptyStateEval" class="empty-state" style="display:none"><div class="empty-icon">📈</div><div class="empty-title">Sin evaluaciones</div><div class="empty-sub">No hay registros para este periodo.</div></div>
+    </div>
+  </div>
+
+  <!-- VIEW: PRÉSTAMOS -->
+  <div class="content" id="prestamosView" style="display:none">
+    <div class="stats-grid">
+      <div class="stat-card blue"><div class="stat-label">Capital Prestado</div><div class="stat-value blue" id="loanTotal">0</div><div class="stat-sub">Monto original total</div></div>
+      <div class="stat-card orange"><div class="stat-label">Saldo Pendiente</div><div class="stat-value orange" id="loanSaldo">0</div><div class="stat-sub">Cartera por cobrar</div></div>
+      <div class="stat-card green"><div class="stat-label">Recuperación</div><div class="stat-value green" id="loanRecuperacion">0%</div><div class="stat-sub">Eficiencia de cobro</div></div>
+      <div class="stat-card purple"><div class="stat-label">Préstamos Activos</div><div class="stat-value purple" id="loanActivos">0</div><div class="stat-sub">Con saldo > 0</div></div>
+    </div>
+    <div class="section-header"><div><div class="section-title">Control de Préstamos y Cartera</div><div class="section-sub">Seguimiento de desembolsos y cronograma de pagos</div></div></div>
+    <div class="filters-bar">
+      <div class="search-box"><span>🔍</span><input type="text" placeholder="Buscar por empleado o cédula..." id="searchLoan" oninput="renderLoans()"></div>
+      <select class="filter-select" id="filterLoanEstado" onchange="renderLoans()">
+        <option value="">Todos los estados</option><option>Activo</option><option>Pagado</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Empleado</th><th>Estado</th><th>Monto Original</th><th>Saldo Pendiente</th><th>Progreso</th><th style="text-align:center">Acciones</th></tr></thead>
+      <tbody id="tableBodyLoan"></tbody></table>
+      <div id="emptyStateLoan" class="empty-state" style="display:none"><div class="empty-icon">💰</div><div class="empty-title">Sin préstamos</div><div class="empty-sub">No se han registrado préstamos al personal.</div></div>
+    </div>
+  </div>
+
+  <!-- VIEW: CAPACITACIONES -->
+  <div class="content" id="capacitacionesView" style="display:none">
+    <div class="stats-grid">
+      <div class="stat-card blue"><div class="stat-label">Total Horas</div><div class="stat-value blue" id="trainHours">0</div><div class="stat-sub">Horas de formación año</div></div>
+      <div class="stat-card green"><div class="stat-label">Sesiones</div><div class="stat-value green" id="trainCount">0</div><div class="stat-sub">Capacitaciones realizadas</div></div>
+      <div class="stat-card orange"><div class="stat-label">Asistencia Prom.</div><div class="stat-value orange" id="trainAssist">0</div><div class="stat-sub">Colaboradores por sesión</div></div>
+      <div class="stat-card purple"><div class="stat-label">Inversión</div><div class="stat-value purple" id="trainCost">$ 0</div><div class="stat-sub">Costo acumulado formación</div></div>
+    </div>
+    <div class="section-header"><div><div class="section-title">Registro de Capacitaciones</div><div class="section-sub">Cronograma y evidencia de formación del personal</div></div></div>
+    <div class="filters-bar">
+      <div class="search-box"><span>🔍</span><input type="text" placeholder="Buscar por tema o facilitador..." id="searchTrain" oninput="renderTrain()"></div>
+      <select class="filter-select" id="filterTrainMes" onchange="renderTrain()">
+        <option value="">Todo el año</option>
+        <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option><option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option><option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option><option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Fecha</th><th>Tema / Facilitador</th><th>Duración</th><th>Asistentes</th><th>Costo</th><th>Estado</th><th style="text-align:center">Acciones</th></tr></thead>
+      <tbody id="tableBodyTrain"></tbody></table>
+      <div id="emptyStateTrain" class="empty-state" style="display:none"><div class="empty-icon">🎓</div><div class="empty-title">Sin capacitaciones</div><div class="empty-sub">Registre su primera sesión de formación.</div></div>
     </div>
   </div>
 </main>
@@ -395,22 +463,99 @@
   </div>
 </div>
 
+<!-- MODAL: PRÉSTAMO -->
+<div class="modal-overlay" id="modalOverlayLoan" onclick="if(event.target===this)closeLoanModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">💰 Registro de Préstamo</div><div class="modal-subtitle">Desembolso de dinero al colaborador</div></div>
+      <button class="modal-close" onclick="closeLoanModal()">✕</button>
+    </div>
+    <div class="modal-body"><div class="form-grid">
+      <div class="form-section-label">Detalles del Desembolso</div>
+      <div class="form-group"><label>Empleado *</label>
+        <select class="form-control" id="loanCedula" onchange="autoEmpLoan()">
+            <option value="">Seleccionar...</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Nombre</label><input type="text" class="form-control" id="loanNombre" readonly></div>
+      <div class="form-group"><label>Monto del Préstamo ($) *</label><input type="number" class="form-control" id="loanMonto" placeholder="0"></div>
+      <div class="form-group"><label>Número de Cuotas *</label><input type="number" class="form-control" id="loanCuotas" placeholder="Ej: 4"></div>
+      <div class="form-group"><label>Fecha de Desembolso *</label><input type="date" class="form-control" id="loanFecha"></div>
+      <div class="form-group"><label>Motivo / Observación</label><input type="text" class="form-control" id="loanObs" placeholder="Ej: Calamidad, Vivienda..."></div>
+    </div></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeLoanModal()">Cancelar</button><button class="btn btn-primary" onclick="guardarLoan()">💾 Guardar Préstamo</button></div>
+  </div>
+</div>
+
+<!-- MODAL: DETALLES PRÉSTAMO -->
+<div class="modal-overlay" id="modalOverlayLoanDetail" onclick="if(event.target===this)closeLoanDetailModal()">
+  <div class="modal">
+    <div class="modal-header" style="background:var(--surface2); padding:24px; border-radius:14px 14px 0 0">
+      <div><div class="modal-title" id="ldTitle" style="font-size:20px">Detalles del Préstamo</div><div class="modal-subtitle" id="ldSubtitle"></div></div>
+      <button class="modal-close" onclick="closeLoanDetailModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:24px">
+        <div class="stat-card" style="text-align:center"><div class="stat-label">Original</div><div class="stat-value" id="ldMonto" style="font-size:18px"></div></div>
+        <div class="stat-card" style="text-align:center"><div class="stat-label">Saldo</div><div class="stat-value" id="ldSaldo" style="font-size:18px; color:var(--danger)"></div></div>
+        <div class="stat-card" style="text-align:center"><div class="stat-label">Cuotas</div><div class="stat-value" id="ldCuotas" style="font-size:18px; color:var(--success)"></div></div>
+      </div>
+      <div class="section-header"><div><div class="section-title">Historial de Abonos</div></div> <button class="btn btn-primary btn-sm" onclick="triggerPayment()">＋ Abonar Cuota</button></div>
+      <div class="table-wrap" style="max-height:300px; overflow-y:auto">
+        <table><thead><tr><th>Fecha</th><th>Concepto</th><th style="text-align:right">Valor</th></tr></thead>
+        <tbody id="ldHistoryBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CAPACITACIÓN -->
+<div class="modal-overlay" id="modalOverlayTrain" onclick="if(event.target===this)closeTrainModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div><div class="modal-title">🎓 Registro de Capacitación</div><div class="modal-subtitle">Documentar sesión de formación</div></div>
+      <button class="modal-close" onclick="closeTrainModal()">✕</button>
+    </div>
+    <div class="modal-body"><div class="form-grid">
+      <div class="form-section-label">Información de la Sesión</div>
+      <div class="form-group full"><label>Tema / Título de la Capacitación *</label><input type="text" class="form-control" id="trTema" placeholder="Ej: Seguridad en el Trabajo, Excel Avanzado..."></div>
+      <div class="form-group"><label>Facilitador / Expositor *</label><input type="text" class="form-control" id="trFacilitador" placeholder="Nombre del docente o entidad"></div>
+      <div class="form-group"><label>Fecha *</label><input type="date" class="form-control" id="trFecha"></div>
+      <div class="form-group"><label>Duración (Horas) *</label><input type="number" class="form-control" id="trHoras" placeholder="0"></div>
+      <div class="form-group"><label>Costo de la Sesión ($)</label><input type="number" class="form-control" id="trCosto" placeholder="0"></div>
+      <div class="form-group"><label>Lugar / Modalidad</label><select class="form-control" id="trLugar"><option>Presencial (Planta)</option><option>Presencial (Externo)</option><option>Virtual / Online</option></select></div>
+      <div class="form-group"><label>Estado</label><select class="form-control" id="trEstado"><option>Realizada</option><option>Programada</option><option>Cancelada</option></select></div>
+      <hr class="form-divider">
+      <div class="form-section-label">Asistencia</div>
+      <div class="form-group full"><label>Nombres de los Asistentes (Separados por coma)</label><textarea class="form-control" id="trAsistentes" placeholder="Juan Perez, Maria Gomez..."></textarea></div>
+    </div></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeTrainModal()">Cancelar</button><button class="btn btn-primary" onclick="guardarTrain()">💾 Guardar Sesión</button></div>
+  </div>
+</div>
+
 <script>
-const LS_EMP='dimalcco_emp_v2', LS_NOV='dimalcco_nov_v2', LS_EVAL='dimalcco_eval_v1';
+const LS_EMP='dimalcco_emp_v2', LS_NOV='dimalcco_nov_v2', LS_EVAL='dimalcco_eval_v1', LS_LOAN='dimalcco_loans_v1', LS_TRAIN='dimalcco_train_v1';
 let empleados=JSON.parse(localStorage.getItem(LS_EMP))||[];
 let novedades=JSON.parse(localStorage.getItem(LS_NOV))||[];
 let evaluaciones=JSON.parse(localStorage.getItem(LS_EVAL))||[];
-let iEmp=null, iNov=null, iEval=null, iMode='emp', iRows=[];
+let prestamos=JSON.parse(localStorage.getItem(LS_LOAN))||[];
+let capacitaciones=JSON.parse(localStorage.getItem(LS_TRAIN))||[];
+let iEmp=null, iNov=null, iEval=null, iLoan=null, iTrain=null, iMode='emp', iRows=[];
 let evalChartInstance = null;
+let currentLoanIdx = -1;
 
 if(!empleados.length){empleados=[];}
 if(!novedades.length){novedades=[];}
 if(!evaluaciones.length){evaluaciones=[];}
+if(!prestamos.length){prestamos=[];}
+if(!capacitaciones.length){capacitaciones=[];}
 
 function save(manual){
   localStorage.setItem(LS_EMP,JSON.stringify(empleados));
   localStorage.setItem(LS_NOV,JSON.stringify(novedades));
   localStorage.setItem(LS_EVAL,JSON.stringify(evaluaciones));
+  localStorage.setItem(LS_LOAN,JSON.stringify(prestamos));
+  localStorage.setItem(LS_TRAIN,JSON.stringify(capacitaciones));
 
   // Sincronización con Nube DIMALCCO
   if (window.parent && window.parent.postMessage) {
@@ -453,14 +598,22 @@ function switchView(v, el) {
   document.getElementById('novedadesView').style.display = v === 'novedades' ? 'block' : 'none';
   document.getElementById('empleadosView').style.display = v === 'empleados' ? 'block' : 'none';
   document.getElementById('evaluacionesView').style.display = v === 'evaluaciones' ? 'block' : 'none';
+  document.getElementById('prestamosView').style.display = v === 'prestamos' ? 'block' : 'none';
+  document.getElementById('capacitacionesView').style.display = v === 'capacitaciones' ? 'block' : 'none';
+  
   document.getElementById('topbarNovedades').style.display = v === 'novedades' ? 'flex' : 'none';
   document.getElementById('topbarEmpleados').style.display = v === 'empleados' ? 'flex' : 'none';
   document.getElementById('topbarEvaluaciones').style.display = v === 'evaluaciones' ? 'flex' : 'none';
+  document.getElementById('topbarPrestamos').style.display = v === 'prestamos' ? 'flex' : 'none';
+  document.getElementById('topbarCapacitaciones').style.display = v === 'capacitaciones' ? 'flex' : 'none';
+
   document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
   el.classList.add('active');
   if (v === 'empleados') renderEmp();
   if (v === 'novedades') filterTable();
   if (v === 'evaluaciones') renderEval();
+  if (v === 'prestamos') renderLoans();
+  if (v === 'capacitaciones') renderTrain();
 }
 
 // ── NOVEDADES ──
@@ -962,6 +1115,251 @@ function updateEvalChart(){
     evalChartInstance.data.datasets[0].data = dataPoints;
     evalChartInstance.update();
   }
+}
+
+// ── PRÉSTAMOS ──
+function renderLoans(){
+  const q=(document.getElementById('searchLoan').value||'').toLowerCase();
+  const st=document.getElementById('filterLoanEstado').value;
+  const data=prestamos.filter(p=>{
+    const emp = empleados.find(e=>e.cedula===p.cedula)||{nombre:'N/A'};
+    const state = p.saldo <= 0 ? 'Pagado' : 'Activo';
+    return (!q||(emp.nombre+p.cedula).toLowerCase().includes(q)) && (!st||state===st);
+  });
+  const tb=document.getElementById('tableBodyLoan'), es=document.getElementById('emptyStateLoan');
+  if(!data.length){tb.innerHTML='';es.style.display='block';}
+  else {
+    es.style.display='none';
+    tb.innerHTML=data.map(p=>{
+        const i=prestamos.indexOf(p);
+        const emp=empleados.find(e=>e.cedula===p.cedula)||{nombre:'N/A'};
+        const pct=Math.min(100, Math.round(((p.monto - (p.saldo||0)) / p.monto) * 100));
+        const st=p.saldo <= 0 ? 'Pagado' : 'Activo';
+        const sc=st==='Pagado'?'e-aprobado':'e-pendiente';
+        return `<tr><td><div class="td-employee"><div class="avatar" style="background:${clr(emp.nombre)}">${ini(emp.nombre)}</div>
+        <div><div class="emp-name">${emp.nombre}</div><div class="emp-cargo">CC: ${p.cedula}</div></div></div></td>
+        <td><span class="estado-badge ${sc}">${st}</span></td>
+        <td style="font-weight:600">${fCOP(p.monto)}</td>
+        <td style="font-weight:600; color:var(--danger)">${fCOP(p.saldo)}</td>
+        <td>
+            <div style="font-size:10px; margin-bottom:4px; display:flex; justify-content:space-between"><span>${p.cuotasPagadas||0}/${p.cuotas}</span> <span>${pct}%</span></div>
+            <div style="width:100%; height:4px; background:var(--surface2); border-radius:4px; overflow:hidden"><div style="width:${pct}%; height:100%; background:var(--accent)"></div></div>
+        </td>
+        <td><div class="td-actions" style="justify-content:center">
+          <button class="icon-btn" onclick="verLoanDet(${i})">👁️</button>
+          <button class="icon-btn edit" onclick="payLoanQuota(${i})" title="Abonar cuota">💰</button>
+          <button class="icon-btn del" onclick="delLoan(${i})">🗑️</button>
+        </div></td></tr>`;
+    }).join('');
+  }
+  // Stats
+  const totalOrig = prestamos.reduce((s,p)=>s+p.monto,0);
+  const totalSaldo = prestamos.reduce((s,p)=>s+p.saldo,0);
+  const totalRecup = totalOrig ? Math.round(((totalOrig-totalSaldo)/totalOrig)*100) : 0;
+  document.getElementById('loanTotal').textContent=fCOP(totalOrig);
+  document.getElementById('loanSaldo').textContent=fCOP(totalSaldo);
+  document.getElementById('loanRecuperacion').textContent=totalRecup+'%';
+  document.getElementById('loanActivos').textContent=prestamos.filter(p=>p.saldo>0).length;
+}
+
+function openLoanModal(){
+    iLoan=null;
+    const sel = document.getElementById('loanCedula');
+    sel.innerHTML = '<option value="">Seleccionar...</option>' + empleados.sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(e=>`<option value="${e.cedula}">${e.nombre}</option>`).join('');
+    document.getElementById('loanNombre').value='';
+    document.getElementById('loanMonto').value='';
+    document.getElementById('loanCuotas').value='';
+    document.getElementById('loanFecha').value=new Date().toISOString().split('T')[0];
+    document.getElementById('loanObs').value='';
+    document.getElementById('modalOverlayLoan').classList.add('open');
+}
+function closeLoanModal(){document.getElementById('modalOverlayLoan').classList.remove('open');}
+function autoEmpLoan(){
+    const e = empleados.find(ex=>ex.cedula===document.getElementById('loanCedula').value);
+    document.getElementById('loanNombre').value=e?e.nombre:'';
+}
+function guardarLoan(){
+    const p={cedula:document.getElementById('loanCedula').value, monto:parseInt(document.getElementById('loanMonto').value), cuotas:parseInt(document.getElementById('loanCuotas').value),
+        fecha:document.getElementById('loanFecha').value, obs:document.getElementById('loanObs').value, cuotasPagadas:0, saldo:0, historial:[]};
+    p.saldo = p.monto;
+    if(!p.cedula||!p.monto||!p.cuotas){alert('Campos obligatorios incompletos.');return;}
+    prestamos.push(p);
+    save();closeLoanModal();renderLoans();
+}
+function verLoanDet(i){
+    currentLoanIdx = i;
+    const p=prestamos[i];
+    const emp=empleados.find(e=>e.cedula===p.cedula)||{nombre:'N/A'};
+    document.getElementById('ldTitle').textContent=emp.nombre;
+    document.getElementById('ldSubtitle').textContent=`IDENTIFICACIÓN: ${p.cedula} | ${p.obs||'Sin observación'}`;
+    document.getElementById('ldMonto').textContent=fCOP(p.monto);
+    document.getElementById('ldSaldo').textContent=fCOP(p.saldo);
+    document.getElementById('ldCuotas').textContent=`${p.cuotasPagadas||0} / ${p.cuotas}`;
+    
+    const body=document.getElementById('ldHistoryBody');
+    body.innerHTML=p.historial && p.historial.length ? p.historial.map(h=>`<tr><td>${h.fecha}</td><td>${h.concepto}</td><td style="text-align:right">${fCOP(h.valor)}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text-dim)">Sin abonos</td></tr>';
+    document.getElementById('modalOverlayLoanDetail').classList.add('open');
+}
+function closeLoanDetailModal(){document.getElementById('modalOverlayLoanDetail').classList.remove('open');}
+function triggerPayment(){ if(currentLoanIdx!==-1) payLoanQuota(currentLoanIdx); }
+function payLoanQuota(i){
+    const p=prestamos[i];
+    if(p.saldo <= 0){alert('Préstamo ya pagado.');return;}
+    const val = Math.min(p.saldo, Math.ceil(p.monto/p.cuotas));
+    p.cuotasPagadas = (p.cuotasPagadas||0) + 1;
+    p.saldo = Math.max(0, p.saldo - val);
+    if(!p.historial) p.historial=[];
+    p.historial.push({fecha:new Date().toLocaleDateString(), concepto:`Abono Cuota ${p.cuotasPagadas}`, valor:val});
+    save();
+    renderLoans();
+    if(document.getElementById('modalOverlayLoanDetail').classList.contains('open')) verLoanDet(i);
+}
+function delLoan(i){if(confirm('¿Eliminar registro de préstamo?')){prestamos.splice(i,1);save();renderLoans();}}
+function exportarPrestamos(){
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([['Cédula','Empleado','Monto','Cuotas','Saldo','Pagadas','Fecha','Obs'],...prestamos.map(p=>{const e=empleados.find(x=>x.cedula===p.cedula)||{nombre:'N/A'};return[p.cedula,e.nombre,p.monto,p.cuotas,p.saldo,p.cuotasPagadas,p.fecha,p.obs]})]);
+  XLSX.utils.book_append_sheet(wb,ws,'Préstamos');
+  XLSX.writeFile(wb,'Prestamos_DIMALCCO_2026.xlsx');
+}
+
+// ── CAPACITACIONES ──
+function renderTrain(){
+  const q=(document.getElementById('searchTrain').value||'').toLowerCase();
+  const m=document.getElementById('filterTrainMes').value;
+  const data=capacitaciones.filter(t=>(!q||(t.tema+t.facilitador).toLowerCase().includes(q))&&(!m||t.fecha.startsWith('2026-'+m)));
+  const tb=document.getElementById('tableBodyTrain'), es=document.getElementById('emptyStateTrain');
+  
+  if(!data.length){tb.innerHTML='';es.style.display='block';}
+  else {
+    es.style.display='none';
+    tb.innerHTML=data.map(t=>{
+        const i=capacitaciones.indexOf(t);
+        const ec=t.estado==='Realizada'?'e-aprobado':(t.estado==='Cancelada'?'e-rechazado':'e-pendiente');
+        const assistCount = t.asistentes ? t.asistentes.split(',').length : 0;
+        return `<tr><td style="font-family:'DM Mono',monospace;font-size:12px">${t.fecha}</td>
+        <td><div class="emp-name">${t.tema}</div><div class="emp-cargo">${t.facilitador} · ${t.lugar}</div></td>
+        <td>${t.horas} h</td>
+        <td><span class="badge b-ingreso">${assistCount} pers.</span></td>
+        <td style="font-weight:600">${fCOP(t.costo)}</td>
+        <td><span class="estado-badge ${ec}">${t.estado}</span></td>
+        <td><div class="td-actions" style="justify-content:center">
+          <button class="icon-btn edit" onclick="editTrain(${i})">✏️</button>
+          <button class="icon-btn del" onclick="delTrain(${i})">🗑️</button>
+        </div></td></tr>`;
+    }).join('');
+  }
+  // Stats
+  const totalHrs = data.reduce((s,t)=>s+(parseInt(t.horas)||0),0);
+  const totalCost = data.reduce((s,t)=>s+(parseInt(t.costo)||0),0);
+  const assistProm = data.length ? Math.round(data.reduce((s,t)=>s+(t.asistentes?t.asistentes.split(',').length:0),0)/data.length) : 0;
+  document.getElementById('trainHours').textContent=totalHrs;
+  document.getElementById('trainCount').textContent=data.length;
+  document.getElementById('trainAssist').textContent=assistProm;
+  document.getElementById('trainCost').textContent=fCOP(totalCost);
+}
+
+function openTrainModal(){
+  iTrain=null;
+  ['trTema','trFacilitador','trHoras','trCosto','trAsistentes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('trFecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('trLugar').selectedIndex=0;
+  document.getElementById('trEstado').selectedIndex=0;
+  document.getElementById('modalOverlayTrain').classList.add('open');
+}
+function closeTrainModal(){document.getElementById('modalOverlayTrain').classList.remove('open');}
+function guardarTrain(){
+    const t={tema:document.getElementById('trTema').value, facilitador:document.getElementById('trFacilitador').value, fecha:document.getElementById('trFecha').value,
+        horas:document.getElementById('trHoras').value, costo:document.getElementById('trCosto').value, lugar:document.getElementById('trLugar').value,
+        estado:document.getElementById('trEstado').value, asistentes:document.getElementById('trAsistentes').value};
+    if(!t.tema||!t.facilitador||!t.fecha){alert('Campos obligatorios incompletos.');return;}
+    if(iTrain!==null) capacitaciones[iTrain]=t; else capacitaciones.push(t);
+    save();closeTrainModal();renderTrain();
+}
+function editTrain(i){
+    iTrain=i; const t=capacitaciones[i];
+    document.getElementById('trTema').value=t.tema; document.getElementById('trFacilitador').value=t.facilitador;
+    document.getElementById('trFecha').value=t.fecha; document.getElementById('trHoras').value=t.horas;
+    document.getElementById('trCosto').value=t.costo; document.getElementById('trLugar').value=t.lugar;
+    document.getElementById('trEstado').value=t.estado; document.getElementById('trAsistentes').value=t.asistentes;
+    document.getElementById('modalOverlayTrain').classList.add('open');
+}
+function delTrain(i){if(confirm('¿Eliminar registro de capacitación?')){capacitaciones.splice(i,1);save();renderTrain();}}
+function exportarTrain(){
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([['Fecha','Tema','Facilitador','Horas','Costo','Lugar','Estado','Asistentes'],...capacitaciones.map(t=>[t.fecha,t.tema,t.facilitador,t.horas,t.costo,t.lugar,t.estado,t.asistentes])]);
+  XLSX.utils.book_append_sheet(wb,ws,'Capacitaciones');
+  XLSX.writeFile(wb,'Capacitaciones_DIMALCCO_2026.xlsx');
+}
+
+function handleTrainImport(input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const data = new Uint8Array(e.target.result);
+    const wb = XLSX.read(data, {type: 'array'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, {header: 1});
+    
+    // Buscar fila de encabezado
+    let headerIdx = -1;
+    for(let i=0; i<rows.length; i++){
+      if(rows[i].some(c => String(c).includes('Nombre de la capacitación'))){ headerIdx = i; break; }
+    }
+    if(headerIdx === -1){ alert('No se reconoció el formato del cronograma. Asegúrese de tener la columna "Nombre de la capacitación".'); return; }
+
+    const headers = rows[headerIdx];
+    const months = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+    const newSessions = [];
+
+    // Mapear columnas
+    const colTopic = headers.findIndex(h => String(h).includes('Nombre'));
+    const colInst = headers.findIndex(h => String(h).includes('Instructor'));
+    const colHrs = headers.findIndex(h => String(h).includes('Horas'));
+
+    for(let i = headerIdx + 1; i < rows.length; i++){
+      const r = rows[i];
+      const topic = r[colTopic];
+      if(!topic) continue;
+      
+      const instructor = r[colInst] || 'Pendiente';
+      const hours = r[colHrs] || 0;
+
+      // Buscar marcas en los meses (P o E)
+      // Nota: Según la imagen, después de Temario vienen pares de P y E por cada mes.
+      // Vamos a buscar los índices de las columnas que están bajo los meses.
+      months.forEach((m, mIdx) => {
+          const startCol = colTopic + 3 + (mIdx * 2); // Aproximado según layout (Topic, Alcance, Temario... P, E)
+          const pVal = r[startCol];
+          const eVal = r[startCol + 1];
+
+          if(pVal || eVal){
+              const monthNum = String(mIdx + 1).padStart(2, '0');
+              newSessions.push({
+                  tema: topic,
+                  facilitador: instructor,
+                  fecha: `2026-${monthNum}-01`,
+                  horas: hours,
+                  costo: 0,
+                  lugar: 'Por definir',
+                  estado: eVal ? 'Realizada' : 'Programada',
+                  asistentes: ''
+              });
+          }
+      });
+    }
+
+    if(newSessions.length){
+        if(confirm(`Se detectaron ${newSessions.length} sesiones en el cronograma. ¿Desea importarlas?`)){
+            capacitaciones = [...capacitaciones, ...newSessions];
+            save(); renderTrain();
+            alert('Importación exitosa.');
+        }
+    } else {
+        alert('No se encontraron sesiones marcadas (P o E) en el archivo.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  input.value = '';
 }
 
 filterTable();

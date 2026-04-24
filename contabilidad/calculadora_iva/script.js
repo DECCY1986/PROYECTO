@@ -3,6 +3,191 @@
  * Handles real-time calculations for Formulario 300 (DIAN)
  */
 
+/**
+ * Handles the Excel file selection event for Sales
+ */
+function importSalesFromExcelByFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+            if (jsonData.length === 0) {
+                alert("El archivo Excel está vacío o no tiene el formato correcto.");
+                return;
+            }
+
+            processExcelSales(jsonData);
+        } catch (err) {
+            console.error("Error al procesar Excel:", err);
+            alert("Error al procesar el archivo Excel.");
+        }
+        event.target.value = '';
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+/**
+ * Handles the Excel file selection event for Purchases
+ */
+function importPurchasesFromExcelByFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+            if (jsonData.length === 0) {
+                alert("El archivo Excel está vacío o no tiene el formato correcto.");
+                return;
+            }
+
+            processExcelPurchases(jsonData);
+        } catch (err) {
+            console.error("Error al procesar Excel:", err);
+            alert("Error al procesar el archivo Excel.");
+        }
+        event.target.value = '';
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+/**
+ * Common helper to find column values
+ */
+function getColumnValue(row, patterns) {
+    const key = Object.keys(row).find(k => 
+        patterns.some(p => k.toLowerCase().trim().includes(p.toLowerCase()))
+    );
+    return key ? row[key] : null;
+}
+
+/**
+ * Maps Excel data to the Sales table
+ */
+function processExcelSales(data) {
+    const salesTable = document.querySelector('#sales-table tbody');
+    let importedCount = 0;
+
+    data.forEach(row => {
+        // --- Specific mapping based on user image: FACTURA | Nombre Receptor | BASE ---
+        const factura = getColumnValue(row, ['factura', 'nro_fac', 'consecutivo', 'num']);
+        const receptor = getColumnValue(row, ['nombre receptor', 'receptor', 'cliente', 'tercero', 'nombre']);
+        const baseRaw = getColumnValue(row, ['base', 'monto', 'subtotal', 'valor_neto', 'valor']);
+        
+        // Construct detailed concept
+        let concept = 'Venta Importada';
+        if (factura && receptor) concept = `FAC: ${factura} - ${receptor}`;
+        else if (factura) concept = `FAC: ${factura}`;
+        else if (receptor) concept = receptor;
+        else concept = getColumnValue(row, ['descripcion', 'detalle']) || 'Venta Importada';
+
+        const ivaRaw = getColumnValue(row, ['iva', 'impuesto', 'vlr_iva']) || 0;
+        const typeRaw = getColumnValue(row, ['tipo', 'tarifa', 'clase']) || '';
+
+        const base = Math.abs(parseFloat(String(baseRaw).replace(/[^0-9.-]+/g, "")) || 0);
+        const iva = Math.abs(parseFloat(String(ivaRaw).replace(/[^0-9.-]+/g, "")) || 0);
+
+        if (base === 0 && iva === 0) return;
+
+        addRow('sales-table');
+        const newRow = salesTable.lastElementChild;
+        const typeSelect = newRow.querySelector('.type-select');
+        
+        newRow.querySelector('td:nth-child(1) input').value = concept;
+        newRow.querySelector('.base-input').value = base;
+
+        // Guess type
+        const typeStr = String(typeRaw).toLowerCase();
+        if (typeStr.includes('aiu')) {
+            typeSelect.value = 'aiu';
+        } else if (iva === 0 && base > 0 && !typeStr) {
+            // If we have base but NO IVA and NO type, assume General (19%) as it's the most common case for taxable sales
+            // The user can always change it to "No Gravada" if needed
+            typeSelect.value = 'general';
+        } else if (iva === 0 && base > 0) {
+            typeSelect.value = 'no-gravada';
+        } else {
+            typeSelect.value = 'general';
+        }
+        
+        toggleType(typeSelect);
+        calculateRow(newRow.querySelector('.base-input'));
+        importedCount++;
+    });
+
+    if (importedCount > 0) {
+        updateMasterSummary();
+        saveData();
+        alert(`¡Éxito! Se importaron ${importedCount} ventas con la estructura personalizada.`);
+    }
+}
+
+/**
+ * Maps Excel data to the Purchases table
+ */
+function processExcelPurchases(data) {
+    const purchaseTable = document.querySelector('#purchases-table tbody');
+    let importedCount = 0;
+
+    data.forEach(row => {
+        const concept = getColumnValue(row, ['concepto', 'descripcion', 'detalle', 'proveedor', 'nombre', 'beneficiario']) || 'Compra Importada';
+        const ivaRaw = getColumnValue(row, ['iva', 'impuesto', 'vlr_iva', 'riva']) || 0;
+        const baseRaw = getColumnValue(row, ['base', 'subtotal', 'neto', 'monto']) || 0;
+        const rateRaw = getColumnValue(row, ['tarifa', 'porcentaje', 'pct', '%']) || '';
+
+        const iva = Math.abs(parseFloat(String(ivaRaw).replace(/[^0-9.-]+/g, "")) || 0);
+        const base = Math.abs(parseFloat(String(baseRaw).replace(/[^0-9.-]+/g, "")) || 0);
+        
+        if (iva === 0 && base === 0) return;
+
+        let rate = 'bienes-19';
+        const rateStr = String(rateRaw).toLowerCase();
+        if (rateStr.includes('5')) rate = 'bienes-5';
+        else if (rateStr.includes('19')) rate = 'bienes-19';
+        else if (iva > 0 && base > 0) {
+            const calcRate = iva / base;
+            if (calcRate > 0.15) rate = 'bienes-19';
+            else if (calcRate > 0.03) rate = 'bienes-5';
+        }
+
+        addRow('purchases-table');
+        const newRow = purchaseTable.lastElementChild;
+        newRow.querySelector('td:nth-child(1) input').value = concept;
+        
+        const ivaInput = newRow.querySelector('.iva-input');
+        if (iva > 0) {
+            ivaInput.value = iva;
+        } else if (base > 0) {
+            const r = rate.includes('19') ? 0.19 : 0.05;
+            ivaInput.value = Math.round(base * r);
+        }
+
+        newRow.querySelector('.type-select').value = rate;
+        calculateRow(ivaInput);
+        importedCount++;
+    });
+
+    if (importedCount > 0) {
+        updateMasterSummary();
+        saveData();
+        alert(`¡Éxito! Se importaron ${importedCount} compras.`);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Basic navigation active state handling
     const navLinks = document.querySelectorAll('.nav-link');
@@ -560,4 +745,109 @@ function clearData() {
  */
 function exportSummary() {
     window.print();
+}
+
+/**
+ * 📊 EXPORT TO EXCEL
+ * Generates a multi-sheet Excel file with Summary, Sales, and Purchases
+ */
+function exportToExcel() {
+    try {
+        const wb = XLSX.utils.book_new();
+
+        // --- 1. SUMMARY SHEET ---
+        const summaryData = [
+            ["DECLARACIÓN DE IVA - RESUMEN FORMULARIO 300"],
+            ["Empresa:", "Janus ERP"],
+            ["Fecha de Exportación:", new Date().toLocaleDateString()],
+            [""],
+            ["Sección", "Renglón / Concepto", "Valor"],
+        ];
+
+        // Helper to get text/value from summary
+        const getSumVal = (id) => document.getElementById(id)?.textContent || "$ 0";
+
+        summaryData.push(["INGRESOS", "(28) Gravados Tarifa General", getSumVal('gen-28-val')]);
+        summaryData.push(["", "(29) AIU (Base Especial)", getSumVal('gen-29-val')]);
+        summaryData.push(["", "(40) Operaciones No Gravadas", getSumVal('gen-40-val')]);
+        summaryData.push(["", "(41) Total Ingresos Brutos", getSumVal('inc-bruto')]);
+        summaryData.push(["", "(42) Devoluciones en Ventas", getSumVal('inc-dev-total')]);
+        summaryData.push(["", "(43) Total Ingresos Netos", getSumVal('inc-neto')]);
+        summaryData.push([""]);
+
+        summaryData.push(["COMPRAS (BASES)", "(50) Bienes Gravados 5%", getSumVal('base-50-val')]);
+        summaryData.push(["", "(51) Bienes Gravados 19%", getSumVal('base-51-val')]);
+        summaryData.push(["", "(52) Servicios Gravados 5%", getSumVal('base-52-val')]);
+        summaryData.push(["", "(53) Servicios Gravados 19%", getSumVal('base-53-val')]);
+        summaryData.push(["", "(54) Bienes y Serv. Excluidos", getSumVal('base-54-val')]);
+        summaryData.push(["", "(55) Total Compras Brutas", getSumVal('base-55-val')]);
+        summaryData.push(["", "(56) Dev. en Compras (Base)", getSumVal('base-56-val')]);
+        summaryData.push([""]);
+
+        summaryData.push(["IMPUESTO GENERADO", "(58) A la tarifa 5%", getSumVal('gen-58-val')]);
+        summaryData.push(["", "(59) A la tarifa general", getSumVal('gen-59-val')]);
+        summaryData.push(["", "(60) Sobre A.I.U", getSumVal('gen-60-val')]);
+        summaryData.push(["", "(66) IVA Recup. en Devolución", getSumVal('gen-66-val')]);
+        summaryData.push(["", "Total Generado", getSumVal('total-generated')]);
+        summaryData.push([""]);
+
+        summaryData.push(["IMPUESTO DESCONTABLE", "Factor Prorrateo", getSumVal('prorate-factor')]);
+        summaryData.push(["", "(71) Bienes Gravados 5%", getSumVal('desc-71-val')]);
+        summaryData.push(["", "(72) Bienes Gravados 19%", getSumVal('desc-72-val')]);
+        summaryData.push(["", "(74) Servicios Gravados 5%", getSumVal('desc-74-val')]);
+        summaryData.push(["", "(75) Servicios Gravados 19%", getSumVal('desc-75-val')]);
+        summaryData.push(["", "Devoluciones Ventas", getSumVal('desc-dev-v')]);
+        summaryData.push(["", "(77) Total IVA Descontable", getSumVal('total-deductible')]);
+        summaryData.push([""]);
+
+        summaryData.push(["TOTALES", "Saldo del Periodo", getSumVal('net-balance')]);
+        summaryData.push(["", "Retenciones de IVA", "$" + (document.getElementById('reteiva-input')?.value || "0")]);
+        summaryData.push(["", "TOTAL A PAGAR", getSumVal('final-to-pay')]);
+
+        const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+        XLSX.utils.book_append_sheet(wb, wsSummary, "Resumen F300");
+
+        // --- 2. SALES DETAILS ---
+        const salesData = [["Concepto", "Tipo Operación", "Base Gravable", "AIU % (A/I/U)", "IVA Generado"]];
+        document.querySelectorAll('#sales-table tbody tr').forEach(row => {
+            const concept = row.querySelector('td:nth-child(1) input').value;
+            const type = row.querySelector('.type-select').value;
+            const base = row.querySelector('.base-input').value;
+            const iva = row.querySelector('.iva-cell').textContent;
+            
+            let aiuStr = "N/A";
+            if (type.includes('aiu')) {
+                const a = row.querySelector('.a-input')?.value || 0;
+                const i = row.querySelector('.i-input')?.value || 0;
+                const u = row.querySelector('.u-input')?.value || 0;
+                aiuStr = `${a}/${i}/${u}`;
+            }
+
+            salesData.push([concept, type, base, aiuStr, iva]);
+        });
+        const wsSales = XLSX.utils.aoa_to_sheet(salesData);
+        XLSX.utils.book_append_sheet(wb, wsSales, "Detalle Ventas");
+
+        // --- 3. PURCHASES DETAILS ---
+        const purchasesData = [["Concepto", "IVA Pagado", "Tarifa Seleccionada", "Base Calculada"]];
+        document.querySelectorAll('#purchases-table tbody tr').forEach(row => {
+            const concept = row.querySelector('td:nth-child(1) input').value;
+            const ivaInput = row.querySelector('.iva-input').value;
+            const type = row.querySelector('.type-select').value;
+            const baseCell = row.querySelector('.base-cell').textContent;
+
+            purchasesData.push([concept, ivaInput, type, baseCell]);
+        });
+        const wsPurchases = XLSX.utils.aoa_to_sheet(purchasesData);
+        XLSX.utils.book_append_sheet(wb, wsPurchases, "Detalle Compras");
+
+        // Save file
+        const fileName = `Declaracion_IVA_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+
+        alert("¡Excel generado con éxito!");
+    } catch (err) {
+        console.error("Error al exportar a Excel:", err);
+        alert("Ocurrió un error al generar el archivo Excel.");
+    }
 }

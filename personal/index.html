@@ -72,10 +72,14 @@
             <div id="section-prestamos" class="section" style="display:none">
                 <header class="header">
                     <div>
-                        <h1>Novedades de Préstamos</h1>
-                        <p class="subtitle">Control de préstamos a empleados y deducciones.</p>
+                        <h1>Gestión de Préstamos</h1>
+                        <p class="subtitle">Control detallado de desembolsos, saldos y recuperación de cartera.</p>
                     </div>
                     <div class="actions">
+                        <div class="search-box">
+                            <i class="ph ph-magnifying-glass"></i>
+                            <input type="text" id="search-loan" placeholder="Buscar colaborador..." oninput="renderLoans()">
+                        </div>
                         <button class="btn btn-primary" onclick="openLoanModal()">
                             <i class="ph ph-hand-coins"></i> Registrar Préstamo
                         </button>
@@ -84,25 +88,38 @@
 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <span class="label">Capital Prestado Acum.</span>
-                        <span class="value" id="loan-total-loaned">$ 0</span>
+                        <div class="stat-icon" style="background:#e0e7ff; color:#4338ca"><i class="ph-fill ph-money"></i></div>
+                        <div>
+                            <span class="label">Capital Prestado Total</span>
+                            <span class="value" id="loan-total-loaned">$ 0</span>
+                        </div>
                     </div>
                     <div class="stat-card">
-                        <span class="label">Saldo Pendiente de Cobro</span>
-                        <span class="value" id="loan-total-pending" style="color:#ef4444">$ 0</span>
+                        <div class="stat-icon" style="background:#fee2e2; color:#ef4444"><i class="ph-fill ph-trend-up"></i></div>
+                        <div>
+                            <span class="label">Cartera Pendiente</span>
+                            <span class="value" id="loan-total-pending" style="color:#ef4444">$ 0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#dcfce7; color:#16a34a"><i class="ph-fill ph-check-circle"></i></div>
+                        <div>
+                            <span class="label">Préstamos Finalizados</span>
+                            <span class="value" id="loan-total-completed">0</span>
+                        </div>
                     </div>
                 </div>
 
                 <div class="card table-card">
-                    <table>
+                    <table id="loan-table">
                         <thead>
                             <tr>
                                 <th>Colaborador</th>
-                                <th>Fecha Inicio</th>
-                                <th>Monto Inicial</th>
-                                <th>Cuotas</th>
-                                <th>Saldo Pendiente</th>
-                                <th>Acciones</th>
+                                <th>Estado</th>
+                                <th>Monto & Saldo</th>
+                                <th>Progreso de Pago</th>
+                                <th>Próxima Cuota</th>
+                                <th style="text-align:right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="loan-body"></tbody>
@@ -149,31 +166,86 @@
     <!-- MODAL PRÉSTAMOS -->
     <div id="modal-loan" class="modal-backdrop">
         <div class="card" style="width:450px; padding:32px; background:white">
-            <h2 style="margin-top:0; font-family:'Outfit'">Registro de Préstamo</h2>
+            <h2 style="margin-top:0; font-family:'Outfit'; color:#1e293b">Nuevo Préstamo</h2>
+            <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px">Complete la información para registrar un nuevo desembolso al personal.</p>
             <input type="hidden" id="pl-id">
-            <div style="display:flex; flex-direction:column; gap:16px">
+            <div style="display:flex; flex-direction:column; gap:20px">
                 <div>
-                    <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">COLABORADOR</label>
+                    <label class="form-label">COLABORADOR</label>
                     <select id="pl-emp" class="form-input"></select>
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px">
                     <div>
-                        <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">MONTO TOTAL</label>
+                        <label class="form-label">MONTO TOTAL</label>
                         <input type="number" id="pl-monto" placeholder="Ej. 1000000" class="form-input">
                     </div>
                     <div>
-                        <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">CUOTAS</label>
+                        <label class="form-label">NÚMERO DE CUOTAS</label>
                         <input type="number" id="pl-cuotas" placeholder="Ej. 4" class="form-input">
                     </div>
                 </div>
                 <div>
-                    <label style="font-size:11px; font-weight:700; color:var(--text-muted); margin-bottom:6px; display:block">FECHA DE DESEMBOLSO</label>
+                    <label class="form-label">FECHA DE DESEMBOLSO</label>
                     <input type="date" id="pl-fecha" class="form-input">
                 </div>
+                <div>
+                    <label class="form-label">OBSERVACIONES / MOTIVO</label>
+                    <input type="text" id="pl-obs" placeholder="Ej. Calamidad doméstica, Vivienda..." class="form-input">
+                </div>
             </div>
-            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:32px">
+            <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:32px">
                 <button class="btn btn-secondary" onclick="closeLoanModal()">Cancelar</button>
                 <button class="btn btn-primary" onclick="saveLoan()">Guardar Préstamo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DETALLES PRÉSTAMO -->
+    <div id="modal-loan-detail" class="modal-backdrop">
+        <div class="card" style="width:600px; padding:0; background:white; overflow:hidden">
+            <div style="padding:24px; background:#0f172a; color:white; display:flex; justify-content:space-between; align-items:center">
+                <div>
+                    <h2 id="ld-name" style="margin:0; font-family:'Outfit'">Detalles del Préstamo</h2>
+                    <p id="ld-cedula" style="margin:4px 0 0; font-size:12px; opacity:0.8; letter-spacing:1px"></p>
+                </div>
+                <button onclick="closeLoanDetailModal()" style="background:none; border:none; color:white; cursor:pointer; font-size:24px"><i class="ph ph-x"></i></button>
+            </div>
+            <div style="padding:32px">
+                <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:24px">
+                    <div style="text-align:center">
+                        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase">Monto Original</div>
+                        <div id="ld-monto" style="font-size:18px; font-weight:700; color:var(--text); margin-top:4px"></div>
+                    </div>
+                    <div style="text-align:center">
+                        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase">Saldo Actual</div>
+                        <div id="ld-saldo" style="font-size:18px; font-weight:700; color:#ef4444; margin-top:4px"></div>
+                    </div>
+                    <div style="text-align:center">
+                        <div style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase">Cuotas Pagadas</div>
+                        <div id="ld-cuotas" style="font-size:18px; font-weight:700; color:#16a34a; margin-top:4px"></div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:24px">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px">
+                        <h3 style="margin:0; font-size:16px; font-family:'Outfit'">Historial de Pagos</h3>
+                        <button class="btn btn-primary" style="padding:6px 12px; font-size:12px" onclick="triggerPayment()">
+                            <i class="ph ph-plus"></i> Abonar Cuota
+                        </button>
+                    </div>
+                    <div style="max-height:250px; overflow-y:auto; border:1px solid var(--border); border-radius:8px">
+                        <table style="font-size:13px">
+                            <thead style="position:sticky; top:0; background:#f8fafc">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Concepto</th>
+                                    <th style="text-align:right">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ld-history-body"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -350,19 +422,22 @@
         }
 
         // --- Lógica de Préstamos ---
+        let currentLoanIdx = -1;
+
         function openLoanModal() {
             const sel = document.getElementById('pl-emp');
             sel.innerHTML = '<option value="">Seleccione Colaborador...</option>';
-            empleados.forEach((e, idx) => {
+            empleados.sort((a,b) => a.nombre.localeCompare(b.nombre)).forEach((e) => {
                 const opt = document.createElement('option');
                 opt.value = e.cedula;
-                opt.textContent = e.nombre + ' (' + e.cedula + ')';
+                opt.textContent = e.nombre;
                 sel.appendChild(opt);
             });
             
             document.getElementById('pl-id').value = -1;
             document.getElementById('pl-monto').value = '';
             document.getElementById('pl-cuotas').value = '';
+            document.getElementById('pl-obs').value = '';
             document.getElementById('pl-fecha').value = new Date().toISOString().split('T')[0];
             document.getElementById('modal-loan').style.display = 'flex';
         }
@@ -374,8 +449,9 @@
             const monto = Number(document.getElementById('pl-monto').value);
             const cuotas = Number(document.getElementById('pl-cuotas').value);
             const fecha = document.getElementById('pl-fecha').value;
+            const obs = document.getElementById('pl-obs').value;
             
-            if(!empCed || !monto || !cuotas || !fecha) return alert('Todos los campos son obligatorios');
+            if(!empCed || !monto || !cuotas || !fecha) return alert('Campos obligatorios incompletos');
 
             const newLoan = {
                 id: Date.now(),
@@ -383,8 +459,10 @@
                 montoTotal: monto,
                 cuotasTotal: cuotas,
                 fecha,
+                obs: obs || 'Préstamo personal',
                 cuotasPagadas: 0,
-                saldo: monto
+                saldo: monto,
+                historial: []
             };
 
             prestamos.push(newLoan);
@@ -395,31 +473,51 @@
 
         function renderLoans() {
             const body = document.getElementById('loan-body');
+            const search = document.getElementById('search-loan').value.toLowerCase();
             body.innerHTML = '';
+            
             let totalLoaned = 0;
             let totalPending = 0;
+            let completed = 0;
 
             prestamos.forEach((loan, idx) => {
                 const emp = empleados.find(e => e.cedula === loan.empCed) || { nombre: 'N/A' };
+                if (search && !emp.nombre.toLowerCase().includes(search) && !loan.empCed.includes(search)) return;
+
                 totalLoaned += loan.montoTotal;
                 totalPending += loan.saldo || 0;
+                if (loan.saldo <= 0) completed++;
+
+                const pct = Math.min(100, Math.round(((loan.montoTotal - (loan.saldo || 0)) / loan.montoTotal) * 100));
+                const cuotaVal = loan.montoTotal / loan.cuotasTotal;
+                const status = loan.saldo <= 0 ? '<span class="status-pill success">Pagado</span>' : '<span class="status-pill warning">Activo</span>';
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
-                        <div style="font-weight:500">${emp.nombre}</div>
-                        <div style="font-size:10px; color:var(--text-muted)">CC: ${loan.empCed}</div>
+                        <div style="font-weight:600; color:var(--text)">${emp.nombre}</div>
+                        <div style="font-size:11px; color:var(--text-muted)">ID: ${loan.empCed}</div>
                     </td>
-                    <td class="mono">${loan.fecha}</td>
-                    <td class="mono">$ ${loan.montoTotal.toLocaleString('es-CO')}</td>
+                    <td>${status}</td>
                     <td>
-                        <div style="font-weight:600">${loan.cuotasPagadas} / ${loan.cuotasTotal}</div>
-                        <div style="font-size:10px; color:var(--text-muted)">$ ${(loan.montoTotal / loan.cuotasTotal).toLocaleString('es-CO')} x cuota</div>
+                        <div class="mono" style="font-size:14px">$ ${loan.montoTotal.toLocaleString('es-CO')}</div>
+                        <div class="mono" style="font-size:11px; color:#ef4444">Saldo: $ ${(loan.saldo || 0).toLocaleString('es-CO')}</div>
                     </td>
-                    <td class="mono" style="color:#ef4444">$ ${(loan.saldo || 0).toLocaleString('es-CO')}</td>
                     <td>
-                        <button class="btn-icon" onclick="payQuota(${idx})" title="Abonar Cuota"><i class="ph-bold ph-hand-coins"></i></button>
-                        <button class="btn-icon danger" onclick="removeLoan(${idx})"><i class="ph-bold ph-trash"></i></button>
+                        <div style="display:flex; justify-content:space-between; font-size:10px; margin-bottom:4px; font-weight:700">
+                            <span>${loan.cuotasPagadas} / ${loan.cuotasTotal} Cuotas</span>
+                            <span>${pct}%</span>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+                    </td>
+                    <td>
+                        <div class="mono" style="font-size:13px">$ ${cuotaVal.toLocaleString('es-CO')}</div>
+                        <div style="font-size:10px; color:var(--text-muted)">Siguiente abono</div>
+                    </td>
+                    <td style="text-align:right">
+                        <button class="btn-icon" onclick="viewLoanDetail(${idx})" title="Ver Detalles"><i class="ph ph-eye"></i></button>
+                        <button class="btn-icon" onclick="payQuota(${idx})" title="Abonar Cuota"><i class="ph ph-hand-coins"></i></button>
+                        <button class="btn-icon danger" onclick="removeLoan(${idx})"><i class="ph ph-trash"></i></button>
                     </td>
                 `;
                 body.appendChild(tr);
@@ -427,24 +525,72 @@
 
             document.getElementById('loan-total-loaned').textContent = '$ ' + totalLoaned.toLocaleString('es-CO');
             document.getElementById('loan-total-pending').textContent = '$ ' + totalPending.toLocaleString('es-CO');
+            document.getElementById('loan-total-completed').textContent = completed;
+        }
+
+        function viewLoanDetail(idx) {
+            currentLoanIdx = idx;
+            const loan = prestamos[idx];
+            const emp = empleados.find(e => e.cedula === loan.empCed) || { nombre: 'N/A' };
+
+            document.getElementById('ld-name').textContent = emp.nombre;
+            document.getElementById('ld-cedula').textContent = 'IDENTIFICACIÓN: ' + loan.empCed;
+            document.getElementById('ld-monto').textContent = '$ ' + loan.montoTotal.toLocaleString('es-CO');
+            document.getElementById('ld-saldo').textContent = '$ ' + (loan.saldo || 0).toLocaleString('es-CO');
+            document.getElementById('ld-cuotas').textContent = loan.cuotasPagadas + ' / ' + loan.cuotasTotal;
+
+            const hBody = document.getElementById('ld-history-body');
+            hBody.innerHTML = '';
+            
+            if (!loan.historial || loan.historial.length === 0) {
+                hBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text-muted)">No hay abonos registrados</td></tr>';
+            } else {
+                loan.historial.forEach(h => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${h.fecha}</td>
+                        <td>${h.concepto}</td>
+                        <td style="text-align:right" class="mono">$ ${h.monto.toLocaleString('es-CO')}</td>
+                    `;
+                    hBody.appendChild(tr);
+                });
+            }
+
+            document.getElementById('modal-loan-detail').style.display = 'flex';
+        }
+
+        function closeLoanDetailModal() { document.getElementById('modal-loan-detail').style.display = 'none'; }
+
+        function triggerPayment() {
+            if (currentLoanIdx !== -1) payQuota(currentLoanIdx);
         }
 
         function payQuota(idx) {
             const loan = prestamos[idx];
-            if(loan.cuotasPagadas >= loan.cuotasTotal) return alert('Este préstamo ya está totalmente pagado.');
+            if(loan.saldo <= 0) return alert('Este préstamo ya está totalmente pagado.');
             
             const cuotaValue = loan.montoTotal / loan.cuotasTotal;
-            loan.cuotasPagadas++;
-            loan.saldo = Math.max(0, loan.montoTotal - (loan.cuotasPagadas * cuotaValue));
+            const realPayment = Math.min(loan.saldo, cuotaValue);
             
+            loan.cuotasPagadas++;
+            loan.saldo = Math.max(0, loan.saldo - realPayment);
+            
+            if (!loan.historial) loan.historial = [];
+            loan.historial.push({
+                fecha: new Date().toLocaleDateString(),
+                concepto: `Abono Cuota ${loan.cuotasPagadas}`,
+                monto: realPayment
+            });
+
             localStorage.setItem(KEY_LOANS, JSON.stringify(prestamos));
             renderLoans();
-            
-            // Aquí se podría disparar un evento para la Tesorería/Nómina si existiera un hub centralizado
+            if (document.getElementById('modal-loan-detail').style.display === 'flex') {
+                viewLoanDetail(idx);
+            }
         }
 
         function removeLoan(idx) {
-            if(confirm('¿Eliminar registro de préstamo?')) {
+            if(confirm('¿Eliminar registro de préstamo permanentemente?')) {
                 prestamos.splice(idx, 1);
                 localStorage.setItem(KEY_LOANS, JSON.stringify(prestamos));
                 renderLoans();

@@ -116,7 +116,6 @@ td.num{text-align:right;font-family:var(--mo);font-size:11px}
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
       <div class="hdr-dt" id="hdr-dt"></div>
-      <button class="btn-refresh" style="border-color:#334155;color:#94a3b8" onclick="openAIConfig()"><i class="ph ph-gear"></i> Ajustes IA</button>
     </div>
   </div>
 </header>
@@ -496,6 +495,16 @@ renderAll();
             <input type="text" id="aiProxyInput" placeholder="https://tu-proxy.com/v1/messages">
             <span style="font-size:10px;color:var(--t3);margin-top:4px;display:block">Necesario si tienes problemas de CORS.</span>
         </div>
+        <div class="form-row">
+            <label class="form-lbl">Github Access Token</label>
+            <input type="password" id="aiGithubToken" placeholder="ghp_...">
+            <span style="font-size:10px;color:var(--t3);margin-top:4px;display:block">Necesario para la nube.</span>
+        </div>
+        <div class="form-row">
+            <label class="form-lbl">ID de Sincronización (Gist)</label>
+            <input type="text" id="aiGistInput" placeholder="ID del Gist...">
+            <span style="font-size:10px;color:var(--t3);margin-top:4px;display:block">Comparte este ID con el equipo.</span>
+        </div>
         <div class="modal-ftr">
             <button class="btn-sec" onclick="closeAIConfig()">Cerrar</button>
             <button class="btn-pri" onclick="saveAIConfig()">Guardar ajustes</button>
@@ -515,6 +524,8 @@ function toggleAIChat(){
 function openAIConfig(){
     document.getElementById('aiKeyInput').value = localStorage.getItem('ANTHROPIC_API_KEY') || '';
     document.getElementById('aiProxyInput').value = localStorage.getItem('AI_PROXY_URL') || '';
+    document.getElementById('aiGithubToken').value = localStorage.getItem('dim_cloud_token') || '';
+    document.getElementById('aiGistInput').value = localStorage.getItem('dim_cloud_gist_id') || '';
     document.getElementById('aiModalBk').classList.add('open');
 }
 
@@ -525,10 +536,15 @@ function closeAIConfig(){
 function saveAIConfig(){
     localStorage.setItem('ANTHROPIC_API_KEY', document.getElementById('aiKeyInput').value.trim());
     localStorage.setItem('AI_PROXY_URL', document.getElementById('aiProxyInput').value.trim());
-    window.DimalccoAI.apiKey = localStorage.getItem('ANTHROPIC_API_KEY');
-    window.DimalccoAI.proxyUrl = localStorage.getItem('AI_PROXY_URL');
+    localStorage.setItem('dim_cloud_token', document.getElementById('aiGithubToken').value.trim());
+    localStorage.setItem('dim_cloud_gist_id', document.getElementById('aiGistInput').value.trim());
+
+    if (window.DimalccoAI) {
+        window.DimalccoAI.apiKey = localStorage.getItem('ANTHROPIC_API_KEY');
+        window.DimalccoAI.proxyUrl = localStorage.getItem('AI_PROXY_URL');
+    }
     closeAIConfig();
-    alert("Configuración IA guardada.");
+    alert("Configuración IA y Nube guardada.");
 }
 
 async function sendAIMessage(){

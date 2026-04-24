@@ -182,11 +182,11 @@ const NOMINA = (() => {
 
     // Provisión mensual de prestaciones sociales (costo empleador)
     function calcularPrestacionesMes(salarioMensual, auxTransporteMes) {
-        // Base para cesantías incluye aux. transporte
-        const baseCes = salarioMensual + auxTransporteMes;
-        const prima = salarioMensual * PRIMA_SERV;
-        const cesantias = baseCes * CESANTIAS;
-        const intCes = cesantias * INT_CESANT;  // 1% mensual de las cesarías
+        // Base para prima y cesantías incluye aux. transporte (Ley 1 de 1963)
+        const basePrestacional = salarioMensual + auxTransporteMes;
+        const prima = basePrestacional * PRIMA_SERV;
+        const cesantias = basePrestacional * CESANTIAS;
+        const intCes = cesantias * INT_CESANT;  // 1% mensual de las cesantías
         const vacaciones = salarioMensual * VACACIONES;
         return {
             prima, cesantias, intCes, vacaciones,
@@ -202,17 +202,28 @@ const NOMINA = (() => {
     function liquidar(empleado) {
         const sal = parseAmount(empleado.salarioMensual);
         const baseQ = sal / 2;
-        const auxQ = tieneAuxTransporte(sal) ? AUX_TRANSPORTE / 2 : 0;
 
-        // Novedades
+        // Novedades y Días no laborados (para proporcionalidad del Aux. Transporte)
         let totalAdiciones = 0;
         let totalDeducciones = 0;
+        let diasNoLaborados = 0;
+
         const detalleNovedades = (empleado.novedades || []).map(nov => {
             const r = calcularNovedad(nov, sal);
             totalAdiciones += r.adicion;
             totalDeducciones += r.deduccion;
+            
+            // Sumar días que afectan el auxilio de transporte
+            if (['ausencia_injustificada', 'incapacidad', 'vacaciones'].includes(nov.tipo)) {
+                diasNoLaborados += Number(nov.valor) || 0;
+            }
+
             return { ...nov, ...r, novedad: nov };
         });
+
+        // Cálculo proporcional del Auxilio de Transporte (15 días - días no laborados)
+        const diasTransporte = Math.max(0, 15 - diasNoLaborados);
+        const auxQ = tieneAuxTransporte(sal) ? (AUX_TRANSPORTE / 30) * diasTransporte : 0;
 
         // Seguridad social empleado (FORZADO SOBRE SMMLV SEGÚN INSTRUCCIÓN)
         const saludQ = SMMLV * SALUD_EMP / 2;
@@ -254,6 +265,7 @@ const NOMINA = (() => {
         return {
             empleado,
             baseQ, auxQ,
+            diasTransporte,
             tieneAuxTransporte: auxQ > 0,
             totalAdiciones, totalDeducciones,
             saludQ, pensionQ,

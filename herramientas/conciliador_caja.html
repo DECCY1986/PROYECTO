@@ -45,8 +45,13 @@
         .scrollbar-custom::-webkit-scrollbar-thumb:hover { background: #475569; }
         
         .row-conciliado {
-            background-color: rgba(16, 185, 129, 0.1) !important;
-            border-left: 3px solid #10b981;
+            background-color: rgba(16, 185, 129, 0.15) !important;
+            border-left: 4px solid #10b981 !important;
+            box-shadow: inset 10px 0 20px -10px rgba(16, 185, 129, 0.3);
+        }
+        .row-conciliado .check-indicator {
+            opacity: 1 !important;
+            transform: scale(1) !important;
         }
         .month-active {
             background: linear-gradient(90deg, rgba(56, 189, 248, 0.2) 0%, transparent 100%);
@@ -60,7 +65,7 @@
     <!-- Top Navbar -->
     <header class="glass-panel border-b border-slate-700/50 py-4 px-6 flex justify-between items-center shrink-0 z-20">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 flex items-center justify-center to-sky-500 shadow-lg">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 flex items-center justify-center to-sky-500 shadow-lg cursor-pointer" onclick="location.reload()">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <div>
@@ -69,12 +74,33 @@
             </div>
         </div>
         <div class="flex gap-4">
+            <button id="btnNuevo" class="hidden bg-slate-700 hover:bg-slate-600 transition-all px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border border-slate-600">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Nueva Conciliación
+            </button>
+            <button id="btnGuardar" class="hidden bg-emerald-600 hover:bg-emerald-700 transition-all px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-lg shadow-emerald-900/20">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                Guardar Progreso
+            </button>
             <button id="btnExportar" class="hidden btn-gradient px-5 py-2 rounded-lg text-sm font-semibold flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 Exportar Excel
             </button>
         </div>
     </header>
+    
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed top-20 right-6 z-50 transform translate-x-full transition-transform duration-300 pointer-events-none">
+        <div class="glass-panel border-emerald-500/50 bg-emerald-950/80 px-6 py-3 rounded-xl flex items-center gap-3 shadow-2xl">
+            <div class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <div>
+                <p class="text-sm font-bold text-white">Progreso Guardado</p>
+                <p class="text-[10px] text-emerald-300">Se han guardado los cambios localmente.</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Main Content -->
     <main class="flex-1 flex overflow-hidden relative z-10">
@@ -112,8 +138,29 @@
                 <h3 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-1">Periodos Contables</h3>
                 <div class="text-xl font-bold" id="totalRowsTxt">0 Registros</div>
             </div>
+            
+            <div class="p-4 border-b border-slate-700/50">
+                <h3 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Filtrar por Nº Flujo</h3>
+                <div class="relative">
+                    <input type="text" id="flujoSearchInput" placeholder="Nº de flujo..." 
+                           class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-sky-500 outline-none transition-all placeholder:text-slate-600">
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                </div>
+            </div>
+
             <div class="flex-1 overflow-y-auto scrollbar-custom p-2 space-y-1" id="monthsList">
-                <!-- Injected by JS -->
+                <button class="w-full text-left px-4 py-3 rounded-lg flex justify-between items-center transition-all bg-slate-800/50 border border-slate-700 hover:border-sky-500 mb-4" id="btnVerTodo" onclick="selectMonth('ALL')">
+                    <div>
+                        <div class="font-bold text-sm text-sky-400">Ver Todo</div>
+                        <div class="text-[10px] uppercase tracking-wider text-slate-500">Sin importar fecha</div>
+                    </div>
+                    <svg class="w-5 h-5 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                </button>
+                <div id="monthsContainer" class="space-y-1">
+                    <!-- Injected by JS -->
+                </div>
             </div>
         </aside>
 
@@ -177,6 +224,12 @@
         const monthTotal = document.getElementById('monthTotal');
         const totalRowsTxt = document.getElementById('totalRowsTxt');
         const btnExportar = document.getElementById('btnExportar');
+        const btnGuardar = document.getElementById('btnGuardar');
+        const btnNuevo = document.getElementById('btnNuevo');
+        const toast = document.getElementById('toast');
+
+        const STORAGE_KEY = 'dimalcco_conciliador_v1_progress';
+        const SESSION_KEY = 'dimalcco_conciliador_v1_session';
 
         // Drag & Drop
         dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('drag-active'); });
@@ -352,12 +405,126 @@
                 groupedData[item.monthKey].push(item);
             });
 
+            persistSession();
+            
             // Transition UI
             mappingView.classList.add('hidden');
             totalRowsTxt.innerText = `${cleanData.length} Registros`;
             btnExportar.classList.remove('hidden');
+            btnGuardar.classList.remove('hidden');
+            btnNuevo.classList.remove('hidden');
+            busquedaInput.classList.remove('hidden');
+            
+            // Check for saved progress
+            loadSavedProgress();
+            
             renderSidebar();
+            
+            // Default to seeing everything regardless of date
+            selectMonth('ALL');
         }
+
+        function persistSession() {
+            try {
+                const session = {
+                    data: cleanData,
+                    currentMonth: currentMonthKey
+                };
+                localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+            } catch (e) {
+                console.warn("La sesión es demasiado grande para el almacenamiento local permanente, pero el progreso de conciliación sí se guardará.");
+            }
+        }
+
+        function loadSession() {
+            const rawSession = localStorage.getItem(SESSION_KEY);
+            if(!rawSession) return;
+
+            try {
+                const session = JSON.parse(rawSession);
+                cleanData = session.data || [];
+                
+                // Restablecer objetos Date a partir de strings guardados en JSON
+                cleanData.forEach(item => {
+                    if (item.dateObj && typeof item.dateObj === 'string') {
+                        const d = new Date(item.dateObj);
+                        if (!isNaN(d.getTime())) item.dateObj = d;
+                    }
+                });
+
+                if(cleanData.length > 0) {
+                    // Re-group
+                    groupedData = {};
+                    cleanData.forEach(item => {
+                        if(!groupedData[item.monthKey]) groupedData[item.monthKey] = [];
+                        groupedData[item.monthKey].push(item);
+                    });
+
+                    // UI restore
+                    uploadView.classList.add('hidden');
+                    mappingView.classList.add('hidden');
+                    totalRowsTxt.innerText = `${cleanData.length} Registros`;
+                    btnExportar.classList.remove('hidden');
+                    btnGuardar.classList.remove('hidden');
+                    btnNuevo.classList.remove('hidden');
+                    busquedaInput.classList.remove('hidden');
+                    
+                    renderSidebar();
+                    if(session.currentMonth && groupedData[session.currentMonth]) {
+                        selectMonth(session.currentMonth);
+                    }
+                }
+            } catch(e) {
+                localStorage.removeItem(SESSION_KEY);
+            }
+        }
+
+        function loadSavedProgress() {
+            const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            if (saved.length === 0) return;
+
+            let restoredCount = 0;
+            cleanData.forEach(item => {
+                // Heuristic to match record: numFlujo + valNum + dateStr
+                const match = saved.find(s => 
+                    s.numFlujo === item.numFlujo && 
+                    s.valNum === item.valNum && 
+                    s.dateStr === item.dateStr
+                );
+                if (match) {
+                    item.conciliado = true;
+                    restoredCount++;
+                }
+            });
+
+            if (restoredCount > 0) {
+                showToast(`Se restauraron ${restoredCount} registros conciliados.`);
+            }
+        }
+
+        function saveProgress() {
+            const progress = cleanData.filter(i => i.conciliado).map(i => ({
+                numFlujo: i.numFlujo,
+                dateStr: i.dateStr,
+                valNum: i.valNum,
+                descripcion: i.descripcion
+            }));
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+            showToast("¡Progreso asegurado!");
+        }
+
+        function showToast(message = "Progreso Guardado") {
+            const titleEl = toast.querySelector('p.font-bold');
+            if (titleEl) titleEl.innerText = message;
+            
+            toast.classList.remove('translate-x-full');
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        btnGuardar.addEventListener('click', saveProgress);
 
         const formatter = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 });
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -370,9 +537,23 @@
         }
 
         function renderSidebar() {
-            const keys = Object.keys(groupedData).sort();
+            let keys = Object.keys(groupedData).filter(k => k !== 'null' && k !== 'Sin Fecha').sort();
+            
+            // Add "Sin Fecha" at the end if it exists
+            if(groupedData['Sin Fecha']) keys.push('Sin Fecha');
+
             let html = '';
+            
+            // Highlight View All button
+            const btnVerTodo = document.getElementById('btnVerTodo');
+            if(currentMonthKey === 'ALL') {
+                btnVerTodo.classList.add('border-sky-500', 'bg-sky-500/10');
+            } else {
+                btnVerTodo.classList.remove('border-sky-500', 'bg-sky-500/10');
+            }
+
             keys.forEach(k => {
+                if(!groupedData[k]) return;
                 const checkedCount = groupedData[k].filter(i => i.conciliado).length;
                 const total = groupedData[k].length;
                 html += `
@@ -388,7 +569,7 @@
                     </button>
                 `;
             });
-            monthsList.innerHTML = html;
+            document.getElementById('monthsContainer').innerHTML = html;
         }
 
         const busquedaInput = document.getElementById('busquedaInput');
@@ -397,17 +578,44 @@
             renderWorkspace(e.target.value);
         });
 
+        const flujoSearchInput = document.getElementById('flujoSearchInput');
+        flujoSearchInput.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            if(val !== '') {
+                // If searching specifically for flow, switch to ALL view automatically
+                if(currentMonthKey !== 'ALL') {
+                    currentMonthKey = 'ALL';
+                    currentMonthTitle.innerHTML = `<svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg> Filtrando por Nº Flujo`;
+                    renderSidebar();
+                }
+                renderWorkspace('', val); // Use second param for flow specific search
+            } else {
+                renderWorkspace(busquedaInput.value);
+            }
+        });
+
         window.selectMonth = function(key) {
             currentMonthKey = key;
+            persistSession();
             busquedaInput.classList.remove('hidden');
             busquedaInput.value = ''; // Reset filter
             renderSidebar(); // update active state
-            currentMonthTitle.innerHTML = `<svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> ${getFriendlyMonthName(key)}`;
+            
+            if(key === 'ALL') {
+                currentMonthTitle.innerHTML = `<svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg> Todos los Registros`;
+            } else {
+                currentMonthTitle.innerHTML = `<svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> ${getFriendlyMonthName(key)}`;
+            }
             renderWorkspace();
         };
 
-        function renderWorkspace(filterText = '') {
-            let items = groupedData[currentMonthKey] || [];
+        function renderWorkspace(filterText = '', flowFilter = '') {
+            let items = [];
+            if(currentMonthKey === 'ALL') {
+                items = [...cleanData];
+            } else {
+                items = groupedData[currentMonthKey] || [];
+            }
             
             if(filterText.trim() !== '') {
                 const q = filterText.toLowerCase().trim();
@@ -418,40 +626,71 @@
                 });
             }
 
+            if(flowFilter.trim() !== '') {
+                const q = flowFilter.toLowerCase().trim();
+                items = items.filter(i => i.numFlujo.toLowerCase().includes(q));
+            }
+
             // Sort by date inside month
             items.sort((a,b) => {
-                if(!a.dateObj) return 1; if(!b.dateObj) return -1;
-                return a.dateObj.getTime() - b.dateObj.getTime();
+                const da = (a.dateObj && a.dateObj.getTime) ? a.dateObj.getTime() : 0;
+                const db = (b.dateObj && b.dateObj.getTime) ? b.dateObj.getTime() : 0;
+                return da - db;
             });
 
             let html = '';
             let valTotal = 0;
             let checkedItems = 0;
-
-            const totalInMonth = groupedData[currentMonthKey]?.length || 0;
+            let lastMonthFound = '';
 
             items.forEach((item) => {
                 valTotal += item.valNum;
                 if(item.conciliado) checkedItems++;
 
+                // Classification header for "See All" mode
+                if(currentMonthKey === 'ALL' && item.monthKey !== lastMonthFound) {
+                    html += `
+                        <div class="sticky top-0 z-10 py-2 px-4 mb-2 mt-4 bg-slate-900/80 backdrop-blur-md rounded-lg border-l-4 border-sky-500 shadow-lg flex justify-between items-center">
+                            <span class="text-xs font-bold text-sky-400 uppercase tracking-widest">${getFriendlyMonthName(item.monthKey)}</span>
+                            <span class="text-[10px] text-slate-500 font-medium">${items.filter(i => i.monthKey === item.monthKey).length} registros</span>
+                        </div>
+                    `;
+                    lastMonthFound = item.monthKey;
+                }
+
                 let shortDesc = item.descripcion.length > 50 ? item.descripcion.substring(0,50)+'...' : item.descripcion;
+                let displayDate = item.dateStr;
+                if(item.dateObj && item.dateObj.toLocaleDateString) {
+                    displayDate = item.dateObj.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'});
+                }
 
                 html += `
-                    <div class="grid grid-cols-[100px_minmax(120px,1fr)_minmax(200px,2fr)_120px_100px] gap-4 px-6 py-3 mb-1 rounded-lg border border-slate-700/30 transition-colors hover:border-slate-500/50 bg-slate-800/40 items-center overflow-hidden ${item.conciliado ? 'row-conciliado' : ''}" data-id="${item._originalIndex}">
-                        <div class="text-xs text-slate-300 truncate">${item.dateObj ? item.dateObj.toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}) : item.dateStr}</div>
-                        <div>
-                            <span class="inline-block px-3 py-1 bg-sky-900/40 border border-sky-500/50 text-sky-300 rounded font-bold text-sm tracking-widest shadow-inner">${item.numFlujo || 'N/A'}</span>
+                    <div class="grid grid-cols-[100px_minmax(120px,1fr)_minmax(200px,2fr)_120px_100px] gap-4 px-6 py-4 mb-2 rounded-xl border border-slate-700/30 transition-all duration-300 hover:border-slate-500/50 bg-slate-800/20 items-center overflow-hidden relative ${item.conciliado ? 'row-conciliado' : ''}" data-id="${item._originalIndex}">
+                        
+                        <!-- Mini Check Indicator -->
+                        <div class="absolute left-1 top-1/2 -translate-y-1/2 check-indicator opacity-0 scale-50 transition-all duration-300 text-emerald-500 pointer-events-none">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                         </div>
+
+                        <div class="text-xs text-slate-300 truncate font-light">${displayDate}</div>
+                        
+                        <div class="flex items-center gap-2">
+                            <span class="inline-block px-3 py-1 bg-sky-900/30 border border-sky-500/40 text-sky-300 rounded-lg font-bold text-sm tracking-widest shadow-inner">${item.numFlujo || 'N/A'}</span>
+                            ${item.conciliado ? '<span class="text-[8px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/30 font-bold uppercase tracking-tighter">Conciliado</span>' : ''}
+                        </div>
+
                         <div class="text-xs text-slate-300 truncate" title="${item.descripcion}">${shortDesc || '-'}</div>
-                        <div class="text-xs text-right font-medium ${item.valNum > 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatter.format(item.valNum)}</div>
+                        
+                        <div class="text-sm text-right font-bold ${item.valNum > 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatter.format(item.valNum)}</div>
+                        
                         <div class="flex justify-center flex-col items-center gap-1">
                             <label class="relative flex items-center justify-center cursor-pointer group">
-                                <input type="checkbox" ${item.conciliado ? 'checked' : ''} onchange="updateItem(${item._originalIndex}, 'check', this.checked)" class="opacity-0 absolute h-5 w-5 cursor-pointer z-20">
-                                <div class="h-5 w-5 border-2 ${item.conciliado ? 'border-emerald-500 bg-emerald-500' : 'border-slate-500'} rounded transition-colors group-hover:border-emerald-400 flex items-center justify-center z-10 shadow">
-                                    <svg class="w-3 h-3 text-white ${item.conciliado ? 'opacity-100' : 'opacity-0'} transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                <input type="checkbox" ${item.conciliado ? 'checked' : ''} onchange="updateItem(${item._originalIndex}, 'check', this.checked)" class="opacity-0 absolute h-7 w-7 cursor-pointer z-20">
+                                <div class="h-6 w-6 border-2 ${item.conciliado ? 'border-emerald-500 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'border-slate-500'} rounded-lg transition-all duration-300 group-hover:border-emerald-400 flex items-center justify-center z-10">
+                                    <svg class="w-4 h-4 text-white ${item.conciliado ? 'opacity-100' : 'opacity-0'} transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                                 </div>
                             </label>
-                            <span class="text-[9px] text-slate-500 font-bold uppercase">Ubicado</span>
+                            <span class="text-[8px] ${item.conciliado ? 'text-emerald-400' : 'text-slate-500'} font-black uppercase tracking-tighter transition-colors">${item.conciliado ? 'Ubicado' : 'Pendiente'}</span>
                         </div>
                     </div>
                 `;
@@ -466,9 +705,15 @@
 
             workspaceRows.innerHTML = html;
             
-            // Recalculate checked items for the whole month, not just filtered
-            const allCheckedInMonth = (groupedData[currentMonthKey] || []).filter(i => i.conciliado).length;
-            monthProgress.innerText = totalInMonth ? `${Math.round((allCheckedInMonth/totalInMonth)*100)}%` : '0%';
+            // Recalculate checked items
+            let totalInMode = items.length;
+            let checkedInMode = items.filter(i => i.conciliado).length;
+
+            if(currentMonthKey === 'ALL') {
+                monthProgress.innerText = cleanData.length ? `${Math.round((cleanData.filter(i=>i.conciliado).length/cleanData.length)*100)}% de avance total` : '0%';
+            } else {
+                monthProgress.innerText = totalInMode ? `${Math.round((checkedInMode/totalInMode)*100)}%` : '0%';
+            }
         }
 
         window.updateItem = function(id, type, val) {
@@ -488,8 +733,13 @@
                 const checkedItems = items.filter(i => i.conciliado).length;
                 monthProgress.innerText = items.length ? `${Math.round((checkedItems/items.length)*100)}%` : '0%';
                 
-                // Only re-render sidebar occasionally
-                if(type === 'check') renderSidebar();
+                // Auto-save and persist
+                saveProgress();
+                persistSession();
+
+                // Re-render to show badges and small icons
+                renderWorkspace(busquedaInput.value);
+                renderSidebar();
             }
         };
 
@@ -520,6 +770,16 @@
             
             XLSX.writeFile(newWb, "Flujos_Caja_Control_Fisico.xlsx");
         });
+
+        btnNuevo.addEventListener('click', () => {
+            if(confirm("¿Estás seguro de que quieres iniciar una nueva conciliación? Esto borrará el archivo actual de la pantalla (pero el progreso guardado de los recibos ya ubicados se mantendrá en memoria).")) {
+                localStorage.removeItem(SESSION_KEY);
+                location.reload();
+            }
+        });
+
+        // Initialize session on load
+        loadSession();
 
     </script>
 </body>

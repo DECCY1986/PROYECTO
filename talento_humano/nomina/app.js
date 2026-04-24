@@ -23,7 +23,21 @@ const LS_HISTORY = 'dimalcco_history_nomina';
 const LS_KEY = 'nomina_state_v1'; // para estado local (filtros, periodo actual)
 
 function guardarState() {
+  // 1. Guardar estado de la UI
   localStorage.setItem(LS_KEY, JSON.stringify({ periodo: state.periodo, empleadoSelId: state.empleadoSelId }));
+  
+  // 2. Guardar empleados (central)
+  const emps = state.empleados.map(e => ({
+    nombre: e.nombre,
+    cedula: e.cedula,
+    cargo: e.cargo,
+    salario: e.salarioMensual,
+    arl: e.nivelARL,
+    fechaIngreso: e.fechaIngreso
+  }));
+  localStorage.setItem(LS_EMPLEADOS, JSON.stringify(emps));
+
+  // 3. Las novedades se guardan directamente al crearlas/editarlas para evitar pérdida de datos
 }
 
 function cargarState() {
@@ -53,7 +67,12 @@ function cargarState() {
     const prefix = `${anioStr}-${mesStr}`;
     const quincena = state.periodo.quincena;
 
-    const novedadesEmp = novs.filter(n => n.cedula === e.cedula && n.fechaInicio.startsWith(prefix));
+    const novedadesEmp = novs.filter(n => {
+      if (n.cedula !== e.cedula || !n.fechaInicio.startsWith(prefix)) return false;
+      const dia = parseInt(n.fechaInicio.split('-')[2]);
+      if (quincena === '1') return dia <= 15;
+      return dia > 15;
+    });
 
     // --- INTEGRACIÓN CON CONTROL DE HORARIOS ---
     const rawShifts = localStorage.getItem('shiftRecords');
@@ -381,7 +400,7 @@ function renderResumen(liq) {
         <div class="card-valor">$${fmt(liq.devengado)}</div>
         <div class="card-desglose">
           <span>Base: $${fmt(liq.baseQ)}</span>
-          ${liq.tieneAuxTransporte ? `<span>Aux. Transp.: $${fmt(liq.auxQ)}</span>` : ''}
+          ${liq.tieneAuxTransporte ? `<span>Aux. Transp. (${liq.diasTransporte}d): $${fmt(liq.auxQ)}</span>` : ''}
           ${liq.totalAdiciones > 0 ? `<span>Novedades +: $${fmt(liq.totalAdiciones)}</span>` : ''}
         </div>
       </div>
@@ -593,28 +612,119 @@ function guardarNovedad() {
     return;
   }
 
+  // Obtener novedades actuales de la DB central
+  const rawNovs = localStorage.getItem(LS_NOVEDADES);
+  let novs = rawNovs ? JSON.parse(rawNovs) : [];
+
   const emp = state.empleados.find(e => e.id === empId);
   if (!emp) return;
 
+  // Definir fecha por defecto para la quincena (Día 1 o Día 16)
+  const diaDef = state.periodo.quincena === '1' ? '01' : '16';
+  const fechaDef = `${state.periodo.anio}-${String(state.periodo.mes).padStart(2, '0')}-${diaDef}`;
+
   if (editandoNovedadIdx !== null) {
-    emp.novedades[editandoNovedadIdx] = { tipo, valor };
+    const novObj = emp.novedades[editandoNovedadIdx];
+    if (novObj.original) {
+      // Es una novedad existente en la DB, buscarla y actualizarla
+      const idxInNovs = novs.findIndex(n => JSON.stringify(n) === JSON.stringify(novObj.original));
+      if (idxInNovs !== -1) {
+        novs[idxInNovs].valor = valor;
+        novs[idxInNovs].tipo = NOMINA.TIPOS_NOVEDAD.find(tn => tn.value === tipo)?.label || 'Otros';
+      }
+    }
   } else {
-    emp.novedades.push({ tipo, valor });
+    // Nueva novedad
+    const tipoLabel = NOMINA.TIPOS_NOVEDAD.find(tn => tn.value === tipo)?.label || 'Otros';
+    novs.push({
+      cedula: emp.cedula,
+      tipo: tipoLabel,
+      subtipo: tipo,
+      valor: valor,
+      fechaInicio: fechaDef,
+      estado: 'Aprobado'
+    });
   }
 
+  localStorage.setItem(LS_NOVEDADES, JSON.stringify(novs));
   cerrarModalNovedad();
-  guardarState();
+  cargarState(); // Recargar para procesar cambios
   renderEmpleados();
   renderPanelNovedades();
+  guardarState();
 }
 
 function eliminarNovedad(empId, idx) {
+  if (!confirm('¿Eliminar esta novedad?')) return;
   const emp = state.empleados.find(e => e.id === empId);
   if (!emp) return;
-  emp.novedades.splice(idx, 1);
-  guardarState();
+  
+  const novObj = emp.novedades[idx];
+  if (novObj && novObj.original) {
+    const rawNovs = localStorage.getItem(LS_NOVEDADES);
+    let novs = rawNovs ? JSON.parse(rawNovs) : [];
+    const idxInNovs = novs.findIndex(n => JSON.stringify(n) === JSON.stringify(novObj.original));
+    if (idxInNovs !== -1) {
+      novs.splice(idxInNovs, 1);
+      localStorage.setItem(LS_NOVEDADES, JSON.stringify(novs));
+    }
+  }
+
+  cargarState();
   renderEmpleados();
   renderPanelNovedades();
+  guardarState();
+}
+
+// ── Consolidado ───────────────────────────────────────────────────────────────
+function abrirConsolidado() {
+  const tbody = $('tbody-consolidado');
+  const tfoot = $('tfoot-consolidado');
+  tbody.innerHTML = '';
+  
+  const liquidaciones = NOMINA.liquidarTodos(state.empleados);
+  if (liquidaciones.length === 0) {
+    alert('No hay empleados para liquidar.');
+    return;
+  }
+
+  let totals = { base: 0, aux: 0, ads: 0, ss: 0, ded: 0, neto: 0 };
+
+  liquidaciones.forEach(liq => {
+    const ss = liq.saludQ + liq.pensionQ;
+    totals.base += liq.baseQ;
+    totals.aux += liq.auxQ;
+    totals.ads += liq.totalAdiciones;
+    totals.ss += ss;
+    totals.ded += liq.totalDeducciones;
+    totals.neto += liq.neto;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${liq.empleado.nombre}</strong><br><small>${liq.empleado.cargo}</small></td>
+      <td class="num">$${NOMINA.fmt(liq.baseQ)}</td>
+      <td class="num">$${NOMINA.fmt(liq.auxQ)}</td>
+      <td class="num green">$${NOMINA.fmt(liq.totalAdiciones)}</td>
+      <td class="num red">$${NOMINA.fmt(ss)}</td>
+      <td class="num red">$${NOMINA.fmt(liq.totalDeducciones)}</td>
+      <td class="num" style="background: #f0f9ff; font-weight: bold;">$${NOMINA.fmt(liq.neto)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  tfoot.innerHTML = `
+    <tr>
+      <td>TOTALES (${liquidaciones.length} empleados)</td>
+      <td class="num">$${NOMINA.fmt(totals.base)}</td>
+      <td class="num">$${NOMINA.fmt(totals.aux)}</td>
+      <td class="num green">$${NOMINA.fmt(totals.ads)}</td>
+      <td class="num red">$${NOMINA.fmt(totals.ss)}</td>
+      <td class="num red">$${NOMINA.fmt(totals.ded)}</td>
+      <td class="num" style="background: #bae6fd;">$${NOMINA.fmt(totals.neto)}</td>
+    </tr>
+  `;
+
+  $('modal-consolidado').style.display = 'flex';
 }
 
 // ── Exportaciones ─────────────────────────────────────────────────────────────
@@ -754,8 +864,8 @@ document.addEventListener('DOMContentLoaded', () => {
   $('btn-export-excel').addEventListener('click', exportarExcel);
   $('btn-export-para').addEventListener('click', exportarParafiscales);
   $('btn-export-prest').addEventListener('click', exportarPrestaciones);
-  $('btn-limpiar').addEventListener('click', limpiarDatos);
   $('btn-archivar').addEventListener('click', cerrarYArchivarNomina);
+  $('btn-consolidado').addEventListener('click', abrirConsolidado);
 
   // Botón GUARDAR manual (Solicitado por el usuario)
   $('btn-guardar-global').addEventListener('click', () => {
