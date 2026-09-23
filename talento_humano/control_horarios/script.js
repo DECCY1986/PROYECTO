@@ -84,15 +84,77 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const loadWorkersFromPersonal = () => {
-        // No sincronizar con Personal según instrucción: "no integres esos dos modulos"
-        console.log("Carga de trabajadores desde Personal desactivada. Usando base fija.");
+        // 1. Cargar base fija obligatoria
+        Object.entries(FIXED_QUINCENA).forEach(([name, quincena]) => {
+            if (!workerRates[name]) workerRates[name] = { quincena: quincena };
+        });
+
+        // 2. Cargar workerRates guardados previamente en LocalStorage
+        try {
+            const savedRates = JSON.parse(localStorage.getItem('workerRates'));
+            if (savedRates && typeof savedRates === 'object') {
+                Object.assign(workerRates, savedRates);
+            }
+        } catch(e){}
+
+        // 3. Cargar colaboradores registrados en el módulo de Personal
+        try {
+            const personalRaw = localStorage.getItem('dimalcco_personal_master');
+            if (personalRaw) {
+                const list = JSON.parse(personalRaw);
+                if (Array.isArray(list)) {
+                    list.forEach(emp => {
+                        const name = (emp.nombre || "").trim().toUpperCase();
+                        if (name && !workerRates[name]) {
+                            const sal = (parseFloat(emp.salario) || 1350000);
+                            workerRates[name] = { quincena: sal / 2 };
+                        }
+                    });
+                }
+            }
+        } catch(e){}
+
+        // 4. Cargar cualquier trabajador presente en turnos guardados
+        try {
+            const recs = JSON.parse(localStorage.getItem('shiftRecords')) || [];
+            recs.forEach(r => {
+                const name = (r.workerName || "").trim().toUpperCase();
+                if (name && !workerRates[name]) {
+                    workerRates[name] = { quincena: 1350000 / 2 };
+                }
+            });
+        } catch(e){}
     };
 
-    // Actualizar el select de trabajadores en el HTML
+    loadWorkersFromPersonal();
+
+    // Comprobar si se requiere restauración de emergencia desde backup previo
+    let storedRecords = [];
+    try {
+        storedRecords = JSON.parse(localStorage.getItem('shiftRecords')) || [];
+    } catch(e){}
+
+    if (storedRecords.length === 0 && typeof restorePreCloudPullBackupIfNeeded === 'function') {
+        const restored = restorePreCloudPullBackupIfNeeded();
+        if (restored) {
+            try {
+                storedRecords = JSON.parse(localStorage.getItem('shiftRecords')) || [];
+            } catch(e){}
+        }
+    }
+
+    window.records = storedRecords;
+    window.shiftBalances = JSON.parse(localStorage.getItem('shiftBalances') || '{}'); 
+    window.manualCrossHoursVal = 0; // Para el modo parcial
+    window.lastRenderedWorker = "";
+
+    // Actualizar los desplegables de selección
     const updateWorkerSelects = () => {
+        loadWorkersFromPersonal();
         const selects = [document.getElementById('workerName'), document.getElementById('tableWorkerFilter'), document.getElementById('workerFilter')];
+        const sortedWorkers = Object.keys(workerRates).sort();
         const options = '<option value="">Seleccione un trabajador...</option>' + 
-            Object.keys(workerRates).map(w => `<option value="${w}">${w}</option>`).join('');
+            sortedWorkers.map(w => `<option value="${w}">${w}</option>`).join('');
         
         selects.forEach(s => {
             if (s) {
@@ -105,14 +167,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateWorkerSelects();
 
-    window.records = JSON.parse(localStorage.getItem('shiftRecords')) || [];
-    window.shiftBalances = JSON.parse(localStorage.getItem('shiftBalances')) || {}; 
-    window.manualCrossHoursVal = 0; // Para el modo parcial
-    window.lastRenderedWorker = "";
-
     const saveRecords = () => {
         localStorage.setItem('shiftRecords', JSON.stringify(records));
         localStorage.setItem('shiftBalances', JSON.stringify(shiftBalances));
+        localStorage.setItem('workerRates', JSON.stringify(workerRates));
         updateDatalists();
         
         // Disparar sincronización con la nube si el dashboard maestro está presente
