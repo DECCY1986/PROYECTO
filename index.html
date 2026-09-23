@@ -21,126 +21,117 @@
         </div>
 
         <nav class="ws-nav">
-            <div class="nav-group">
-                <span class="nav-label">Monitoreo</span>
-                <a href="#" class="nav-item active" onclick="loadModule('monitoreo/tablero.html', this)">
-                    <i class="ph ph-chart-bar"></i> <span>Dashboard Global</span>
-                </a>
-            </div>
+
+
+
 
             <div class="nav-group">
-                <span class="nav-label">Finanzas</span>
-                <a href="#" class="nav-item" onclick="loadModule('finanzas/tesoreria.html', this)">
-                    <i class="ph ph-bank"></i> <span>Tesorería</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('finanzas/cxcxp.html', this)">
-                    <i class="ph ph-hand-coins"></i> <span>CxC / CxP</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('finanzas/presupuesto.html', this)">
-                    <i class="ph ph-calculator"></i> <span>Presupuesto</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('finanzas/costos.html', this)">
-                    <i class="ph ph-trend-up"></i> <span>Costos</span>
-                </a>
-            </div>
-
-            <div class="nav-group">
-                <span class="nav-label">Contabilidad</span>
-                <a href="#" class="nav-item" onclick="loadModule('contabilidad/industria_comercio/index.html', this)">
-                    <i class="ph ph-receipt"></i> <span>Industria y Comercio</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('contabilidad/retencion_fuente/index.html', this)">
-                    <i class="ph ph-scales"></i> <span>Retención Fuente</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('contabilidad/retencion_ica/index.html', this)">
-                    <i class="ph ph-file-text"></i> <span>ReteICA</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('contabilidad/renta_juridica/index.html', this)">
-                    <i class="ph ph-buildings"></i> <span>Renta Jurídica (F110)</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('contabilidad/cierre_contable/index.html', this)">
-                    <i class="ph ph-lock-key"></i> <span>Cierre Contable</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('contabilidad/calculadora_iva/index.html', this)">
-                    <i class="ph ph-calculator"></i> <span>Calculadora de IVA</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('contabilidad/flujo_caja.html', this)">
-                    <i class="ph ph-hand-coins"></i> <span>Legalización Flujo de Caja</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('contabilidad/dashboard_fiscal.html', this)">
-                    <i class="ph ph-chart-line-up"></i> <span>Resumen Fiscal</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('contabilidad/estados_financieros/index.html', this)">
-                    <i class="ph ph-presentation-chart"></i> <span>Estados Financieros</span>
-                </a>
-            </div>
-
-            <div class="nav-group">
-                <span class="nav-label">Bancos</span>
+                <div class="nav-label" onclick="toggleNavGroup(this)">
+                    <span>Bancos</span> <i class="ph ph-caret-down"></i>
+                </div>
                 <a href="#" class="nav-item" onclick="loadModule('contabilidad/control_diario_pagos.html', this)">
                     <i class="ph ph-calendar-check"></i> <span>Control Diario Pagos</span>
                 </a>
                 <a href="#" class="nav-item" onclick="loadModule('contabilidad/conciliacion_bancaria/index.html', this)">
                     <i class="ph ph-bank"></i> <span>Conciliación Bancaria</span>
                 </a>
-                <a href="#" class="nav-item" style="opacity:0.5;pointer-events:none">
-                    <i class="ph ph-piggy-bank"></i> <span>Préstamos Bancarios (Próximamente)</span>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label" onclick="toggleNavGroup(this)">
+                    <span>Contabilidad</span> <i class="ph ph-caret-down"></i>
+                </div>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/acuse_recibido_dian.html', this)">
+                    <i class="ph ph-file-check"></i> <span>Acuse Recibido DIAN</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/asistente_dian.html', this)">
+                    <i class="ph ph-download-simple"></i> <span>Descargador Masivo DIAN</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/dashboard_fiscal.html', this)">
+                    <i class="ph ph-receipt"></i> <span>Dashboard Fiscal</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('contabilidad/mi_oficina_contable.html', this)">
+                    <i class="ph ph-buildings"></i> <span>Mi Oficina Contable</span>
                 </a>
             </div>
 
             <div class="nav-group">
-                <span class="nav-label">Talento Humano</span>
-                <a href="#" class="nav-item" onclick="loadModule('talento_humano/nomina.html', this)">
-                    <i class="ph ph-users-three"></i> <span>Nómina</span>
-                </a>
+                <div class="nav-label" onclick="toggleNavGroup(this)">
+                    <span>Talento Humano</span> <i class="ph ph-caret-down"></i>
+                </div>
                 <a href="#" class="nav-item" onclick="loadModule('talento_humano/personal/index.html', this)">
                     <i class="ph ph-identification-card"></i> <span>Gestión Personal</span>
                 </a>
-                <a href="#" class="nav-item" onclick="loadModule('talento_humano/control_horarios/index.html', this)">
+                <a href="#" class="nav-item active" onclick="loadModule('talento_humano/control_horarios/index.html', this)">
                     <i class="ph ph-timer"></i> <span>Control Horarios</span>
                 </a>
+                <a href="#" class="nav-item" onclick="loadModule('talento_humano/liquidacion.html', this)">
+                    <i class="ph ph-hand-coins"></i> <span>Liquidación Prestaciones</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label" onclick="toggleNavGroup(this)">
+                    <span>SST</span> <i class="ph ph-caret-down"></i>
+                </div>
                 <a href="#" class="nav-item" onclick="loadModule('talento_humano/sst/index.html', this)">
                     <i class="ph ph-shield-check"></i> <span>Módulo SST</span>
                 </a>
             </div>
 
+            <div class="nav-group">
+                <div class="nav-label" onclick="toggleNavGroup(this)">
+                    <span>Compras & Almacén</span> <i class="ph ph-caret-down"></i>
+                </div>
+                <a href="#" class="nav-item" onclick="loadModule('compras/index.html', this)">
+                    <i class="ph ph-shopping-cart"></i> <span>Sistema Integral</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label" onclick="toggleNavGroup(this)">
+                    <span>Servicios Públicos</span> <i class="ph ph-caret-down"></i>
+                </div>
+                <a href="#" class="nav-item" onclick="loadModule('servicios_publicos/index.html', this)">
+                    <i class="ph ph-lightning"></i> <span>Control Mensual</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label" onclick="toggleNavGroup(this)">
+                    <span>Gestión Administrativa</span> <i class="ph ph-caret-down"></i>
+                </div>
+                <a href="#" class="nav-item" onclick="loadModule('gestion_administrativa/index.html', this)">
+                    <i class="ph ph-briefcase"></i> <span>Panel & Flujograma</span>
+                </a>
+                <a href="#" class="nav-item" onclick="loadModule('gestion_administrativa/ordenes_produccion/index.html', this)">
+                    <i class="ph ph-factory"></i> <span>Órdenes de Producción</span>
+                </a>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-label" onclick="toggleNavGroup(this)">
+                    <span>Operaciones</span> <i class="ph ph-caret-down"></i>
+                </div>
+                <a href="#" class="nav-item" onclick="loadModule('herramientas/mantenimiento_maquinas.html', this)">
+                    <i class="ph ph-wrench"></i> <span>Mantenimiento Máquinas</span>
+                </a>
+            </div>
+
             <div class="nav-group" id="agenda-group" style="display:none">
-                <span class="nav-label">Agenda & Tareas</span>
+                <div class="nav-label" onclick="toggleNavGroup(this)">
+                    <span>Agenda & Tareas</span> <i class="ph ph-caret-down"></i>
+                </div>
                 <a href="#" class="nav-item" onclick="loadModule('agenda/index.html', this)">
                     <i class="ph ph-calendar-check"></i> <span>Agenda 2026</span>
                 </a>
             </div>
 
-            <div class="nav-group">
-                <span class="nav-label">Producción & Calidad</span>
-                <a href="#" class="nav-item" onclick="loadModule('carpinteria/index.html', this)">
-                    <i class="ph ph-hammer"></i> <span>Carpintería (Gestión)</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('calidad/index.html', this)">
-                    <i class="ph ph-shield-check"></i> <span>Gestión de Calidad</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('proyectos/index.html', this)">
-                    <i class="ph ph-strategy"></i> <span>Gestión de Proyectos</span>
-                </a>
-            </div>
-
-            <div class="nav-group">
-                <span class="nav-label">Operación & Clientes</span>
-                <a href="#" class="nav-item" onclick="loadModule('compras/index.html', this)">
-                    <i class="ph ph-shopping-cart"></i> <span>Compras</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('servicio_cliente/index.html', this)">
-                    <i class="ph ph-headset"></i> <span>Servicio al Cliente</span>
-                </a>
-                <a href="#" class="nav-item" onclick="loadModule('bi/index.html', this)">
-                    <i class="ph ph-chart-line-up"></i> <span>Business Intelligence</span>
-                </a>
-            </div>
         </nav>
 
         <!-- Claude AI Card in Sidebar -->
         <div class="ws-card">
-            <div id="cloud-sync-status" class="cloud-indicator" onclick="pushToCloud()" style="cursor:pointer; display:flex; gap:10px; align-items:center; margin-bottom:12px; color:var(--text-muted); opacity:0.8;">
+            <div id="cloud-sync-status" class="cloud-indicator" style="display:flex; gap:10px; align-items:center; margin-bottom:12px; color:var(--text-muted); opacity:0.8;">
                 <i class="ph ph-cloud-slash" style="font-size:24px"></i>
                 <span style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em">Sincronización Nube</span>
             </div>
@@ -156,17 +147,29 @@
     <!-- CONTENT AREA -->
     <main class="ws-content">
         <header class="ws-header">
-            <div id="module-title" class="ws-header-title">Dashboard Global</div>
-            <div style="display:flex;align-items:center;gap:16px">
-                <span id="ws-clock" style="font-family:'DM Mono'; font-size:12px; color:#64748b"></span>
-                <button onclick="openAIConfig()" style="background:none; border:1px solid #e2e8f0; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; display:flex; align-items:center; gap:6px">
+            <div id="module-title" class="ws-header-title">Control Horarios</div>
+            <div class="ws-header-actions">
+                <span id="ws-clock" class="ws-clock"></span>
+                <a href="talento_humano/control_horarios/registro_movil.html" target="_blank" class="ws-shift-btn" style="background:#0284c7; color:white; text-decoration:none; display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px; font-weight:600; font-size:12px;">
+                    <i class="ph ph-device-mobile"></i> <span>Marcador Móvil</span>
+                </a>
+                <a href="talento_humano/control_horarios/generar_qr.html" target="_blank" class="ws-shift-btn" style="background:#8b5cf6; color:white; text-decoration:none; display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px; font-weight:600; font-size:12px;">
+                    <i class="ph ph-qr-code"></i> <span>Generar QR</span>
+                </a>
+                <button id="btnTopSyncMobile" class="ws-shift-btn" style="background:#059669; color:white; border:none; padding:6px 12px; border-radius:8px; font-weight:600; font-size:12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;" onclick="triggerMobileSync()">
+                    <i class="ph ph-cloud-arrow-down"></i> <span>Sincronizar Turnos Móviles</span>
+                </button>
+                <button id="refreshShiftBtn" class="ws-shift-btn" onclick="refreshCurrentModule()">
+                    <i class="ph ph-arrow-clockwise"></i> <span>Actualizar Turno</span>
+                </button>
+                <button onclick="openAIConfig()" class="ws-settings-btn">
                     <i class="ph ph-gear"></i> Ajustes IA
                 </button>
             </div>
         </header>
 
         <div class="ws-iframe-container" id="ws-container">
-            <iframe id="ws-viewport" src="monitoreo/tablero.html"></iframe>
+            <iframe id="ws-viewport" src="talento_humano/control_horarios/index.html"></iframe>
         </div>
     </main>
 </div>
@@ -221,8 +224,14 @@
                     <i class="ph ph-upload-simple"></i> Importar Backup
                 </button>
                 <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+                <button onclick="showDataDiagnostic()" style="padding:10px; border:1px solid #64748b; color:#475569; border-radius:8px; background:none; cursor:pointer; font-size:11px; font-weight:600">
+                    <i class="ph ph-database"></i> Diagnóstico
+                </button>
+                <button onclick="restoreLocalBackup()" style="padding:10px; border:1px solid #f59e0b; color:#b45309; border-radius:8px; background:none; cursor:pointer; font-size:11px; font-weight:600">
+                    <i class="ph ph-arrow-counter-clockwise"></i> Restaurar Local
+                </button>
             </div>
-            <p style="font-size:10px; color:#94a3b8; margin-top:8px">Usa esto para mover tus datos entre la versión local y la web.</p>
+            <p id="dataDiagnosticText" style="font-size:10px; color:#94a3b8; margin-top:8px">Usa esto para mover tus datos entre la versión local y la web. La nube está en modo manual para proteger la base.</p>
         </div>
 
         <div style="display:flex; justify-content:flex-end; gap:12px">
@@ -235,14 +244,161 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="ai_assistant.js"></script>
 <script>
+const ALLOWED_BACKUP_KEYS = [
+    /^dim_/,
+    /^dimalcco_/,
+    /^shiftRecords$/,
+    /^publicidad_shiftRecords$/,
+    /^shiftBalances$/,
+    /^workerRates$/,
+    /^oficina_/,
+    /^taxTransactions$/,
+    /^ANTHROPIC_API_KEY$/,
+    /^AI_PROXY_URL$/
+];
+
+function isAllowedStorageKey(key) {
+    return typeof key === 'string' && ALLOWED_BACKUP_KEYS.some(pattern => pattern.test(key));
+}
+
+function createFullBackup() {
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        data[key] = localStorage.getItem(key);
+    }
+    return data;
+}
+
+function downloadJson(data, filename) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function sanitizeHtml(html) {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    template.content.querySelectorAll('script, iframe, object, embed, link, meta, style').forEach(el => el.remove());
+    template.content.querySelectorAll('*').forEach(el => {
+        [...el.attributes].forEach(attr => {
+            const name = attr.name.toLowerCase();
+            const value = attr.value.trim().toLowerCase();
+            if (name.startsWith('on') || value.startsWith('javascript:') || value.startsWith('data:text/html')) {
+                el.removeAttribute(attr.name);
+            }
+        });
+    });
+    return template.innerHTML;
+}
+
+function appendChatBubble(content, type) {
+    const chatArea = document.getElementById('aiChatArea');
+    const bubble = document.createElement('div');
+    bubble.style.marginBottom = '12px';
+    bubble.style.padding = '10px 14px';
+    bubble.style.borderRadius = '12px';
+    bubble.style.maxWidth = '85%';
+
+    if (type === 'user') {
+        bubble.style.background = '#4338ca';
+        bubble.style.color = '#fff';
+        bubble.style.marginLeft = 'auto';
+        bubble.style.borderBottomRightRadius = '2px';
+        bubble.textContent = content;
+    } else if (type === 'error') {
+        bubble.style.color = 'red';
+        bubble.style.fontSize = '12px';
+        bubble.textContent = content;
+    } else {
+        bubble.style.background = '#fff';
+        bubble.style.color = '#0f172a';
+        bubble.style.border = '1px solid #e2e8f0';
+        bubble.style.borderBottomLeftRadius = '2px';
+        bubble.innerHTML = sanitizeHtml(content);
+    }
+
+    chatArea.appendChild(bubble);
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
+
 // Logic to load modules into the iframe
+let currentModuleUrl = 'talento_humano/control_horarios/index.html';
+
 function loadModule(url, el) {
-    document.getElementById('ws-viewport').src = url;
+    currentModuleUrl = url;
+    const separator = url.includes('?') ? '&' : '?';
+    const cacheBustedUrl = url + separator + 'v=' + Date.now();
+    document.getElementById('ws-viewport').src = cacheBustedUrl;
     document.getElementById('module-title').textContent = el.querySelector('span').textContent;
     
     // UI Update
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     el.classList.add('active');
+}
+
+function refreshCurrentModule() {
+    const viewport = document.getElementById('ws-viewport');
+    const button = document.getElementById('refreshShiftBtn');
+    const label = button.querySelector('span');
+    const separator = currentModuleUrl.includes('?') ? '&' : '?';
+    const isControlHorarios = currentModuleUrl.includes('talento_humano/control_horarios/');
+
+    const resetButton = (text = 'Actualizar Turno') => {
+        setTimeout(() => {
+            button.classList.remove('is-refreshing');
+            label.textContent = text;
+        }, 1400);
+    };
+
+    try {
+        if (isControlHorarios && viewport.contentWindow && typeof viewport.contentWindow.submitCurrentShift === 'function') {
+            const saved = viewport.contentWindow.submitCurrentShift();
+            button.classList.add('is-refreshing');
+            label.textContent = saved ? 'Turno actualizado' : 'Completa los datos';
+            resetButton();
+            return;
+        }
+
+        const iframeButton = isControlHorarios ? viewport.contentDocument?.getElementById('btnSubmitShift') : null;
+        if (iframeButton) {
+            iframeButton.click();
+            button.classList.add('is-refreshing');
+            label.textContent = 'Turno actualizado';
+            resetButton();
+            return;
+        }
+    } catch (err) {
+        console.warn('No se pudo actualizar desde el módulo activo. Se recargará el iframe.', err);
+    }
+
+    viewport.src = currentModuleUrl + separator + 'v=' + Date.now();
+}
+
+function triggerMobileSync() {
+    const viewport = document.getElementById('ws-viewport');
+    if (viewport && viewport.contentDocument) {
+        const btn = viewport.contentDocument.getElementById('btn-sync-mobile');
+        if (btn) {
+            btn.click();
+            return;
+        }
+    }
+    // Fallback: recargar iframe
+    if (viewport) {
+        viewport.src = viewport.src;
+        alert("✅ Módulo recargado para obtener los turnos sincronizados.");
+    }
+}
+
+// Nav group toggle
+function toggleNavGroup(el) {
+    const group = el.parentElement;
+    group.classList.toggle('collapsed');
 }
 
 // Clock
@@ -275,13 +431,16 @@ function saveAIConfig() {
     localStorage.setItem('ANTHROPIC_API_KEY', document.getElementById('aiKeyInput').value.trim());
     localStorage.setItem('AI_PROXY_URL', document.getElementById('aiProxyInput').value.trim());
     localStorage.setItem('dim_cloud_token', document.getElementById('aiGithubToken').value.trim());
+    if (window.DimalccoCloudSync) {
+        window.DimalccoCloudSync.refreshConfig();
+    }
     
     const newGistId = document.getElementById('aiGistInput').value.trim();
     const oldGistId = localStorage.getItem('dim_cloud_gist_id');
     
     if (newGistId && newGistId !== oldGistId) {
         localStorage.setItem('dim_cloud_gist_id', newGistId);
-        if (confirm('ID de Sincronización actualizado. ¿Deseas descargar los datos de la nube ahora?')) {
+        if (confirm('ID de Sincronización actualizado. Descargar datos de la nube puede sobrescribir la base local. ¿Deseas hacerlo ahora?')) {
             pullFromCloud().then(() => location.reload());
         }
     } else {
@@ -301,38 +460,79 @@ async function sendAIMessage() {
     if (!text) return;
 
     input.value = '';
-    const chatArea = document.getElementById('aiChatArea');
-    chatArea.innerHTML += `<div style="margin-bottom:12px; padding:10px 14px; background:#4338ca; color:#fff; border-radius:12px; max-width:85%; margin-left:auto; border-bottom-right-radius:2px">${text}</div>`;
-    chatArea.scrollTop = chatArea.scrollHeight;
+    appendChatBubble(text, 'user');
 
     document.getElementById('aiLoading').style.display = 'block';
 
     try {
         const response = await window.DimalccoAI.sendMessage(text);
         const html = marked.parse(response);
-        chatArea.innerHTML += `<div style="margin-bottom:12px; padding:10px 14px; background:#fff; color:#0f172a; border:1px solid #e2e8f0; border-radius:12px; max-width:85%; border-bottom-left-radius:2px">${html}</div>`;
+        appendChatBubble(html, 'assistant');
     } catch (e) {
-        chatArea.innerHTML += `<div style="color:red; font-size:12px">${e.message}</div>`;
+        appendChatBubble(e.message, 'error');
     } finally {
         document.getElementById('aiLoading').style.display = 'none';
-        chatArea.scrollTop = chatArea.scrollHeight;
     }
 }
 
 // Data Management Logic (FULL SYNC)
 function exportData() {
-    const data = {};
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        // Exportamos TODO para asegurar que no falte ningún módulo
-        data[key] = localStorage.getItem(key);
+    downloadJson(createFullBackup(), `backup_completo_dimalcco_${new Date().toISOString().split('T')[0]}.json`);
+}
+
+function getBackupSummary(data) {
+    const entries = Object.entries(data || {}).filter(([key, value]) => isAllowedStorageKey(key) && typeof value === 'string');
+    const totalBytes = entries.reduce((acc, [, value]) => acc + value.length, 0);
+    return { keys: entries.length, totalBytes };
+}
+
+function showDataDiagnostic() {
+    const summary = getBackupSummary(createFullBackup());
+    const prePullRaw = localStorage.getItem('dim_pre_cloud_pull_backup');
+    let prePullText = 'Sin backup local previo de nube.';
+
+    if (prePullRaw) {
+        try {
+            const prePull = JSON.parse(prePullRaw);
+            const preSummary = getBackupSummary(prePull.data || {});
+            prePullText = `Backup previo: ${preSummary.keys} claves, ${preSummary.totalBytes.toLocaleString()} caracteres, creado ${prePull.createdAt || 'sin fecha'}.`;
+        } catch (err) {
+            prePullText = 'Hay backup previo, pero no se pudo leer.';
+        }
     }
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `backup_completo_dimalcco_${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
+
+    const text = `Actual: ${summary.keys} claves protegidas, ${summary.totalBytes.toLocaleString()} caracteres. ${prePullText}`;
+    const el = document.getElementById('dataDiagnosticText');
+    if (el) el.textContent = text;
+    alert(text);
+}
+
+function restoreLocalBackup() {
+    const raw = localStorage.getItem('dim_pre_cloud_pull_backup');
+    if (!raw) {
+        alert('No existe dim_pre_cloud_pull_backup en este navegador.');
+        return;
+    }
+
+    try {
+        const backup = JSON.parse(raw);
+        const data = backup.data || {};
+        const validEntries = Object.entries(data).filter(([key, value]) => isAllowedStorageKey(key) && typeof value === 'string');
+
+        if (validEntries.length === 0) {
+            alert('El backup local no contiene claves válidas para restaurar.');
+            return;
+        }
+
+        if (confirm(`Se restaurarán ${validEntries.length} claves desde el backup local creado ${backup.createdAt || 'sin fecha'}. ¿Continuar?`)) {
+            downloadJson(createFullBackup(), `backup_antes_restaurar_dimalcco_${new Date().toISOString().replace(/[:.]/g, '-')}.json`);
+            validEntries.forEach(([key, value]) => localStorage.setItem(key, value));
+            alert('Backup local restaurado. Recargando workspace...');
+            location.reload();
+        }
+    } catch (err) {
+        alert('No se pudo restaurar el backup local: ' + err.message);
+    }
 }
 
 function importData(event) {
@@ -342,17 +542,25 @@ function importData(event) {
     reader.onload = function(e) {
         try {
             const data = JSON.parse(e.target.result);
+            if (!data || typeof data !== 'object' || Array.isArray(data)) {
+                throw new Error('Formato de backup inválido.');
+            }
+            const validEntries = Object.entries(data).filter(([key, value]) => {
+                return isAllowedStorageKey(key) && typeof value === 'string';
+            });
+            if (validEntries.length === 0) {
+                throw new Error('El backup no contiene claves válidas para este workspace.');
+            }
             if (confirm('Esto sobrescribirá tus datos actuales. ¿Deseas continuar?')) {
-                Object.keys(data).forEach(key => {
-                    localStorage.setItem(key, data[key]);
+                downloadJson(createFullBackup(), `backup_antes_importar_dimalcco_${new Date().toISOString().replace(/[:.]/g, '-')}.json`);
+                validEntries.forEach(([key, value]) => {
+                    localStorage.setItem(key, value);
                 });
-                // Después de importar, sincronizamos con la nube
-                pushToCloud();
-                alert('Datos importados correctamente. Recargando workspace...');
+                alert(`Datos importados correctamente (${validEntries.length} claves). Recargando workspace...`);
                 location.reload();
             }
         } catch (err) {
-            alert('Error al leer el archivo de backup.');
+            alert('Error al leer el archivo de backup: ' + err.message);
         }
     };
     reader.readAsText(file);
