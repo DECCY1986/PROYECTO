@@ -367,11 +367,15 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderSummary = () => {
-        const worker = (workerFilter.value || "").trim().toUpperCase();
+        const worker = (workerFilter ? workerFilter.value : "").trim().toUpperCase();
         if (!worker) {
-            payrollSummaryArea.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--color-text-tertiary);">Seleccione un trabajador para ver su resumen de nómina.</div>';
+            payrollSummaryArea.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--color-text-tertiary); font-weight: 500;"><i class="ph ph-user-focus" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: #94a3b8;"></i>Seleccione un trabajador para ver su resumen de nómina.</div>';
             return;
         }
+
+        const selectedMonthStr = filterMonth ? filterMonth.value : '';
+        const selectedFortnight = filterFortnight ? filterFortnight.value : '';
+        const selMonth = parseInt(selectedMonthStr, 10);
 
         const workerRecords = records.filter(r => {
             if (typeof r.workerName !== 'string' || typeof r.date !== 'string') return false;
@@ -382,17 +386,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const date = r.date; // YYYY-MM-DD
             if (!date) return false;
             const parts = date.split('-');
-            const rMonth = parts[1];
-            const rDay = parseInt(parts[2]);
-            const rYear = parts[0];
+            if (parts.length < 3) return false;
             
-            const selectedMonth = filterMonth.value;
-            const selectedFortnight = filterFortnight.value;
+            const rMonth = parseInt(parts[1], 10);
+            const rDay = parseInt(parts[2], 10);
             
-            if (rMonth !== selectedMonth) return false;
+            if (selectedMonthStr && rMonth !== selMonth) return false;
             if (selectedFortnight === "1") return rDay <= 15;
-            return rDay > 15;
+            if (selectedFortnight === "2") return rDay > 15;
+            return true;
         });
+
+        if (workerRecords.length === 0) {
+            const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+            const mName = monthNames[selMonth - 1] || 'este mes';
+            const fName = selectedFortnight === "1" ? '1ª Quincena (1-15)' : '2ª Quincena (16-Fin)';
+
+            payrollSummaryArea.innerHTML = `
+                <div style="padding: 2rem 1rem; text-align: center; color: #64748b; background: #ffffff; border-radius: 12px; border: 1.5px dashed #cbd5e1; margin-top: 1rem;">
+                    <i class="ph ph-file-x" style="font-size: 2.2rem; color: #94a3b8; display: block; margin: 0 auto 0.5rem auto;"></i>
+                    <h3 style="font-size: 1.05rem; font-weight: 700; color: #1e293b; margin-bottom: 0.25rem;">Sin registros en esta quincena</h3>
+                    <p style="font-size: 0.88rem; color: #64748b;">El trabajador <strong>${worker}</strong> no tiene turnos guardados para <strong>${mName} - ${fName}</strong>.</p>
+                </div>
+            `;
+            return;
+        }
 
         // We calculate equivalent worked days first to determine dynamic daily rate
         const equivalentDays = workerRecords.reduce((acc, r) => acc + (r.isTravelRecord ? 0 : (r.esMedioDia ? 0.5 : 1)), 0);
@@ -627,8 +645,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderTable = () => {
         tableBody.innerHTML = '';
         const workerToFilter = tableWorkerFilter ? tableWorkerFilter.value : '';
-        const selectedMonth = filterMonth.value;
-        const selectedFortnight = filterFortnight.value;
+        const selectedMonthStr = filterMonth ? filterMonth.value : '';
+        const selectedFortnight = filterFortnight ? filterFortnight.value : '';
+        const selMonth = parseInt(selectedMonthStr, 10);
 
         const recordsToDisplay = records.filter(r => {
             // Protección contra datos corruptos (si se guardó un objeto DOM por error)
@@ -640,13 +659,38 @@ document.addEventListener('DOMContentLoaded', () => {
             const date = r.date;
             if (!date) return false;
             const parts = date.split('-');
-            const rMonth = parts[1];
-            const rDay = parseInt(parts[2]);
+            if (parts.length < 3) return false;
 
-            if (rMonth !== selectedMonth) return false;
+            const rMonth = parseInt(parts[1], 10);
+            const rDay = parseInt(parts[2], 10);
+
+            if (selectedMonthStr && rMonth !== selMonth) return false;
             if (selectedFortnight === "1") return rDay <= 15;
-            return rDay > 15;
+            if (selectedFortnight === "2") return rDay > 15;
+            return true;
         });
+
+        if (recordsToDisplay.length === 0) {
+            const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+            const mName = monthNames[selMonth - 1] || 'este mes';
+            const fName = selectedFortnight === "1" ? "1ª Quincena (1-15)" : "2ª Quincena (16-Fin)";
+
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="12" style="text-align: center; padding: 2.5rem 1rem; color: #64748b; background: #f8fafc;">
+                        <i class="ph ph-calendar-x" style="font-size: 2.2rem; color: #cbd5e1; display: block; margin: 0 auto 0.5rem auto;"></i>
+                        <strong style="font-size: 1.05rem; color: #1e293b; display: block; margin-bottom: 0.25rem;">
+                            No hay turnos registrados ${workerToFilter ? `para <strong>${workerToFilter}</strong>` : ''}
+                        </strong>
+                        <span style="font-size: 0.85rem; color: #64748b;">
+                            Filtro activo: <strong>${mName}</strong> (${fName}). 
+                            ${workerToFilter ? 'Cambie de trabajador o seleccione <em>"Todos los trabajadores"</em> para ver otros registros.' : 'Utilice "Registrar Turno" o "Cargar Quincena Completa" para añadir registros.'}
+                        </span>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
 
         recordsToDisplay.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach((rec) => {
             const extras = Math.max(0, rec.totalHours - rec.ordinaryHours).toFixed(2);
@@ -860,19 +904,96 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 7. Event Listeners y Exportación Definitiva ---
-    // Initialize filters to current month and fortnight
+    // Sincronizador bidireccional de trabajador entre filtros y detección de periodo
+    const syncWorkerSelection = (selectedWorker, source) => {
+        const workerUpper = (selectedWorker || '').trim().toUpperCase();
+        
+        // Mantener sincronizados ambos selectores
+        if (source !== 'table' && tableWorkerFilter && tableWorkerFilter.value !== selectedWorker) {
+            tableWorkerFilter.value = selectedWorker;
+        }
+        if (source !== 'summary' && workerFilter && workerFilter.value !== selectedWorker) {
+            workerFilter.value = selectedWorker;
+        }
+
+        // Si se seleccionó un trabajador específico (no todos)
+        if (workerUpper) {
+            const currentSelMonth = parseInt(filterMonth ? filterMonth.value : '0', 10);
+            const currentSelFortnight = filterFortnight ? filterFortnight.value : '1';
+
+            const hasCurrentRecords = records.some(r => {
+                if (!r.workerName || !r.date) return false;
+                if (r.workerName.trim().toUpperCase() !== workerUpper) return false;
+                const parts = r.date.split('-');
+                if (parts.length < 3) return false;
+                const rM = parseInt(parts[1], 10);
+                const rD = parseInt(parts[2], 10);
+                const isF1 = rD <= 15;
+                return rM === currentSelMonth && ((currentSelFortnight === "1" && isF1) || (currentSelFortnight === "2" && !isF1));
+            });
+
+            // Si NO tiene registros en el periodo seleccionado actualmente, buscar su periodo con datos
+            if (!hasCurrentRecords) {
+                const workerAllRecords = records.filter(r => r.workerName && r.workerName.trim().toUpperCase() === workerUpper && r.date);
+                if (workerAllRecords.length > 0) {
+                    workerAllRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    const latestDate = workerAllRecords[0].date;
+                    const parts = latestDate.split('-');
+                    if (parts.length >= 3) {
+                        const newMonth = parts[1].padStart(2, '0');
+                        const newDay = parseInt(parts[2], 10);
+                        const newFortnight = newDay <= 15 ? "1" : "2";
+
+                        if (filterMonth) filterMonth.value = newMonth;
+                        if (filterFortnight) filterFortnight.value = newFortnight;
+
+                        const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+                        const mName = monthNames[parseInt(newMonth, 10) - 1] || newMonth;
+                        
+                        const toast = document.createElement('div');
+                        toast.innerHTML = `📅 Periodo ajustado a <strong>${mName} (${newFortnight === "1" ? "1ª Quincena" : "2ª Quincena"})</strong> para <strong>${workerUpper}</strong>`;
+                        toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#0284c7;color:white;padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.85rem;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+                        document.body.appendChild(toast);
+                        setTimeout(() => toast.remove(), 4000);
+                    }
+                }
+            }
+        }
+
+        renderTable();
+        renderSummary();
+    };
+
+    // Inicializar filtros con el periodo de los registros más recientes (o la fecha actual)
     const today = new Date();
-    const currentMonth = (today.getMonth() + 1).toString().padStart(2, '0');
-    const currentDay = today.getDate();
-    const currentFortnight = currentDay <= 15 ? "1" : "2";
+    let currentMonth = (today.getMonth() + 1).toString().padStart(2, '0');
+    let currentFortnight = today.getDate() <= 15 ? "1" : "2";
+
+    if (records && records.length > 0) {
+        const sorted = [...records].filter(r => r.date).sort((a, b) => new Date(b.date) - new Date(a.date));
+        if (sorted.length > 0) {
+            const latestDate = sorted[0].date;
+            const parts = latestDate.split('-');
+            if (parts.length >= 3) {
+                currentMonth = parts[1].padStart(2, '0');
+                const day = parseInt(parts[2], 10);
+                currentFortnight = day <= 15 ? "1" : "2";
+            }
+        }
+    }
 
     if (filterMonth) filterMonth.value = currentMonth;
     if (filterFortnight) filterFortnight.value = currentFortnight;
 
+    if (tableWorkerFilter) {
+        tableWorkerFilter.addEventListener('change', () => {
+            syncWorkerSelection(tableWorkerFilter.value, 'table');
+        });
+    }
+
     if (workerFilter) {
         workerFilter.addEventListener('change', () => {
-            console.log("Cambiando a trabajador:", workerFilter.value);
-            renderSummary();
+            syncWorkerSelection(workerFilter.value, 'summary');
         });
     }
 
@@ -893,12 +1014,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterMonth) {
         filterMonth.addEventListener('change', () => {
             renderTable();
+            renderSummary();
         });
     }
 
     if (filterFortnight) {
         filterFortnight.addEventListener('change', () => {
             renderTable();
+            renderSummary();
         });
     }
 
