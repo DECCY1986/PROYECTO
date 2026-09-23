@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Códigos QR - DIMALCCO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="qrcode_standalone.js"></script>
+    <style>
+        :root {
+            --bg-main: #f8fafc;
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 680px;
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 1rem;
+        }
+
+        .header-icon {
+            background: #f3e8ff;
+            color: var(--primary);
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 32px;
+            display: flex;
+        }
+
+        .header-title h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .header-title p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 0.95rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            background: #ffffff;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+        }
+
+        .poster-preview-card {
+            border: 3px dashed var(--primary);
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            background: #faf5ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 0.5rem;
+        }
+
+        .poster-tag {
+            background: var(--primary);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+        }
+
+        .poster-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .poster-sub {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .qr-display-box {
+            padding: 16px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            margin: 8px 0;
+            min-width: 200px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: #475569;
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-secondary:hover {
+            background: #334155;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-icon">
+                <i class="ph ph-qr-code"></i>
+            </div>
+            <div class="header-title">
+                <h1>Generador de Códigos QR</h1>
+                <p>DIMALCCO - Control de Horarios y OPs</p>
+            </div>
+        </div>
+
+        <!-- Formulario -->
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="qrFormat"><i class="ph ph-qr-code"></i> Modo de Lectura del QR</label>
+                <select id="qrFormat">
+                    <option value="app_scanner">Recomendado: Para Escáner Móvil DIMALCCO (Formato Corto e Instantáneo)</option>
+                    <option value="web_url">Para Cámara Nativa de Celular (Requiere Servidor Web / IP)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="qrType"><i class="ph ph-list-bullets"></i> Tipo de Código QR</label>
+                <select id="qrType">
+                    <option value="op">QR para Ficha de OP / Trabajo</option>
+                    <option value="location">QR para Cartel de Entrada (Planta / Obra)</option>
+                    <option value="worker">QR para Carnet de Trabajador</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="grpOp">
+                <label for="opInput"><i class="ph ph-hash"></i> Número de OP</label>
+                <input type="text" id="opInput" value="1042" placeholder="Ej: 1042">
+            </div>
+
+            <div class="form-group" id="grpProject">
+                <label for="projectInput"><i class="ph ph-buildings"></i> Nombre Obra / Planta</label>
+                <input type="text" id="projectInput" value="Planta Principal" placeholder="Ej: Planta Principal / Obra Central">
+            </div>
+
+            <div class="form-group" id="grpLocation">
+                <label for="locationInput"><i class="ph ph-map-pin"></i> Ubicación</label>
+                <select id="locationInput">
+                    <option value="planta">Planta</option>
+                    <option value="obra">Obra</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="grpServerUrl" style="display: none; grid-column: span 2;">
+                <label for="serverUrlInput"><i class="ph ph-globe"></i> Dirección Web Pública de DIMALCCO (GitHub Pages)</label>
+                <input type="text" id="serverUrlInput" value="https://deccy1986.github.io/PROYECTO" placeholder="https://deccy1986.github.io/PROYECTO">
+            </div>
+
+            <div class="form-group" id="grpWorker" style="display: none; grid-column: span 2;">
+                <label for="workerSelect"><i class="ph ph-user"></i> Seleccionar Trabajador</label>
+                <select id="workerSelect">
+                    <option value="WILLIAM DIAZ VARGAS">WILLIAM DIAZ VARGAS</option>
+                    <option value="OSCAR MIGUEL CANTOR ZAMUDIO">OSCAR MIGUEL CANTOR ZAMUDIO</option>
+                    <option value="MAURICIO MEDINA OLVIDARES">MAURICIO MEDINA OLVIDARES</option>
+                    <option value="DIEGO JAVIER QUINTERO DUEÑAS">DIEGO JAVIER QUINTERO DUEÑAS</option>
+                    <option value="DECCY BAYONA">DECCY BAYONA</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Poster Preview Imprimible -->
+        <div class="poster-preview-card" id="posterCard">
+            <span class="poster-tag">DIMALCCO S.A.S. - CONTROL DE HORARIOS</span>
+            <div class="poster-title" id="posterTitle">ORDEN DE PRODUCCIÓN #1042</div>
+            <div class="poster-sub" id="posterSub">Planta Principal (PLANTA) - Escanea para marcar Entrada/Salida</div>
+
+            <div class="qr-display-box" id="qrContainer"></div>
+
+            <div style="font-size: 0.75rem; color: #94a3b8; word-break: break-all;" id="urlPreview"></div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="btn-group">
+            <button type="button" class="btn-primary" id="btnPrint">
+                <i class="ph ph-printer"></i> IMPRIMIR CARTEL QR
+            </button>
+            <button type="button" class="btn-secondary" id="btnCopy">
+                <i class="ph ph-copy"></i> Copiar Código / Enlace
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const qrFormat = document.getElementById('qrFormat');
+            const qrType = document.getElementById('qrType');
+            const opInput = document.getElementById('opInput');
+            const projectInput = document.getElementById('projectInput');
+            const locationInput = document.getElementById('locationInput');
+            const serverUrlInput = document.getElementById('serverUrlInput');
+            const workerSelect = document.getElementById('workerSelect');
+
+            const grpOp = document.getElementById('grpOp');
+            const grpProject = document.getElementById('grpProject');
+            const grpLocation = document.getElementById('grpLocation');
+            const grpServerUrl = document.getElementById('grpServerUrl');
+            const grpWorker = document.getElementById('grpWorker');
+
+            const posterTitle = document.getElementById('posterTitle');
+            const posterSub = document.getElementById('posterSub');
+            const urlPreview = document.getElementById('urlPreview');
+            const qrContainer = document.getElementById('qrContainer');
+            const btnPrint = document.getElementById('btnPrint');
+            const btnCopy = document.getElementById('btnCopy');
+
+            function updateVisibility() {
+                const fmt = qrFormat.value;
+                const val = qrType.value;
+
+                grpServerUrl.style.display = (fmt === 'web_url') ? 'flex' : 'none';
+
+                if (val === 'op') {
+                    grpOp.style.display = 'flex';
+                    grpProject.style.display = 'flex';
+                    grpLocation.style.display = 'flex';
+                    grpWorker.style.display = 'none';
+                } else if (val === 'location') {
+                    grpOp.style.display = 'none';
+                    grpProject.style.display = 'flex';
+                    grpLocation.style.display = 'flex';
+                    grpWorker.style.display = 'none';
+                } else if (val === 'worker') {
+                    grpOp.style.display = 'none';
+                    grpProject.style.display = 'none';
+                    grpLocation.style.display = 'none';
+                    grpWorker.style.display = 'flex';
+                }
+                renderQR();
+            }
+
+            function renderQR() {
+                qrContainer.innerHTML = '';
+                const fmt = qrFormat.value;
+                const val = qrType.value;
+
+                let qrData = '';
+                let title = '';
+                let sub = '';
+
+                if (fmt === 'app_scanner') {
+                    // Formato corto ultrarrápido para el escáner de la app móvil
+                    if (val === 'op') {
+                        const op = opInput.value || '1042';
+                        const proj = projectInput.value || 'Planta Principal';
+                        const loc = locationInput.value || 'planta';
+                        qrData = `${op}|${proj}|${loc}`;
+                        title = `ORDEN DE PRODUCCIÓN #${op}`;
+                        sub = `${proj} (${loc.toUpperCase()}) - Escanea con el escáner de la App Móvil`;
+                    } else if (val === 'location') {
+                        const proj = projectInput.value || 'Planta Principal';
+                        const loc = locationInput.value || 'planta';
+                        qrData = `UBICACION|${proj}|${loc}`;
+                        title = `ESTACIÓN DE MARCAJE: ${proj.toUpperCase()}`;
+                        sub = `Ubicación ${loc.toUpperCase()} - Escanea con el escáner de la App Móvil`;
+                    } else if (val === 'worker') {
+                        const worker = workerSelect.value || 'TRABAJADOR';
+                        qrData = `WORKER|${worker}`;
+                        title = `CARNET: ${worker}`;
+                        sub = `Escanea con la App Móvil para registrar turno`;
+                    }
+                } else {
+                    // Formato URL para navegador de cámara de celular
+                    let baseUrl = (serverUrlInput.value || 'https://deccy1986.github.io/PROYECTO').trim();
+                    if (!baseUrl.endsWith('/')) baseUrl += '/';
+                    if (!baseUrl.includes('registro_movil.html')) {
+                        if (!baseUrl.includes('control_horarios')) {
+                            baseUrl += 'talento_humano/control_horarios/';
+                        }
+                        baseUrl += 'registro_movil.html';
+                    }
+
+                    if (val === 'op') {
+                        const op = opInput.value || '1042';
+                        const proj = projectInput.value || 'Planta Principal';
+                        const loc = locationInput.value || 'planta';
+                        qrData = `${baseUrl}?op=${encodeURIComponent(op)}&proyecto=${encodeURIComponent(proj)}&ubicacion=${loc}`;
+                        title = `ORDEN DE PRODUCCIÓN #${op}`;
+                        sub = `${proj} (${loc.toUpperCase()}) - Escanea con la cámara de tu celular`;
+                    } else if (val === 'location') {
+                        const proj = projectInput.value || 'Planta Principal';
+                        const loc = locationInput.value || 'planta';
+                        qrData = `${baseUrl}?proyecto=${encodeURIComponent(proj)}&ubicacion=${loc}`;
+                        title = `ESTACIÓN DE MARCAJE: ${proj.toUpperCase()}`;
+                        sub = `Ubicación ${loc.toUpperCase()} - Escanea con la cámara de tu celular`;
+                    } else if (val === 'worker') {
+                        const worker = workerSelect.value || 'TRABAJADOR';
+                        qrData = `${baseUrl}?trabajador=${encodeURIComponent(worker)}`;
+                        title = `CARNET: ${worker}`;
+                        sub = `Escanea con la cámara para abrir la app`;
+                    }
+                }
+
+                posterTitle.textContent = title;
+                posterSub.textContent = sub;
+                urlPreview.textContent = `Código QR: ${qrData}`;
+
+                if (typeof QRCode !== 'undefined') {
+                    new QRCode(qrContainer, {
+                        text: qrData,
+                        width: 200,
+                        height: 200,
+                        colorDark: "#0f172a",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.L
+                    });
+                }
+            }
+
+            qrType.addEventListener('change', updateVisibility);
+            [opInput, projectInput, locationInput, workerSelect].forEach(el => {
+                el.addEventListener('input', renderQR);
+                el.addEventListener('change', renderQR);
+            });
+
+            btnPrint.addEventListener('click', () => {
+                const posterHtml = document.getElementById('posterCard').outerHTML;
+                const win = window.open('', '_blank');
+                win.document.write(`
+                    <html>
+                    <head>
+                        <title>Imprimir QR - DIMALCCO</title>
+                        <style>
+                            body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #fff; }
+                            .poster-preview-card { border: 3px solid #0f172a !important; width: 85%; max-width: 480px; padding: 40px 24px !important; border-radius: 20px !important; text-align: center; }
+                            .poster-title { font-size: 26px !important; font-weight: 800; margin: 15px 0 !important; }
+                            .poster-sub { font-size: 16px !important; color: #475569 !important; }
+                            canvas, img { margin: 24px auto !important; width: 220px !important; height: 220px !important; display: block; }
+                        </style>
+                    </head>
+                    <body onload="window.print(); window.close();">
+                        ${posterHtml}
+                    </body>
+                    </html>
+                `);
+                win.document.close();
+            });
+
+            btnCopy.addEventListener('click', () => {
+                navigator.clipboard.writeText(urlPreview.textContent);
+                alert("Enlace copiado: " + urlPreview.textContent);
+            });
+
+            updateVisibility();
+        });
+    </script>
+</body>
+
+</html>

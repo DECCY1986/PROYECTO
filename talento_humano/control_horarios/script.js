@@ -1323,5 +1323,176 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    // --- LÓGICA DEL GENERADOR DE CÓDIGOS QR ---
+    const btnOpenQrModal = document.getElementById('btn-open-qr-modal');
+    const btnCloseQrModal = document.getElementById('btn-close-qr-modal');
+    const modalQr = document.getElementById('modal-qr');
+    const qrTypeSelect = document.getElementById('qrTypeSelect');
+    const qrOpInput = document.getElementById('qrOpInput');
+    const qrProjectInput = document.getElementById('qrProjectInput');
+    const qrLocationInput = document.getElementById('qrLocationInput');
+    const qrWorkerSelect = document.getElementById('qrWorkerSelect');
+    const groupQrOp = document.getElementById('groupQrOp');
+    const groupQrProject = document.getElementById('groupQrProject');
+    const groupQrLocation = document.getElementById('groupQrLocation');
+    const groupQrWorker = document.getElementById('groupQrWorker');
+    const posterTitle = document.getElementById('posterTitle');
+    const posterSub = document.getElementById('posterSub');
+    const posterUrlPreview = document.getElementById('posterUrlPreview');
+    const qrcodeDisplay = document.getElementById('qrcodeDisplay');
+    const btnPrintQrPoster = document.getElementById('btnPrintQrPoster');
+    const btnCopyQrUrl = document.getElementById('btnCopyQrUrl');
+
+    if (btnOpenQrModal && modalQr) {
+        btnOpenQrModal.addEventListener('click', () => {
+            modalQr.style.display = 'flex';
+            populateQrWorkers();
+            generateQrCode();
+        });
+    }
+
+    if (btnCloseQrModal && modalQr) {
+        btnCloseQrModal.addEventListener('click', () => {
+            modalQr.style.display = 'none';
+        });
+    }
+
+    function populateQrWorkers() {
+        if (!qrWorkerSelect) return;
+        const workers = Object.keys(workerRates).sort();
+        qrWorkerSelect.innerHTML = '<option value="">Seleccione trabajador...</option>' + 
+            workers.map(w => `<option value="${w}">${w}</option>`).join('');
+    }
+
+    if (qrTypeSelect) {
+        qrTypeSelect.addEventListener('change', () => {
+            const type = qrTypeSelect.value;
+            if (type === 'op') {
+                groupQrOp.style.display = 'block';
+                groupQrProject.style.display = 'block';
+                groupQrLocation.style.display = 'block';
+                groupQrWorker.style.display = 'none';
+            } else if (type === 'location') {
+                groupQrOp.style.display = 'none';
+                groupQrProject.style.display = 'block';
+                groupQrLocation.style.display = 'block';
+                groupQrWorker.style.display = 'none';
+            } else if (type === 'worker') {
+                groupQrOp.style.display = 'none';
+                groupQrProject.style.display = 'none';
+                groupQrLocation.style.display = 'none';
+                groupQrWorker.style.display = 'block';
+            }
+            generateQrCode();
+        });
+    }
+
+    [qrOpInput, qrProjectInput, qrLocationInput, qrWorkerSelect].forEach(input => {
+        if (input) {
+            input.addEventListener('input', generateQrCode);
+            input.addEventListener('change', generateQrCode);
+        }
+    });
+
+    function generateQrCode() {
+        if (!qrcodeDisplay) return;
+        qrcodeDisplay.innerHTML = '';
+
+        let baseUrl;
+        if (window.location.protocol === 'file:') {
+            baseUrl = window.location.href.split('#')[0].split('?')[0].replace(/index\.html$/i, '');
+            if (!baseUrl.endsWith('/')) baseUrl += '/';
+            baseUrl += 'registro_movil.html';
+        } else {
+            baseUrl = window.location.origin + window.location.pathname.split('#')[0].split('?')[0].replace(/index\.html$/i, '');
+            if (!baseUrl.endsWith('/')) baseUrl += '/';
+            baseUrl += 'registro_movil.html';
+        }
+        let targetUrl = baseUrl;
+        let title = '';
+        let subtitle = '';
+
+        if (type === 'op') {
+            const op = (qrOpInput.value || '1042').trim();
+            const proj = (qrProjectInput.value || 'Planta Principal').trim();
+            const loc = qrLocationInput ? qrLocationInput.value : 'planta';
+            targetUrl += `?op=${encodeURIComponent(op)}&proyecto=${encodeURIComponent(proj)}&ubicacion=${loc}`;
+            title = `ORDEN DE PRODUCCIÓN #${op}`;
+            subtitle = `${proj} (${loc.toUpperCase()}) - Escanea para marcar Entrada/Salida`;
+        } else if (type === 'location') {
+            const proj = (qrProjectInput.value || 'Planta Principal').trim();
+            const loc = qrLocationInput ? qrLocationInput.value : 'planta';
+            targetUrl += `?proyecto=${encodeURIComponent(proj)}&ubicacion=${loc}`;
+            title = `ESTACIÓN DE MARCAJE: ${proj.toUpperCase()}`;
+            subtitle = `Ubicación ${loc.toUpperCase()} - Escanea para registrar tu turno`;
+        } else if (type === 'worker') {
+            const worker = qrWorkerSelect.value || 'TRABAJADOR';
+            targetUrl += `?trabajador=${encodeURIComponent(worker)}`;
+            title = `CARNET: ${worker}`;
+            subtitle = `Paso rápido para marcar Entrada o Salida`;
+        }
+
+        if (posterTitle) posterTitle.textContent = title;
+        if (posterSub) posterSub.textContent = subtitle;
+        if (posterUrlPreview) posterUrlPreview.textContent = targetUrl;
+
+        // Renderizado doblemente garantizado del QR
+        let rendered = false;
+        if (typeof QRCode !== 'undefined') {
+            try {
+                new QRCode(qrcodeDisplay, {
+                    text: targetUrl,
+                    width: 180,
+                    height: 180,
+                    colorDark : "#0f172a",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                rendered = true;
+            } catch (e) {
+                console.warn("QRCode local error, usando fallback imagen", e);
+            }
+        }
+
+        if (!rendered) {
+            qrcodeDisplay.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(targetUrl)}" alt="Código QR" style="width:180px;height:180px;display:block;margin:0 auto;border-radius:8px;">`;
+        }
+    }
+
+    if (btnCopyQrUrl) {
+        btnCopyQrUrl.addEventListener('click', () => {
+            const url = posterUrlPreview ? posterUrlPreview.textContent : '';
+            if (url) {
+                navigator.clipboard.writeText(url);
+                alert("Enlace copiado al portapapeles: " + url);
+            }
+        });
+    }
+
+    if (btnPrintQrPoster) {
+        btnPrintQrPoster.addEventListener('click', () => {
+            const posterContent = document.getElementById('printableQrPoster').outerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Imprimir Cartel QR - DIMALCCO</title>
+                    <style>
+                        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #fff; }
+                        #printableQrPoster { border: 3px solid #0f172a !important; width: 80%; max-width: 450px; padding: 40px 20px !important; border-radius: 20px !important; text-align: center; }
+                        h3 { font-size: 24px !important; margin: 15px 0 !important; }
+                        p { font-size: 16px !important; color: #475569 !important; }
+                        img { margin: 20px auto !important; width: 220px !important; height: 220px !important; }
+                    </style>
+                </head>
+                <body onload="window.print(); window.close();">
+                    ${posterContent}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        });
+    }
+
 });
 

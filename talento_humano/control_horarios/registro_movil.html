@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Reporte Móvil de Turno - DIMALCCO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border: #cbd5e1;
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .mobile-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 480px;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #f8fafc;
+            padding-bottom: 12px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            background: var(--primary);
+            color: white;
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 24px;
+            display: flex;
+        }
+
+        .brand-title h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.1;
+        }
+
+        .brand-title p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .badge-qr {
+            background: #e0e7ff;
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .live-clock-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: white;
+            padding: 16px;
+            border-radius: 14px;
+            text-align: center;
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .live-clock-time {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: #38bdf8;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .live-clock-date {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            text-transform: capitalize;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            outline: none;
+            background: #f8fafc;
+            color: var(--text-dark);
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .qr-autofill-banner {
+            background: #ecfdf5;
+            border: 1.5px solid #a7f3d0;
+            color: #065f46;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 0.82rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .action-btn-radio {
+            display: none;
+        }
+
+        .action-card {
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            background: #f8fafc;
+        }
+
+        .action-card i {
+            font-size: 26px;
+        }
+
+        .action-card span {
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .action-btn-radio:checked + .action-card.entrada {
+            border-color: var(--success);
+            background: #ecfdf5;
+            color: #065f46;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .action-btn-radio:checked + .action-card.salida {
+            border-color: var(--danger);
+            background: #fef2f2;
+            color: #991b1b;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+            transition: transform 0.1s, background 0.2s;
+            margin-top: 6px;
+        }
+
+        .btn-submit:active {
+            transform: scale(0.98);
+            background: var(--primary-hover);
+        }
+
+        .btn-scan-qr {
+            background: #f1f5f9;
+            color: var(--text-dark);
+            border: 1.5px dashed var(--primary);
+            font-size: 0.9rem;
+            font-weight: 700;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn-scan-qr:hover {
+            background: #e0e7ff;
+        }
+
+        #qr-reader-container {
+            display: none;
+            width: 100%;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gps-info {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            justify-content: center;
+        }
+
+        .success-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .success-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            max-width: 360px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .success-icon {
+            width: 70px;
+            height: 70px;
+            background: #dcfce7;
+            color: #15803d;
+            font-size: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mobile-card">
+        <!-- Header -->
+        <div class="header">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="ph-fill ph-clock-countdown"></i>
+                </div>
+                <div class="brand-title">
+                    <h1>DIMALCCO</h1>
+                    <p>Reporte Móvil de Asistencia</p>
+                </div>
+            </div>
+            <span class="badge-qr" id="badgeStatus"><i class="ph ph-qr-code"></i> Escáner QR</span>
+        </div>
+
+        <!-- Banner si viene de QR -->
+        <div class="qr-autofill-banner" id="qrBanner" style="display: none;">
+            <i class="ph-fill ph-check-circle" style="font-size: 20px;"></i>
+            <div>
+                <strong>OP Detectada por QR</strong>
+                <div id="qrBannerDetails">OP # -- | Obra --</div>
+            </div>
+        </div>
+
+        <!-- Reloj en vivo -->
+        <div class="live-clock-card">
+            <div class="live-clock-time" id="liveTime">00:00:00</div>
+            <div class="live-clock-date" id="liveDate">Cargando fecha...</div>
+        </div>
+
+        <!-- Botón para escanear con cámara del celular -->
+        <button type="button" class="btn-scan-qr" id="btnToggleCamera">
+            <i class="ph ph-camera"></i> Escanear Código QR de OP o Carnet
+        </button>
+
+        <div id="qr-reader-container">
+            <div id="qr-reader" style="width:100%"></div>
+        </div>
+
+        <!-- Formulario de Marcado -->
+        <form id="mobileForm">
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+
+                <!-- Trabajador -->
+                <div class="form-group">
+                    <label for="workerName"><i class="ph ph-user"></i> Nombre del Trabajador</label>
+                    <select id="workerName" required>
+                        <option value="">Seleccione su nombre...</option>
+                    </select>
+                </div>
+
+                <!-- Ubicación -->
+                <div class="form-group">
+                    <label for="location"><i class="ph ph-map-pin"></i> Ubicación</label>
+                    <select id="location" required>
+                        <option value="planta">Planta</option>
+                        <option value="obra">Obra</option>
+                    </select>
+                </div>
+
+                <!-- Obra / Planta -->
+                <div class="form-group">
+                    <label for="projectName"><i class="ph ph-buildings"></i> Nombre de Obra / Planta</label>
+                    <input type="text" id="projectName" placeholder="Ej: Planta Principal / Torre Central" required>
+                </div>
+
+                <!-- OP Number -->
+                <div class="form-group">
+                    <label for="opNumber"><i class="ph ph-hash"></i> N° de la Orden de Producción (OP)</label>
+                    <input type="text" id="opNumber" placeholder="Ej: OP-1042" required>
+                </div>
+
+                <!-- Selector Entrada vs Salida -->
+                <div class="form-group">
+                    <label><i class="ph ph-arrows-down-up"></i> Tipo de Registro</label>
+                    <div class="action-selector">
+                        <label style="margin: 0; cursor: pointer;">
+                            <input type="radio" name="actionType" value="ENTRADA" class="action-btn-radio" checked>
+                            <div class="action-card entrada">
+                                <i class="ph-bold ph-sign-in"></i>
+                                <span>ENTRADA</span>
+                            </div>
+                        </label>
+                        <label style="margin: 0; cursor: pointer;">
+                            <input type="radio" name="actionType" value="SALIDA" class="action-btn-radio">
+                            <div class="action-card salida">
+                                <i class="ph-bold ph-sign-out"></i>
+                                <span>SALIDA</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Observaciones opcionales -->
+                <div class="form-group">
+                    <label for="notes"><i class="ph ph-note-pencil"></i> Novedad / Nota (Opcional)</label>
+                    <input type="text" id="notes" placeholder="Ej: Cambio de OP a mitad de turno, permiso, etc.">
+                </div>
+
+                <!-- GPS Info -->
+                <div class="gps-info" id="gpsInfo">
+                    <i class="ph ph-navigation-arrow"></i> Ubicación GPS: Obteniendo posición...
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit" id="btnSubmit">
+                    <i class="ph-bold ph-floppy-disk"></i> CONFIRMAR REGISTRO
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal de confirmación exitosa -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-card">
+            <div class="success-icon">
+                <i class="ph-bold ph-check"></i>
+            </div>
+            <h2 style="font-size: 1.4rem; font-weight: 800; color: #0f172a;">¡Marcación Exitosa!</h2>
+            <p id="successMessage" style="font-size: 0.9rem; color: #475569; line-height: 1.4;">
+                Se ha registrado tu marca en el sistema.
+            </p>
+            <button type="button" class="btn-submit" style="background: #10b981; padding: 12px; margin-top: 8px;" id="btnCloseSuccess">
+                Aceptar
+            </button>
+        </div>
+    </div>
+
+    <script src="../../cloud_sync.js"></script>
+    <script src="registro_movil.js?v=1.0"></script>
+</body>
+
+</html>
