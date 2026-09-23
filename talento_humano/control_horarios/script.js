@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const isHalfDayCheckbox = document.getElementById('isHalfDay');
     const isAbsentCheckbox = document.getElementById('isAbsent');
     const recordTypeSelect = document.getElementById('recordType');
-    const btnSubmit = hourForm.querySelector('button[type="submit"]');
+    const btnSubmit = hourForm ? hourForm.querySelector('button[type="submit"]') : null;
 
     // --- Helpers ---
     const parseAmount = (val) => {
@@ -151,16 +151,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Actualizar los desplegables de selección
     const updateWorkerSelects = () => {
         loadWorkersFromPersonal();
-        const selects = [document.getElementById('workerName'), document.getElementById('tableWorkerFilter'), document.getElementById('workerFilter')];
-        const sortedWorkers = Object.keys(workerRates).sort();
+        let sortedWorkers = Object.keys(workerRates).sort();
+        if (sortedWorkers.length === 0) {
+            sortedWorkers = Object.keys(FIXED_QUINCENA).sort();
+        }
         const options = '<option value="">Seleccione un trabajador...</option>' + 
             sortedWorkers.map(w => `<option value="${w}">${w}</option>`).join('');
         
+        const selects = [document.getElementById('workerName'), document.getElementById('tableWorkerFilter'), document.getElementById('workerFilter')];
         selects.forEach(s => {
             if (s) {
                 const currentVal = s.value;
                 s.innerHTML = options;
-                s.value = currentVal;
+                if (currentVal) s.value = currentVal;
             }
         });
     };
