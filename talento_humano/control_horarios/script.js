@@ -1492,6 +1492,92 @@ document.addEventListener('DOMContentLoaded', () => {
             `);
             printWindow.document.close();
         });
+    // --- LÓGICA DE SINCRONIZACIÓN DE TURNOS MÓVILES ---
+    const btnSyncMobile = document.getElementById('btn-sync-mobile');
+    const modalSyncMobile = document.getElementById('modal-sync-mobile');
+    const btnCloseSyncModal = document.getElementById('btn-close-sync-modal');
+    const btnPullCloudData = document.getElementById('btnPullCloudData');
+    const btnImportPastedShift = document.getElementById('btnImportPastedShift');
+    const pasteShiftInput = document.getElementById('pasteShiftInput');
+
+    if (btnSyncMobile && modalSyncMobile) {
+        btnSyncMobile.addEventListener('click', () => {
+            modalSyncMobile.style.display = 'flex';
+        });
+    }
+
+    if (btnCloseSyncModal && modalSyncMobile) {
+        btnCloseSyncModal.addEventListener('click', () => {
+            modalSyncMobile.style.display = 'none';
+        });
+    }
+
+    if (btnPullCloudData) {
+        btnPullCloudData.addEventListener('click', async () => {
+            btnPullCloudData.disabled = true;
+            btnPullCloudData.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Descargando de la Nube...';
+            try {
+                if (typeof pullFromCloud === 'function') {
+                    const success = await pullFromCloud();
+                    if (success) {
+                        records = JSON.parse(localStorage.getItem('shiftRecords')) || [];
+                        renderTable();
+                        alert("✅ Turnos sincronizados correctamente desde la nube.");
+                    } else {
+                        alert("⚠️ No se pudieron descargar datos de la nube. Asegúrate de haber presionado 'Guardar' o de copiar el código del turno.");
+                    }
+                } else {
+                    records = JSON.parse(localStorage.getItem('shiftRecords')) || [];
+                    renderTable();
+                    alert("✅ Registros locales recargados.");
+                }
+            } catch (err) {
+                alert("Información de sincronización: " + err.message);
+            } finally {
+                btnPullCloudData.disabled = false;
+                btnPullCloudData.innerHTML = '<i class="ph ph-cloud-arrow-down" style="font-size: 20px;"></i> Descargar Registros de la Nube (GitHub Gist)';
+                modalSyncMobile.style.display = 'none';
+            }
+        });
+    }
+
+    if (btnImportPastedShift && pasteShiftInput) {
+        btnImportPastedShift.addEventListener('click', () => {
+            const raw = pasteShiftInput.value.trim();
+            if (!raw) return alert("Pega primero el código del turno en el campo de texto.");
+            try {
+                const shiftObj = JSON.parse(raw);
+                if (!shiftObj.workerName || !shiftObj.date) {
+                    throw new Error("El código del turno no tiene un formato válido.");
+                }
+                const newRecord = {
+                    id: Date.now().toString(),
+                    workerName: shiftObj.workerName,
+                    date: shiftObj.date,
+                    location: shiftObj.location || 'planta',
+                    projectName: shiftObj.projectName || 'Planta Principal',
+                    opNumber: shiftObj.opNumber || '1042',
+                    recordType: 'normal',
+                    timeIn: shiftObj.timeIn || '07:00',
+                    timeOut: shiftObj.timeOut || '',
+                    isHalfDay: false,
+                    isAbsent: false,
+                    travelHours: 0,
+                    notes: '[Importado vía Código Móvil]',
+                    createdViaMobile: true
+                };
+
+                records = JSON.parse(localStorage.getItem('shiftRecords')) || [];
+                records.push(newRecord);
+                saveRecords();
+                renderTable();
+                pasteShiftInput.value = '';
+                modalSyncMobile.style.display = 'none';
+                alert(`✅ Turno de ${shiftObj.workerName} para OP #${shiftObj.opNumber} importado con éxito.`);
+            } catch (err) {
+                alert("Error al importar el turno: " + err.message);
+            }
+        });
     }
 
 });

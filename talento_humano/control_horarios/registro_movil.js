@@ -308,11 +308,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Configurar botones de WhatsApp y Copiar Código
+        const btnShareWhatsapp = document.getElementById('btnShareWhatsapp');
+        const btnCopyShiftCode = document.getElementById('btnCopyShiftCode');
+
+        if (btnShareWhatsapp) {
+            const textMsg = `*DIMALCCO CONTROL DE HORARIOS*\n📌 *Trabajador:* ${workerName}\n⏰ *Marca:* ${actionLabel} (${currentTimeStr})\n🛠️ *OP:* #${opNumber}\n🏢 *Ubicación:* ${projectName} (${location.toUpperCase()})\n📅 *Fecha:* ${currentDateStr}`;
+            btnShareWhatsapp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(textMsg)}`;
+            btnShareWhatsapp.style.display = 'flex';
+        }
+
+        if (btnCopyShiftCode) {
+            const shiftJson = JSON.stringify({
+                workerName, date: currentDateStr, timeIn: actionType === 'ENTRADA' ? currentTimeStr : '07:00', timeOut: actionType === 'SALIDA' ? currentTimeStr : '', opNumber, projectName, location
+            });
+            btnCopyShiftCode.onclick = () => {
+                navigator.clipboard.writeText(shiftJson);
+                alert("Código de turno copiado al portapapeles. Puedes pegarlo en el sistema administrativo en el botón 'Sincronizar Turnos Móviles'.");
+            };
+            btnCopyShiftCode.style.display = 'flex';
+        }
+
         // Mostrar confirmación modal
-        const actionLabel = actionType === 'ENTRADA' ? 'ENTRADA 🟢' : 'SALIDA 🔴';
+        const actionLabelStr = actionType === 'ENTRADA' ? 'ENTRADA 🟢' : 'SALIDA 🔴';
         successMessage.innerHTML = `
             <strong>${workerName}</strong><br>
-            Se registró tu <strong>${actionLabel}</strong> a las <strong>${currentTimeStr}</strong>.<br>
+            Se registró tu <strong>${actionLabelStr}</strong> a las <strong>${currentTimeStr}</strong>.<br>
             <span style="font-size: 0.82rem; color: #64748b; margin-top:6px; display:inline-block;">
                 OP #${opNumber} (${projectName})
             </span>
