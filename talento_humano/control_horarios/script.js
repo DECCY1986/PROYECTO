@@ -151,19 +151,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Actualizar los desplegables de selección
     const updateWorkerSelects = () => {
         loadWorkersFromPersonal();
-        let sortedWorkers = Object.keys(workerRates).sort();
-        if (sortedWorkers.length === 0) {
-            sortedWorkers = Object.keys(FIXED_QUINCENA).sort();
-        }
-        const options = '<option value="">Seleccione un trabajador...</option>' + 
-            sortedWorkers.map(w => `<option value="${w}">${w}</option>`).join('');
-        
-        const selects = [document.getElementById('workerName'), document.getElementById('tableWorkerFilter'), document.getElementById('workerFilter')];
-        selects.forEach(s => {
-            if (s) {
-                const currentVal = s.value;
-                s.innerHTML = options;
-                if (currentVal) s.value = currentVal;
+        let sortedWorkers = Array.from(new Set([
+            ...Object.keys(FIXED_QUINCENA),
+            ...Object.keys(workerRates || {})
+        ])).sort();
+
+        const targets = [
+            { id: 'workerName', defaultLabel: 'Seleccione un trabajador...' },
+            { id: 'tableWorkerFilter', defaultLabel: 'Todos los trabajadores' },
+            { id: 'workerFilter', defaultLabel: 'Seleccionar Trabajador...' },
+            { id: 'bulkWorkerName', defaultLabel: 'Seleccione un trabajador...' },
+            { id: 'qrWorkerSelect', defaultLabel: 'Seleccione un trabajador...' }
+        ];
+
+        targets.forEach(t => {
+            const el = document.getElementById(t.id);
+            if (el) {
+                const currentVal = el.value;
+                const optionsHtml = `<option value="">${t.defaultLabel}</option>` +
+                    sortedWorkers.map(w => `<option value="${w}">${w}</option>`).join('');
+                el.innerHTML = optionsHtml;
+                if (currentVal && sortedWorkers.includes(currentVal)) {
+                    el.value = currentVal;
+                }
             }
         });
     };
