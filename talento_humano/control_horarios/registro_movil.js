@@ -296,16 +296,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Guardar en LocalStorage
+        // Guardar en LocalStorage local
         localStorage.setItem('shiftRecords', JSON.stringify(records));
 
-        // Activar sincronización en la nube si cloud_sync.js está activo
-        if (typeof pushToCloud === 'function') {
-            try {
-                await pushToCloud();
-            } catch (err) {
-                console.warn("Sincronización en segundo plano completada localmente.");
-            }
+        // Obtener el registro recién creado/actualizado para subirlo a la nube
+        const activeRecord = records[existingRecordIndex !== -1 ? existingRecordIndex : records.length - 1];
+
+        // Transmitir inmediatamente a la nube pública de relay para que el PC lo reciba al instante
+        if (typeof pushMobileShiftToCloud === 'function') {
+            pushMobileShiftToCloud(activeRecord);
+        } else {
+            fetch('https://ntfy.sh/dimalcco_shifts_2026_x77', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(activeRecord)
+            }).catch(e => {});
         }
 
         // Configurar botones de WhatsApp y Copiar Código

@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rMonth = parseInt(parts[1], 10);
             const rDay = parseInt(parts[2], 10);
             
-            if (selectedMonthStr && rMonth !== selMonth) return false;
+            if (selectedMonthStr && selectedMonthStr !== "ALL" && rMonth !== selMonth) return false;
             if (selectedFortnight === "1") return rDay <= 15;
             if (selectedFortnight === "2") return rDay > 15;
             return true;
@@ -399,8 +399,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (workerRecords.length === 0) {
             const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-            const mName = monthNames[selMonth - 1] || 'este mes';
-            const fName = selectedFortnight === "1" ? '1ª Quincena (1-15)' : '2ª Quincena (16-Fin)';
+            const mName = selectedMonthStr === "ALL" ? "Todos los Meses" : (monthNames[selMonth - 1] || 'este mes');
+            const fName = selectedFortnight === "ALL" ? "Todas las Quincenas" : (selectedFortnight === "1" ? '1ª Quincena (1-15)' : '2ª Quincena (16-Fin)');
 
             payrollSummaryArea.innerHTML = `
                 <div style="padding: 2rem 1rem; text-align: center; color: #64748b; background: #ffffff; border-radius: 12px; border: 1.5px dashed #cbd5e1; margin-top: 1rem;">
@@ -664,7 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rMonth = parseInt(parts[1], 10);
             const rDay = parseInt(parts[2], 10);
 
-            if (selectedMonthStr && rMonth !== selMonth) return false;
+            if (selectedMonthStr && selectedMonthStr !== "ALL" && rMonth !== selMonth) return false;
             if (selectedFortnight === "1") return rDay <= 15;
             if (selectedFortnight === "2") return rDay > 15;
             return true;
@@ -672,8 +672,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (recordsToDisplay.length === 0) {
             const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-            const mName = monthNames[selMonth - 1] || 'este mes';
-            const fName = selectedFortnight === "1" ? "1ª Quincena (1-15)" : "2ª Quincena (16-Fin)";
+            const mName = selectedMonthStr === "ALL" ? "Todos los Meses" : (monthNames[selMonth - 1] || 'este mes');
+            const fName = selectedFortnight === "ALL" ? "Todas las Quincenas" : (selectedFortnight === "1" ? "1ª Quincena (1-15)" : "2ª Quincena (16-Fin)");
 
             tableBody.innerHTML = `
                 <tr>
@@ -1331,13 +1331,21 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDatalists();
     updateWorkerSelects();
     try {
+        if (records && records.length > 0) {
+            const sorted = [...records].filter(r => r.date).sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (sorted.length > 0 && sorted[0].workerName) {
+                const wName = sorted[0].workerName;
+                if (workerFilter && !workerFilter.value) workerFilter.value = wName;
+                if (tableWorkerFilter && !tableWorkerFilter.value) tableWorkerFilter.value = wName;
+            }
+        } else {
+            const firstWorker = Object.keys(workerRates)[0] || "CAMILO DURAN";
+            if (workerFilter && !workerFilter.value) workerFilter.value = firstWorker;
+        }
         renderTable();
+        renderSummary();
     } catch (err) {
-        console.error("Error al renderizar tabla inicial:", err);
-        tableBody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:#dc2626;padding:1rem;">Error al cargar registros. Puede que haya datos corruptos en el almacenamiento local.</td></tr>';
-    }
-    if (workerFilter && workerFilter.value) {
-        try { renderSummary(); } catch (err) { console.error("Error al renderizar resumen:", err); }
+        console.error("Error al renderizar tabla/resumen inicial:", err);
     }
 
     // --- LÓGICA DE CARGA MASIVA QUINCENAL ---
@@ -1503,11 +1511,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (addedCount > 0) {
                 saveRecords();
+                
+                const month = document.getElementById('bulkMonth').value;
+                const fortnight = document.getElementById('bulkFortnight').value;
+                
+                if (filterMonth) filterMonth.value = month;
+                if (filterFortnight) filterFortnight.value = fortnight;
+                if (tableWorkerFilter) tableWorkerFilter.value = worker;
+                if (workerFilter) workerFilter.value = worker;
+
                 renderTable();
+                renderSummary();
                 bulkModal.style.display = 'none';
                 
                 const toast = document.createElement('div');
-                toast.innerHTML = `<i class="ph ph-check-circle"></i> ${addedCount} turnos registrados correctamente.`;
+                toast.innerHTML = `<i class="ph ph-check-circle"></i> ${addedCount} turnos de ${worker} cargados y guardados correctamente.`;
                 toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:12px 24px;border-radius:8px;font-weight:600;font-size:0.95rem;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);animation:fadeIn 0.3s ease;';
                 document.body.appendChild(toast);
                 setTimeout(() => toast.remove(), 4000);
@@ -1711,29 +1729,65 @@ document.addEventListener('DOMContentLoaded', () => {
             btnPullCloudData.disabled = true;
             btnPullCloudData.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Descargando de la Nube...';
             try {
+                let downloadedCount = 0;
+                if (typeof pullMobileShiftsFromCloud === 'function') {
+                    downloadedCount = await pullMobileShiftsFromCloud();
+                }
                 if (typeof pullFromCloud === 'function') {
-                    const success = await pullFromCloud();
-                    if (success) {
-                        records = JSON.parse(localStorage.getItem('shiftRecords')) || [];
-                        renderTable();
-                        alert("✅ Turnos sincronizados correctamente desde la nube.");
-                    } else {
-                        alert("⚠️ No se pudieron descargar datos de la nube. Asegúrate de haber presionado 'Guardar' o de copiar el código del turno.");
+                    await pullFromCloud();
+                }
+                
+                records = JSON.parse(localStorage.getItem('shiftRecords')) || [];
+
+                // Auto-ajustar filtros al periodo más reciente descargado
+                if (records.length > 0) {
+                    const sorted = [...records].filter(r => r.date).sort((a, b) => new Date(b.date) - new Date(a.date));
+                    if (sorted.length > 0) {
+                        const parts = sorted[0].date.split('-');
+                        if (parts.length >= 3) {
+                            if (filterMonth) filterMonth.value = parts[1].padStart(2, '0');
+                            if (filterFortnight) filterFortnight.value = parseInt(parts[2], 10) <= 15 ? "1" : "2";
+                        }
                     }
+                }
+
+                updateWorkerSelects();
+                renderTable();
+                renderSummary();
+
+                if (downloadedCount > 0) {
+                    alert(`✅ ¡Sincronización completada! Se descargaron ${downloadedCount} nuevo(s) turno(s) marcados desde celulares.`);
                 } else {
-                    records = JSON.parse(localStorage.getItem('shiftRecords')) || [];
-                    renderTable();
-                    alert("✅ Registros locales recargados.");
+                    alert("✅ Registros sincronizados correctamente. Todos los turnos están al día.");
                 }
             } catch (err) {
                 alert("Información de sincronización: " + err.message);
             } finally {
                 btnPullCloudData.disabled = false;
-                btnPullCloudData.innerHTML = '<i class="ph ph-cloud-arrow-down" style="font-size: 20px;"></i> Descargar Registros de la Nube (GitHub Gist)';
-                modalSyncMobile.style.display = 'none';
+                btnPullCloudData.innerHTML = '<i class="ph ph-cloud-arrow-down" style="font-size: 20px;"></i> Descargar Registros de la Nube';
+                if (modalSyncMobile) modalSyncMobile.style.display = 'none';
             }
         });
     }
+
+    // Polling automático cada 12 segundos para recibir marcaciones móviles en tiempo real
+    setInterval(async () => {
+        if (typeof pullMobileShiftsFromCloud === 'function') {
+            const count = await pullMobileShiftsFromCloud();
+            if (count > 0) {
+                records = JSON.parse(localStorage.getItem('shiftRecords')) || [];
+                updateWorkerSelects();
+                renderTable();
+                renderSummary();
+
+                const toast = document.createElement('div');
+                toast.innerHTML = `🔔 <strong>${count} nuevo(s) turno(s) móvil(es) recibido(s) en tiempo real</strong>`;
+                toast.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:12px 20px;border-radius:8px;font-weight:600;font-size:0.9rem;z-index:9999;box-shadow:0 4px 14px rgba(0,0,0,0.2);';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+            }
+        }
+    }, 12000);
 
     if (btnImportPastedShift && pasteShiftInput) {
         btnImportPastedShift.addEventListener('click', () => {
