@@ -144,9 +144,77 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.records = storedRecords;
+    let records = storedRecords;
     window.shiftBalances = JSON.parse(localStorage.getItem('shiftBalances') || '{}'); 
     window.manualCrossHoursVal = 0; // Para el modo parcial
     window.lastRenderedWorker = "";
+
+    // Global cloud sync functions for mobile relay (ntfy.sh)
+    window.pushMobileShiftToCloud = async function(record) {
+        try {
+            await fetch('https://ntfy.sh/dimalcco_shifts_2026_x77', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(record)
+            });
+        } catch(e) {
+            console.error("Error pushing to ntfy cloud:", e);
+        }
+    };
+
+    window.pullMobileShiftsFromCloud = async function() {
+        try {
+            const response = await fetch('https://ntfy.sh/dimalcco_shifts_2026_x77/json?poll=1');
+            if (!response.ok) return 0;
+            const text = await response.text();
+            if (!text) return 0;
+
+            const lines = text.trim().split('\n');
+            let importedCount = 0;
+            let localRecords = JSON.parse(localStorage.getItem('shiftRecords')) || [];
+
+            lines.forEach(line => {
+                if (!line.trim()) return;
+                try {
+                    const ntfyObj = JSON.parse(line);
+                    if (ntfyObj.event === 'message' && ntfyObj.message) {
+                        const record = JSON.parse(ntfyObj.message);
+                        if (record && record.workerName && record.date) {
+                            const recWorker = (record.workerName || '').trim().toUpperCase();
+                            const existingIdx = localRecords.findIndex(r => 
+                                (r.id && record.id && r.id === record.id) ||
+                                ((r.workerName || '').trim().toUpperCase() === recWorker && r.date === record.date)
+                            );
+                            
+                            if (existingIdx !== -1) {
+                                const existing = localRecords[existingIdx];
+                                if (record.timeOut && !existing.timeOut) {
+                                    localRecords[existingIdx] = { ...existing, ...record };
+                                    importedCount++;
+                                }
+                            } else {
+                                localRecords.push(record);
+                                importedCount++;
+                            }
+                        }
+                    }
+                } catch(err) {
+                    // Ignore non-json or non-record messages
+                }
+            });
+
+            if (importedCount > 0) {
+                localStorage.setItem('shiftRecords', JSON.stringify(localRecords));
+                window.records = localRecords;
+                records = localRecords;
+            }
+
+            return importedCount;
+        } catch(err) {
+            console.error("Error pulling from ntfy cloud:", err);
+            return 0;
+        }
+    };
 
     // Actualizar los desplegables de selección
     const updateWorkerSelects = () => {
@@ -1333,12 +1401,25 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         if (records && records.length > 0) {
             const sorted = [...records].filter(r => r.date).sort((a, b) => new Date(b.date) - new Date(a.date));
-            if (sorted.length > 0 && sorted[0].workerName) {
-                const wName = sorted[0].workerName;
-                if (workerFilter && !workerFilter.value) workerFilter.value = wName;
-                if (tableWorkerFilter && !tableWorkerFilter.value) tableWorkerFilter.value = wName;
+            if (sorted.length > 0) {
+                const latestRec = sorted[0];
+                const parts = (latestRec.date || "").split('-');
+                if (parts.length >= 3) {
+                    const recMonth = parts[1].padStart(2, '0');
+                    const recDay = parseInt(parts[2], 10);
+                    const recFortnight = recDay <= 15 ? "1" : "2";
+                    if (filterMonth) filterMonth.value = recMonth;
+                    if (filterFortnight) filterFortnight.value = recFortnight;
+                }
+                if (latestRec.workerName) {
+                    const wName = latestRec.workerName.trim().toUpperCase();
+                    if (workerFilter && !workerFilter.value) workerFilter.value = wName;
+                    if (tableWorkerFilter && !tableWorkerFilter.value) tableWorkerFilter.value = wName;
+                }
             }
         } else {
+            if (filterMonth) filterMonth.value = "ALL";
+            if (filterFortnight) filterFortnight.value = "ALL";
             const firstWorker = Object.keys(workerRates)[0] || "CAMILO DURAN";
             if (workerFilter && !workerFilter.value) workerFilter.value = firstWorker;
         }
@@ -1549,7 +1630,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 // Si ya existe registro de ese trabajador ese dia, lo reemplazamos
-                const existingIndex = records.findIndex(r => r.workerName === worker && r.date === date);
+                const existingIndex = records.findIndex(r => (r.workerName || '').trim().toUpperCase() === (worker || '').trim().toUpperCase() && r.date === date);
                 if (existingIndex !== -1) {
                     records[existingIndex] = recordData;
                 } else {
