@@ -383,6 +383,17 @@
             </div>
 
             <div id="bulkTableContainer" style="overflow-x: auto; display: none;">
+                <div style="display: flex; gap: 10px; margin-bottom: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: #f8fafc; padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="font-weight: 600; font-size: 0.9rem; color: #1e293b;">⚡ Acciones Rápida:</div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" id="btnAutoFillNormal" style="background: #0284c7; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="ph ph-lightning"></i> Auto-Llenar Jornada Normal (07:00 - 17:00 / Sáb 07:00 - 12:00)
+                        </button>
+                        <button type="button" id="btnClearBulkTimes" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="ph ph-trash"></i> Limpiar Horarios
+                        </button>
+                    </div>
+                </div>
                 <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;" id="bulkTable">
                     <thead>
                         <tr style="background: #f8fafc;">

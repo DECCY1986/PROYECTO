@@ -1417,7 +1417,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td style="padding: 8px; text-align: center;"><input type="checkbox" class="b-medio" style="width: 1.2rem; height: 1.2rem; accent-color: var(--color-warning);"></td>
                         <td style="padding: 8px; text-align: center;"><input type="checkbox" class="b-viaje" style="width: 1.2rem; height: 1.2rem; accent-color: var(--color-accent-primary);"></td>
                         <td style="padding: 8px;"><input type="time" class="b-in" style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;"></td>
-                        <td style="padding: 8px;"><input type="text" class="b-out" placeholder="MM:HH" pattern="^([0-9]+):([0-5][0-9])$" title="Formato HH:MM (ej. 26:30)" style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;"></td>
+                        <td style="padding: 8px;"><input type="time" class="b-out" style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;"></td>
                     </tr>
                 `;
             }
@@ -1431,6 +1431,55 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.querySelector('.b-in').disabled = this.checked;
                     row.querySelector('.b-out').disabled = this.checked;
                 });
+            });
+        };
+    }
+
+    // Handlers para botones de acción rápida de carga masiva
+    const btnAutoFillNormal = document.getElementById('btnAutoFillNormal');
+    if (btnAutoFillNormal) {
+        btnAutoFillNormal.onclick = () => {
+            const rows = bulkTableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const dateStr = row.getAttribute('data-date');
+                if (!dateStr) return;
+                const dt = new Date(dateStr + 'T00:00:00');
+                const dayOfWeek = dt.getDay(); // 0 = Domingo, 6 = Sábado
+                const isFalta = row.querySelector('.b-falta').checked;
+                
+                const daySubtext = row.querySelector('td div:nth-child(2)').textContent;
+                const isHoliday = daySubtext.includes('🚩');
+
+                if (isFalta) return; // Respetar faltas marcadas
+
+                if (dayOfWeek === 0 || isHoliday) {
+                    // Domingo o Festivo -> dejar en blanco por defecto
+                    return;
+                } else if (dayOfWeek === 6) {
+                    // Sábado -> 07:00 a 12:00
+                    row.querySelector('.b-in').value = '07:00';
+                    row.querySelector('.b-out').value = '12:00';
+                } else {
+                    // Lunes a Viernes -> 07:00 a 17:00
+                    row.querySelector('.b-in').value = '07:00';
+                    row.querySelector('.b-out').value = '17:00';
+                }
+            });
+        };
+    }
+
+    const btnClearBulkTimes = document.getElementById('btnClearBulkTimes');
+    if (btnClearBulkTimes) {
+        btnClearBulkTimes.onclick = () => {
+            const rows = bulkTableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                row.querySelector('.b-in').value = '';
+                row.querySelector('.b-out').value = '';
+                row.querySelector('.b-falta').checked = false;
+                row.querySelector('.b-medio').checked = false;
+                row.querySelector('.b-viaje').checked = false;
+                row.querySelector('.b-in').disabled = false;
+                row.querySelector('.b-out').disabled = false;
             });
         };
     }
