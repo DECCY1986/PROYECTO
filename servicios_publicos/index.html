@@ -739,8 +739,73 @@ const SERVICIOS_META = {
     aseo:     { emoji: '🗑️', label: 'Aseo',     color: '#ec4899', icon: 'recycle' }
 };
 
+const SEED_SUBCUENTAS = {
+    agua: ['Planta Principal', 'Obra Torre Central'],
+    energia: ['Planta Principal', 'Obra Torre Central'],
+    gas: ['Planta Principal'],
+    internet: ['Oficina Central', 'Obra Torre Central'],
+    telefono: ['Línea Administrativa'],
+    aseo: ['Planta Principal']
+};
+
+const SEED_SERVICIOS = [
+    // 2026 Enero
+    { id: 'sp-2026-01-agua1', servicio: 'agua', subcuenta: 'Planta Principal', mes: '01', anio: '2026', valor: 450000, vencimiento: '2026-01-20', estado: 'pagado', fechaPago: '2026-01-18', notas: 'Consumo normal 150m3' },
+    { id: 'sp-2026-01-agua2', servicio: 'agua', subcuenta: 'Obra Torre Central', mes: '01', anio: '2026', valor: 280000, vencimiento: '2026-01-22', estado: 'pagado', fechaPago: '2026-01-20', notas: 'Suministro temporal obra' },
+    { id: 'sp-2026-01-ene1',  servicio: 'energia', subcuenta: 'Planta Principal', mes: '01', anio: '2026', valor: 1850000, vencimiento: '2026-01-15', estado: 'pagado', fechaPago: '2026-01-14', notas: 'Consumo industrial trifásico' },
+    { id: 'sp-2026-01-ene2',  servicio: 'energia', subcuenta: 'Obra Torre Central', mes: '01', anio: '2026', valor: 920000, vencimiento: '2026-01-18', estado: 'pagado', fechaPago: '2026-01-16', notas: 'Energía provisional obra' },
+    { id: 'sp-2026-01-gas',   servicio: 'gas', subcuenta: 'Planta Principal', mes: '01', anio: '2026', valor: 320000, vencimiento: '2026-01-25', estado: 'pagado', fechaPago: '2026-01-24', notas: 'Secadoras y caldera' },
+    { id: 'sp-2026-01-net1',  servicio: 'internet', subcuenta: 'Oficina Central', mes: '01', anio: '2026', valor: 210000, vencimiento: '2026-01-10', estado: 'pagado', fechaPago: '2026-01-08', notas: 'Fibra 300Mbps empresarial' },
+    { id: 'sp-2026-01-net2',  servicio: 'internet', subcuenta: 'Obra Torre Central', mes: '01', anio: '2026', valor: 140000, vencimiento: '2026-01-12', estado: 'pagado', fechaPago: '2026-01-10', notas: 'Enlace 4G corporativo' },
+    { id: 'sp-2026-01-tel',   servicio: 'telefono', subcuenta: 'Línea Administrativa', mes: '01', anio: '2026', valor: 85000, vencimiento: '2026-01-10', estado: 'pagado', fechaPago: '2026-01-08', notas: 'Conmutador PBX' },
+    { id: 'sp-2026-01-aseo',  servicio: 'aseo', subcuenta: 'Planta Principal', mes: '01', anio: '2026', valor: 195000, vencimiento: '2026-01-28', estado: 'pagado', fechaPago: '2026-01-26', notas: 'Ruta especial residuos' },
+
+    // 2026 Febrero
+    { id: 'sp-2026-02-agua1', servicio: 'agua', subcuenta: 'Planta Principal', mes: '02', anio: '2026', valor: 470000, vencimiento: '2026-02-20', estado: 'pagado', fechaPago: '2026-02-18', notas: 'Consumo 155m3' },
+    { id: 'sp-2026-02-agua2', servicio: 'agua', subcuenta: 'Obra Torre Central', mes: '02', anio: '2026', valor: 310000, vencimiento: '2026-02-22', estado: 'pagado', fechaPago: '2026-02-21', notas: 'Pruebas hidráulicas' },
+    { id: 'sp-2026-02-ene1',  servicio: 'energia', subcuenta: 'Planta Principal', mes: '02', anio: '2026', valor: 1920000, vencimiento: '2026-02-15', estado: 'pagado', fechaPago: '2026-02-14', notas: 'Turno nocturno' },
+    { id: 'sp-2026-02-ene2',  servicio: 'energia', subcuenta: 'Obra Torre Central', mes: '02', anio: '2026', valor: 980000, vencimiento: '2026-02-18', estado: 'pagado', fechaPago: '2026-02-17', notas: 'Grúa y maquinaria' },
+    { id: 'sp-2026-02-gas',   servicio: 'gas', subcuenta: 'Planta Principal', mes: '02', anio: '2026', valor: 340000, vencimiento: '2026-02-25', estado: 'pagado', fechaPago: '2026-02-23', notas: 'Uso continuo' },
+    { id: 'sp-2026-02-net1',  servicio: 'internet', subcuenta: 'Oficina Central', mes: '02', anio: '2026', valor: 210000, vencimiento: '2026-02-10', estado: 'pagado', fechaPago: '2026-02-09', notas: 'Fibra dedicada' },
+    { id: 'sp-2026-02-net2',  servicio: 'internet', subcuenta: 'Obra Torre Central', mes: '02', anio: '2026', valor: 140000, vencimiento: '2026-02-12', estado: 'pagado', fechaPago: '2026-02-11', notas: 'Suscripción mes' },
+    { id: 'sp-2026-02-tel',   servicio: 'telefono', subcuenta: 'Línea Administrativa', mes: '02', anio: '2026', valor: 85000, vencimiento: '2026-02-10', estado: 'pagado', fechaPago: '2026-02-09', notas: 'Plan ilimitado' },
+    { id: 'sp-2026-02-aseo',  servicio: 'aseo', subcuenta: 'Planta Principal', mes: '02', anio: '2026', valor: 195000, vencimiento: '2026-02-28', estado: 'pagado', fechaPago: '2026-02-26', notas: 'Aseo industrial' },
+
+    // 2026 Marzo
+    { id: 'sp-2026-03-agua1', servicio: 'agua', subcuenta: 'Planta Principal', mes: '03', anio: '2026', valor: 440000, vencimiento: '2026-03-20', estado: 'pagado', fechaPago: '2026-03-19', notas: 'Consumo normal' },
+    { id: 'sp-2026-03-agua2', servicio: 'agua', subcuenta: 'Obra Torre Central', mes: '03', anio: '2026', valor: 295000, vencimiento: '2026-03-22', estado: 'pagado', fechaPago: '2026-03-21', notas: 'Vaciado losa' },
+    { id: 'sp-2026-03-ene1',  servicio: 'energia', subcuenta: 'Planta Principal', mes: '03', anio: '2026', valor: 1880000, vencimiento: '2026-03-15', estado: 'pagado', fechaPago: '2026-03-13', notas: 'Punta pico alto' },
+    { id: 'sp-2026-03-ene2',  servicio: 'energia', subcuenta: 'Obra Torre Central', mes: '03', anio: '2026', valor: 950000, vencimiento: '2026-03-18', estado: 'pagado', fechaPago: '2026-03-17', notas: 'Soldaduras' },
+    { id: 'sp-2026-03-gas',   servicio: 'gas', subcuenta: 'Planta Principal', mes: '03', anio: '2026', valor: 310000, vencimiento: '2026-03-25', estado: 'pagado', fechaPago: '2026-03-24', notas: 'Consumo regular' },
+    { id: 'sp-2026-03-net1',  servicio: 'internet', subcuenta: 'Oficina Central', mes: '03', anio: '2026', valor: 210000, vencimiento: '2026-03-10', estado: 'pagado', fechaPago: '2026-03-09', notas: 'Tarifa plana' },
+    { id: 'sp-2026-03-net2',  servicio: 'internet', subcuenta: 'Obra Torre Central', mes: '03', anio: '2026', valor: 140000, vencimiento: '2026-03-12', estado: 'pagado', fechaPago: '2026-03-11', notas: 'Tarifa plana' },
+    { id: 'sp-2026-03-tel',   servicio: 'telefono', subcuenta: 'Línea Administrativa', mes: '03', anio: '2026', valor: 85000, vencimiento: '2026-03-10', estado: 'pagado', fechaPago: '2026-03-09', notas: 'Tarifa plana' },
+    { id: 'sp-2026-03-aseo',  servicio: 'aseo', subcuenta: 'Planta Principal', mes: '03', anio: '2026', valor: 195000, vencimiento: '2026-03-28', estado: 'pagado', fechaPago: '2026-03-27', notas: 'Empaques y cartón' },
+
+    // 2026 Abril a Septiembre
+    { id: 'sp-2026-04-ene1',  servicio: 'energia', subcuenta: 'Planta Principal', mes: '04', anio: '2026', valor: 1990000, vencimiento: '2026-04-15', estado: 'pagado', fechaPago: '2026-04-14', notas: 'Alta demanda' },
+    { id: 'sp-2026-04-agua1', servicio: 'agua', subcuenta: 'Planta Principal', mes: '04', anio: '2026', valor: 460000, vencimiento: '2026-04-20', estado: 'pagado', fechaPago: '2026-04-18', notas: 'Consumo regular' },
+    { id: 'sp-2026-05-ene1',  servicio: 'energia', subcuenta: 'Planta Principal', mes: '05', anio: '2026', valor: 2050000, vencimiento: '2026-05-15', estado: 'pagado', fechaPago: '2026-05-13', notas: 'Producción continua' },
+    { id: 'sp-2026-05-agua1', servicio: 'agua', subcuenta: 'Planta Principal', mes: '05', anio: '2026', valor: 480000, vencimiento: '2026-05-20', estado: 'pagado', fechaPago: '2026-05-19', notas: 'Consumo regular' },
+    { id: 'sp-2026-06-ene1',  servicio: 'energia', subcuenta: 'Planta Principal', mes: '06', anio: '2026', valor: 1910000, vencimiento: '2026-06-15', estado: 'pagado', fechaPago: '2026-06-12', notas: 'Revisión técnica' },
+    { id: 'sp-2026-07-ene1',  servicio: 'energia', subcuenta: 'Planta Principal', mes: '07', anio: '2026', valor: 1970000, vencimiento: '2026-07-15', estado: 'pagado', fechaPago: '2026-07-14', notas: 'Consumo regular' },
+    { id: 'sp-2026-08-ene1',  servicio: 'energia', subcuenta: 'Planta Principal', mes: '08', anio: '2026', valor: 2010000, vencimiento: '2026-08-15', estado: 'pagado', fechaPago: '2026-08-13', notas: 'Factura pagada' },
+    { id: 'sp-2026-09-ene1',  servicio: 'energia', subcuenta: 'Planta Principal', mes: '09', anio: '2026', valor: 2040000, vencimiento: '2026-09-15', estado: 'pagado', fechaPago: '2026-09-14', notas: 'Factura pagada' },
+    { id: 'sp-2026-09-agua1', servicio: 'agua', subcuenta: 'Planta Principal', mes: '09', anio: '2026', valor: 490000, vencimiento: '2026-09-20', estado: 'pagado', fechaPago: '2026-09-18', notas: 'Factura pagada' }
+];
+
 let registros   = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 let subcuentas  = JSON.parse(localStorage.getItem(SUBCUENTAS_KEY)) || {};
+
+if (!Object.keys(subcuentas).length) {
+    subcuentas = SEED_SUBCUENTAS;
+    localStorage.setItem(SUBCUENTAS_KEY, JSON.stringify(subcuentas));
+}
+
+if (!registros || registros.length === 0) {
+    registros = SEED_SERVICIOS;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(registros));
+}
 let editId      = null;
 let chartEvo    = null;
 let chartDist   = null;
