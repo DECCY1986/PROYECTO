@@ -152,6 +152,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Si aún no hay registros guardados en el dispositivo/navegador, generar semillas iniciales para los 21 trabajadores
+    if (!Array.isArray(storedRecords) || storedRecords.length === 0) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const monthStr = (now.getMonth() + 1).toString().padStart(2, '0');
+        const dayNow = now.getDate();
+        const startD = dayNow <= 15 ? 1 : 16;
+        const endD = Math.min(dayNow, dayNow <= 15 ? 15 : new Date(year, now.getMonth() + 1, 0).getDate());
+
+        const seededShifts = [];
+        const workersList = Object.keys(FIXED_QUINCENA);
+
+        workersList.forEach((w, idx) => {
+            for (let d = startD; d <= endD; d++) {
+                const dateStr = `${year}-${monthStr}-${d.toString().padStart(2, '0')}`;
+                const dt = new Date(dateStr + 'T00:00:00');
+                const dow = dt.getDay();
+                if (dow === 0) continue; // Domingo libre por defecto
+                
+                const isSat = (dow === 6);
+                const tIn = "07:00";
+                const tOut = isSat ? "12:00" : "17:00";
+                const ord = isSat ? 5 : 10;
+                const tot = isSat ? "5.00" : "10.00";
+
+                seededShifts.push({
+                    id: Date.now() + Math.floor(Math.random() * 1000000) + idx * 100 + d,
+                    workerName: w,
+                    date: dateStr,
+                    location: (idx % 2 === 0) ? 'obra' : 'planta',
+                    projectName: (idx % 2 === 0) ? 'Obra Torre Central' : 'Planta Principal DIMALCCO',
+                    opNumber: (1040 + (idx % 5)).toString(),
+                    timeIn: tIn,
+                    timeOut: tOut,
+                    totalHours: tot,
+                    ordinaryHours: ord,
+                    esMedioDia: false,
+                    travelHours: 0,
+                    isTravelRecord: false,
+                    observations: 'Jornada normal DIMALCCO'
+                });
+            }
+        });
+
+        if (seededShifts.length > 0) {
+            storedRecords = seededShifts;
+            localStorage.setItem('shiftRecords', JSON.stringify(storedRecords));
+            localStorage.setItem('shiftRecords_backup', JSON.stringify(storedRecords));
+        }
+    }
+
     window.records = storedRecords;
     let records = storedRecords;
     window.shiftBalances = JSON.parse(localStorage.getItem('shiftBalances') || '{}'); 

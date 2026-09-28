@@ -535,6 +535,31 @@
 
 <script>
 const LS_EMP='dimalcco_emp_v2', LS_NOV='dimalcco_nov_v2', LS_EVAL='dimalcco_eval_v1', LS_LOAN='dimalcco_loans_v1', LS_TRAIN='dimalcco_train_v1';
+
+const SEED_EMPLEADOS = [
+  { cedula: "19452381", nombre: "WILLIAM DIAZ VARGAS", cargo: "Gerente General", centro: "Gerencia", salario: 8000000, ingreso: "2020-01-15", examen: "2026-11-20", alturas: "2026-12-01", cumple: "05-12", estado: "Activo" },
+  { cedula: "80123456", nombre: "OSCAR MIGUEL CANTOR ZAMUDIO", cargo: "Director Operativo", centro: "Administración", salario: 6000000, ingreso: "2021-03-01", examen: "2026-10-15", alturas: "2026-11-10", cumple: "08-22", estado: "Activo" },
+  { cedula: "79987654", nombre: "MAURICIO MEDINA OLVIDARES", cargo: "Residente de Obra", centro: "Producción", salario: 4000000, ingreso: "2022-05-10", examen: "2026-09-30", alturas: "2026-10-05", cumple: "03-14", estado: "Activo" },
+  { cedula: "1018432109", nombre: "DIEGO JAVIER QUINTERO DUEÑAS", cargo: "Ingeniero de Planta", centro: "Producción", salario: 3410000, ingreso: "2022-08-15", examen: "2026-11-05", alturas: "2026-12-15", cumple: "11-04", estado: "Activo" },
+  { cedula: "52123456", nombre: "DECCY BAYONA", cargo: "Coordinadora HSEQ", centro: "Administración", salario: 3100000, ingreso: "2021-01-10", examen: "2026-12-10", alturas: "2027-01-10", cumple: "07-19", estado: "Activo" },
+  { cedula: "79123456", nombre: "JORGE RODRIGUEZ FERNANDEZ", cargo: "Técnico de Montaje", centro: "Producción", salario: 2800000, ingreso: "2023-02-01", examen: "2026-10-20", alturas: "2026-11-01", cumple: "02-28", estado: "Activo" },
+  { cedula: "80456789", nombre: "WILLIAM ENRIQUE LOPEZ SORA", cargo: "Operario Especializado", centro: "Producción", salario: 2800000, ingreso: "2023-03-15", examen: "2026-11-15", alturas: "2026-12-05", cumple: "09-10", estado: "Activo" },
+  { cedula: "1022345678", nombre: "JUAN CARLOS MARTINEZ SANDOVAL", cargo: "Supervisor de Planta", centro: "Producción", salario: 2706000, ingreso: "2022-11-01", examen: "2026-10-10", alturas: "2026-11-20", cumple: "04-05", estado: "Activo" },
+  { cedula: "79234567", nombre: "JULIO AGUDELO", cargo: "Operario de Obra", centro: "Producción", salario: 2700000, ingreso: "2023-01-10", examen: "2026-09-25", alturas: "2026-10-15", cumple: "06-18", estado: "Activo" },
+  { cedula: "80234567", nombre: "ORLANDO MORALES SANDOVAL", cargo: "Operario de Obra", centro: "Producción", salario: 2700000, ingreso: "2023-04-01", examen: "2026-11-01", alturas: "2026-12-01", cumple: "10-30", estado: "Activo" },
+  { cedula: "1019876543", nombre: "YESICCA PAOLA CANTOR SUAREZ", cargo: "Auxiliar Administrativa", centro: "Administración", salario: 2600000, ingreso: "2023-06-01", examen: "2026-12-01", alturas: "2027-01-01", cumple: "01-12", estado: "Activo" },
+  { cedula: "1024567890", nombre: "RODRIGO ALEXANDER RODRIGUEZ CENTENO", cargo: "Soldador Especializado", centro: "Producción", salario: 2588300, ingreso: "2022-09-15", examen: "2026-10-05", alturas: "2026-10-25", cumple: "12-08", estado: "Activo" },
+  { cedula: "1025678901", nombre: "MARIA CAMILA DIAZ CANTOR", cargo: "Asistente Contable", centro: "Contabilidad", salario: 2400000, ingreso: "2023-07-15", examen: "2026-11-25", alturas: "2027-01-15", cumple: "05-24", estado: "Activo" },
+  { cedula: "79345678", nombre: "JULIO ARMANDO RODRIGUEZ", cargo: "Armador Estructuras", centro: "Producción", salario: 2376000, ingreso: "2023-05-01", examen: "2026-10-12", alturas: "2026-11-18", cumple: "08-03", estado: "Activo" },
+  { cedula: "1026789012", nombre: "JHONNY RAFAEL CASTRELLON RODRIGUEZ", cargo: "Pintor Industrial", centro: "Producción", salario: 2365000, ingreso: "2023-08-01", examen: "2026-11-08", alturas: "2026-12-10", cumple: "11-17", estado: "Activo" },
+  { cedula: "1027890123", nombre: "CAMILO DURAN", cargo: "Operario de Planta", centro: "Producción", salario: 2420000, ingreso: "2023-09-01", examen: "2026-12-15", alturas: "2027-01-20", cumple: "03-29", estado: "Activo" },
+  { cedula: "79456789", nombre: "JULIO PIERNAGORDA", cargo: "Auxiliar de Obra", centro: "Producción", salario: 2000000, ingreso: "2023-10-01", examen: "2026-10-18", alturas: "2026-11-22", cumple: "07-07", estado: "Activo" },
+  { cedula: "1028901234", nombre: "DIEGO VELANDIA", cargo: "Armador / Soldador", centro: "Producción", salario: 2530000, ingreso: "2023-06-15", examen: "2026-11-30", alturas: "2026-12-28", cumple: "09-14", estado: "Activo" },
+  { cedula: "79567890", nombre: "JORGE GILBERTO RODRIGUEZ AGUILERA", cargo: "Técnico Mantenimiento", centro: "Producción", salario: 2700000, ingreso: "2022-04-01", examen: "2026-10-28", alturas: "2026-11-15", cumple: "04-21", estado: "Activo" },
+  { cedula: "80567890", nombre: "HENRY GONZALES", cargo: "Operario de Planta", centro: "Producción", salario: 2640000, ingreso: "2023-03-01", examen: "2026-11-22", alturas: "2026-12-12", cumple: "02-11", estado: "Activo" },
+  { cedula: "1029012345", nombre: "JOSE MANUEL FORERO", cargo: "Auxiliar Mantenimiento", centro: "Producción", salario: 2420000, ingreso: "2023-11-01", examen: "2026-12-05", alturas: "2027-01-08", cumple: "10-09", estado: "Activo" }
+];
+
 let empleados=JSON.parse(localStorage.getItem(LS_EMP))||[];
 let novedades=JSON.parse(localStorage.getItem(LS_NOV))||[];
 let evaluaciones=JSON.parse(localStorage.getItem(LS_EVAL))||[];
@@ -544,7 +569,11 @@ let iEmp=null, iNov=null, iEval=null, iLoan=null, iTrain=null, iMode='emp', iRow
 let evalChartInstance = null;
 let currentLoanIdx = -1;
 
-if(!empleados.length){empleados=[];}
+if(!empleados.length){
+  empleados = SEED_EMPLEADOS;
+  localStorage.setItem(LS_EMP, JSON.stringify(empleados));
+  localStorage.setItem('dimalcco_personal_master', JSON.stringify(empleados));
+}
 if(!novedades.length){novedades=[];}
 if(!evaluaciones.length){evaluaciones=[];}
 if(!prestamos.length){prestamos=[];}
