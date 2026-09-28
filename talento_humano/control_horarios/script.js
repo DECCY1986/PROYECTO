@@ -134,12 +134,21 @@ document.addEventListener('DOMContentLoaded', () => {
         storedRecords = JSON.parse(localStorage.getItem('shiftRecords')) || [];
     } catch(e){}
 
-    if (storedRecords.length === 0 && typeof restorePreCloudPullBackupIfNeeded === 'function') {
-        const restored = restorePreCloudPullBackupIfNeeded();
-        if (restored) {
-            try {
-                storedRecords = JSON.parse(localStorage.getItem('shiftRecords')) || [];
-            } catch(e){}
+    if (!Array.isArray(storedRecords) || storedRecords.length === 0) {
+        // Escanear todas las claves de localStorage en busca de respaldos automáticos
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key !== 'shiftRecords' && (key.includes('shift') || key.includes('backup') || key.includes('Records') || key.includes('dimalcco') || key.includes('dim_'))) {
+                try {
+                    const parsed = JSON.parse(localStorage.getItem(key));
+                    if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].date) {
+                        console.log(`✅ ¡Registros recuperados automáticamente desde respaldo local (${key})!`);
+                        storedRecords = parsed;
+                        localStorage.setItem('shiftRecords', JSON.stringify(storedRecords));
+                        break;
+                    }
+                } catch(e){}
+            }
         }
     }
 
@@ -250,8 +259,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const saveRecords = () => {
         localStorage.setItem('shiftRecords', JSON.stringify(records));
+        localStorage.setItem('shiftRecords_backup', JSON.stringify(records));
         localStorage.setItem('shiftBalances', JSON.stringify(shiftBalances));
         localStorage.setItem('workerRates', JSON.stringify(workerRates));
+        window.records = records;
         updateDatalists();
         
         // Disparar sincronización con la nube si el dashboard maestro está presente
@@ -1395,6 +1406,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // (Filtros ya inicializados arriba en línea ~578-584)
 
+    // Botón para resetear todos los filtros y ver la totalidad de registros
+    const btnShowAllRecords = document.getElementById('btnShowAllRecords');
+    if (btnShowAllRecords) {
+        btnShowAllRecords.onclick = () => {
+            if (filterMonth) filterMonth.value = "ALL";
+            if (filterFortnight) filterFortnight.value = "ALL";
+            if (tableWorkerFilter) tableWorkerFilter.value = "";
+            renderTable();
+            renderSummary();
+            
+            const toast = document.createElement('div');
+            toast.innerHTML = '👁️ Mostrando <strong>TODOS</strong> los trabajadores y periodos registrados';
+            toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#0284c7;color:white;padding:10px 18px;border-radius:8px;font-weight:600;font-size:0.85rem;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        };
+    }
+
     // Inicializar funciones base
     updateDatalists();
     updateWorkerSelects();
@@ -1414,12 +1443,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (latestRec.workerName) {
                     const wName = latestRec.workerName.trim().toUpperCase();
                     if (workerFilter && !workerFilter.value) workerFilter.value = wName;
-                    if (tableWorkerFilter && !tableWorkerFilter.value) tableWorkerFilter.value = wName;
                 }
             }
+            // Mostrar todos los trabajadores en la tabla por defecto para que nada quede oculto
+            if (tableWorkerFilter) tableWorkerFilter.value = "";
         } else {
             if (filterMonth) filterMonth.value = "ALL";
             if (filterFortnight) filterFortnight.value = "ALL";
+            if (tableWorkerFilter) tableWorkerFilter.value = "";
             const firstWorker = Object.keys(workerRates)[0] || "CAMILO DURAN";
             if (workerFilter && !workerFilter.value) workerFilter.value = firstWorker;
         }
