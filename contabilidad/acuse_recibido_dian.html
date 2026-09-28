@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acuse DIAN | Facturas de credito</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg: #f6f8fb;
+            --panel: #ffffff;
+            --ink: #172033;
+            --muted: #667085;
+            --line: #d8e0ea;
+            --primary: #0f766e;
+            --primary-dark: #115e59;
+            --accent: #2563eb;
+            --warn: #b45309;
+            --danger: #b42318;
+            --ok: #047857;
+            --shadow: 0 16px 40px rgba(20, 32, 51, 0.08);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            color: var(--ink);
+            background: var(--bg);
+        }
+
+        .shell { min-height: 100vh; }
+        header {
+            background: #10233f;
+            color: #fff;
+            padding: 22px clamp(16px, 4vw, 42px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .brand {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            background: #0f766e;
+            font-size: 24px;
+            flex: none;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(22px, 3vw, 34px);
+            line-height: 1.05;
+            letter-spacing: 0;
+        }
+
+        .subtitle {
+            margin: 6px 0 0;
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        .home-link, button, .file-btn {
+            border: 0;
+            border-radius: 7px;
+            min-height: 40px;
+            padding: 10px 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .home-link { color: #10233f; background: #fff; }
+        main {
+            width: min(1280px, calc(100% - 32px));
+            margin: 22px auto 40px;
+            display: grid;
+            gap: 18px;
+        }
+
+        .notice {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            color: #7c2d12;
+            padding: 14px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            line-height: 1.45;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: minmax(320px, 420px) 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .panel-head {
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 17px;
+            letter-spacing: 0;
+        }
+
+        .panel-body { padding: 18px; }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        label.full { grid-column: 1 / -1; }
+        input, select, textarea {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            padding: 10px 11px;
+            font: inherit;
+            color: var(--ink);
+            background: #fff;
+        }
+
+        textarea { min-height: 76px; resize: vertical; }
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .primary { background: var(--primary); color: #fff; }
+        .primary:hover { background: var(--primary-dark); }
+        .secondary { background: #e8eef7; color: #10233f; }
+        .danger { background: #fee4e2; color: var(--danger); }
+        .file-btn { background: #eff6ff; color: var(--accent); border: 1px dashed #93c5fd; }
+        .file-btn input { display: none; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .stat {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 13px;
+            background: #fff;
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 26px;
+            line-height: 1;
+        }
+
+        .stat span { color: var(--muted); font-size: 12px; }
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .search {
+            max-width: 360px;
+            min-width: 240px;
+        }
+
+        .table-wrap {
+            overflow: auto;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 920px;
+            background: #fff;
+        }
+
+        th, td {
+            padding: 11px 12px;
+            border-bottom: 1px solid #edf1f6;
+            text-align: left;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f8fafc;
+            color: #475467;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0;
+        }
+
+        tr:last-child td { border-bottom: 0; }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 26px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .pendiente { color: #854d0e; background: #fef3c7; }
+        .listo { color: #075985; background: #e0f2fe; }
+        .enviado { color: #065f46; background: #d1fae5; }
+        .error { color: #991b1b; background: #fee2e2; }
+        .small-btn {
+            min-height: 32px;
+            padding: 7px 9px;
+            border-radius: 6px;
+            background: #eef2f7;
+            color: #10233f;
+        }
+
+        .done { color: #155eef; background: #dbeafe; }
+        .copy-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .copy-chip {
+            min-height: 28px;
+            padding: 5px 8px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #172033;
+            font-size: 12px;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .step {
+            border: 1px solid var(--line);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 12px;
+            background: #fbfdff;
+            font-size: 13px;
+            line-height: 1.35;
+        }
+
+        .step strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #10233f;
+        }
+
+        .work-queue {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 18px;
+        }
+
+        .active-invoice {
+            border: 1px solid #b7e4dc;
+            border-left: 5px solid var(--primary);
+            border-radius: 8px;
+            padding: 16px;
+            background: #f7fffd;
+        }
+
+        .active-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .active-title strong {
+            font-size: clamp(20px, 3vw, 32px);
+            color: #10233f;
+        }
+
+        .facts {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(160px, 1fr));
+            gap: 10px;
+        }
+
+        .fact {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 10px;
+            background: #fff;
+        }
+
+        .fact span {
+            display: block;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .fact strong {
+            display: block;
+            word-break: break-word;
+        }
+
+        .manual-card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 14px;
+            background: #fff;
+        }
+
+        .manual-card h3 {
+            margin: 0 0 10px;
+            font-size: 15px;
+        }
+
+        .integration {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .log {
+            min-height: 120px;
+            max-height: 220px;
+            overflow: auto;
+            background: #111827;
+            color: #d1fae5;
+            border-radius: 8px;
+            padding: 12px;
+            font: 12px/1.5 Consolas, monospace;
+        }
+
+        @media (max-width: 900px) {
+            header { align-items: flex-start; flex-direction: column; }
+            .grid, .integration, .work-queue { grid-template-columns: 1fr; }
+            .steps { grid-template-columns: 1fr 1fr; }
+            .stats { grid-template-columns: 1fr 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .home-link { width: 100%; }
+        }
+
+        @media (max-width: 560px) {
+            .steps { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <header>
+            <div class="brand">
+                <div class="brand-icon"><i class="ph ph-file-check"></i></div>
+                <div>
+                    <h1>Acuse de recibido DIAN</h1>
+                    <p class="subtitle">Control de facturas de credito y preparacion de eventos electronicos.</p>
+                </div>
+            </div>
+            <a class="home-link" href="../index.html" target="_top"><i class="ph ph-house"></i> Volver al Hub</a>
+        </header>
+
+        <main>
+            <div class="notice">
+                <i class="ph ph-warning-circle" style="font-size:22px"></i>
+                <div>
+                    Esta herramienta prepara y controla los acuses de recibido. Para radicar automaticamente ante DIAN se debe conectar un proveedor tecnologico o servicio propio con certificado digital, firma electronica y credenciales autorizadas.
+                </div>
+            </div>
+
+            <section class="grid">
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Factura a crédito</h2>
+                        <span class="pill pendiente" id="draftStatus"><i class="ph ph-pencil-simple"></i> Borrador</span>
+                    </div>
+                    <div class="panel-body">
+                        <form id="invoiceForm" class="form-grid">
+                            <label>
+                                NIT proveedor
+                                <input id="supplierNit" required placeholder="900123456">
+                            </label>
+                            <label>
+                                Proveedor
+                                <input id="supplierName" required placeholder="Nombre o razon social">
+                            </label>
+                            <label>
+                                Prefijo
+                                <input id="prefix" placeholder="FE">
+                            </label>
+                            <label>
+                                Numero
+                                <input id="number" required placeholder="12345">
+                            </label>
+                            <label class="full">
+                                CUFE
+                                <input id="cufe" required placeholder="Codigo unico de factura electronica">
+                            </label>
+                            <label>
+                                Fecha factura
+                                <input id="issueDate" type="date" required>
+                            </label>
+                            <label>
+                                Fecha recibido
+                                <input id="receivedDate" type="date" required>
+                            </label>
+                            <label>
+                                Valor total
+                                <input id="total" type="number" min="0" step="0.01" required placeholder="0.00">
+                            </label>
+                            <label>
+                                Moneda
+                                <select id="currency">
+                                    <option>COP</option>
+                                    <option>USD</option>
+                                </select>
+                            </label>
+                            <label class="full">
+                                Recibido por
+                                <input id="receivedBy" required placeholder="Persona que confirma la recepcion">
+                            </label>
+                            <label class="full">
+                                Observaciones
+                                <textarea id="notes" placeholder="Detalle interno, area que recibio, soporte, novedad, etc."></textarea>
+                            </label>
+                        </form>
+                        <div class="actions">
+                            <button class="primary" id="saveBtn"><i class="ph ph-plus-circle"></i> Agregar factura</button>
+                            <button class="secondary" id="clearBtn"><i class="ph ph-eraser"></i> Limpiar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-head">
+                        <h2>Resumen del lote</h2>
+                        <label class="file-btn">
+                            <i class="ph ph-upload-simple"></i> Importar CSV/Excel
+                            <input id="fileInput" type="file" accept=".csv,.xlsx,.xls">
+                        </label>
+                    </div>
+                    <div class="panel-body">
+                        <div class="stats">
+                            <div class="stat"><strong id="statTotal">0</strong><span>Facturas</span></div>
+                            <div class="stat"><strong id="statReady">0</strong><span>Listas</span></div>
+                            <div class="stat"><strong id="statSent">0</strong><span>Enviadas</span></div>
+                            <div class="stat"><strong id="statErrors">0</strong><span>Con error</span></div>
+                        </div>
+                        <div class="actions">
+                            <button class="secondary" id="markReadyBtn"><i class="ph ph-checks"></i> Validar lote</button>
+                            <button class="primary" id="sendBtn"><i class="ph ph-paper-plane-tilt"></i> Enviar acuses</button>
+                            <button class="secondary" id="csvBtn"><i class="ph ph-download-simple"></i> Exportar CSV</button>
+                            <button class="secondary" id="jsonBtn"><i class="ph ph-code"></i> Exportar JSON</button>
+                            <button class="danger" id="deleteBtn"><i class="ph ph-trash"></i> Borrar todo</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Cola de acuses DIAN</h2>
+                    <button class="secondary" id="nextPendingBtn"><i class="ph ph-skip-forward"></i> Siguiente pendiente</button>
+                </div>
+                <div class="panel-body work-queue">
+                    <div class="active-invoice" id="activeInvoice"></div>
+                    <div class="manual-card">
+                        <h3>Copiar para DIAN</h3>
+                        <div class="actions">
+                            <button class="secondary" id="copyActiveInvoiceBtn"><i class="ph ph-copy"></i> Factura</button>
+                            <button class="secondary" id="copyActiveNitBtn"><i class="ph ph-identification-card"></i> NIT emisor</button>
+                            <button class="secondary" id="copyActiveReceiverBtn"><i class="ph ph-user-check"></i> Receptor</button>
+                        </div>
+                        <div class="actions">
+                            <button class="primary" id="markActiveDoneBtn"><i class="ph ph-seal-check"></i> Marcar hecha DIAN</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Facturas registradas</h2>
+                    <input id="searchBox" class="search" placeholder="Buscar por proveedor, NIT, numero o CUFE">
+                </div>
+                <div class="panel-body">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Estado</th>
+                                    <th>Proveedor</th>
+                                    <th>Factura</th>
+                                    <th>CUFE</th>
+                                    <th>Fecha recibido</th>
+                                    <th>Total</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Ruta manual en DIAN</h2>
+                    <button class="secondary" id="copyReceiverBtn"><i class="ph ph-copy"></i> Copiar datos receptor</button>
+                </div>
+                <div class="panel-body">
+                    <div class="steps">
+                        <div class="step"><strong>1. Entrar</strong>Solucion Gratuita > Factura Electronica.</div>
+                        <div class="step"><strong>2. Historico</strong>Abrir Documentos Recibidos.</div>
+                        <div class="step"><strong>3. Filtrar</strong>Fecha Emision desde/hasta del mes y Buscar.</div>
+                        <div class="step"><strong>4. Seleccionar</strong>Marcar solo facturas con Forma de Pago CREDITO.</div>
+                        <div class="step"><strong>5. Evento</strong>Elegir Acuse de Recibo de la FEV y Enviar.</div>
+                        <div class="step"><strong>6. Firmar</strong>Marcar confirmacion, Previsualizar, Firmar y guardar; luego marcar hecha aqui.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Datos fijos e integración</h2>
+                </div>
+                <div class="panel-body integration">
+                    <label>
+                        Tipo documento receptor
+                        <select id="receiverDocType">
+                            <option value="">Seleccione...</option>
+                            <option>31 - NIT</option>
+                            <option>Cedula de ciudadania</option>
+                            <option>Cedula de extranjeria</option>
+                            <option>NIT</option>
+                            <option>Pasaporte</option>
+                        </select>
+                    </label>
+                    <label>
+                        Numero documento receptor
+                        <input id="receiverDocNumber" placeholder="Documento de quien recibio">
+                    </label>
+                    <label>
+                        Nombres
+                        <input id="receiverNames" placeholder="Nombres">
+                    </label>
+                    <label>
+                        Apellidos
+                        <input id="receiverLastNames" placeholder="Apellidos">
+                    </label>
+                    <label>
+                        Cargo
+                        <input id="receiverPosition" placeholder="Cargo">
+                    </label>
+                    <label>
+                        Area
+                        <input id="receiverArea" placeholder="Area">
+                    </label>
+                    <label>
+                        Endpoint del proveedor/API
+                        <input id="endpoint" placeholder="https://proveedor.com/api/dian/eventos/acuse">
+                    </label>
+                    <label>
+                        Token de autorización
+                        <input id="token" type="password" placeholder="Token Bearer o clave de integracion">
+                    </label>
+                    <label>
+                        NIT receptor
+                        <input id="receiverNit" placeholder="NIT de la empresa que acusa recibido">
+                    </label>
+                    <label>
+                        Ambiente
+                        <select id="environment">
+                            <option value="habilitacion">Habilitacion / pruebas</option>
+                            <option value="produccion">Produccion</option>
+                        </select>
+                    </label>
+                    <label class="full">
+                        Registro de proceso
+                        <div class="log" id="log">Listo para registrar facturas.</div>
+                    </label>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const storageKey = 'dimalcco_acuse_dian_facturas';
+        const configKey = 'dimalcco_acuse_dian_config';
+        let invoices = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const form = document.getElementById('invoiceForm');
+        const fields = ['supplierNit', 'supplierName', 'prefix', 'number', 'cufe', 'issueDate', 'receivedDate', 'total', 'currency', 'receivedBy', 'notes'];
+        const today = new Date().toISOString().slice(0, 10);
+        let activeInvoiceId = localStorage.getItem('dimalcco_acuse_dian_active');
+        document.getElementById('receivedDate').value = today;
+        document.getElementById('issueDate').value = today;
+
+        function saveData() {
+            localStorage.setItem(storageKey, JSON.stringify(invoices));
+            render();
+        }
+
+        function log(message) {
+            const box = document.getElementById('log');
+            const time = new Date().toLocaleString('es-CO');
+            box.textContent = `[${time}] ${message}\n` + box.textContent;
+        }
+
+        function money(value, currency) {
+            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: currency || 'COP' }).format(Number(value || 0));
+        }
+
+        function normalize(value) {
+            return String(value || '').trim();
+        }
+
+        function getCell(row, names) {
+            const entries = Object.entries(row);
+            for (const name of names) {
+                const found = entries.find(([key]) => normalize(key).toLowerCase() === name.toLowerCase());
+                if (found) return found[1];
+            }
+            return '';
+        }
+
+        function isCreditInvoice(row) {
+            const paymentForm = normalize(getCell(row, ['Forma de Pago', 'forma_pago', 'formaPago', 'paymentForm']));
+            return paymentForm === '2';
+        }
+
+        function validateInvoice(item) {
+            const missing = [];
+            ['supplierNit', 'supplierName', 'number', 'cufe', 'issueDate', 'receivedDate', 'total', 'receivedBy'].forEach(key => {
+                if (!normalize(item[key])) missing.push(key);
+            });
+            if (normalize(item.cufe).length < 20) missing.push('cufe incompleto');
+            if (Number(item.total) <= 0) missing.push('valor');
+            return missing;
+        }
+
+        function getFormData() {
+            const data = {};
+            fields.forEach(id => data[id] = normalize(document.getElementById(id).value));
+            data.total = Number(data.total || 0);
+            data.id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+            data.status = 'pendiente';
+            data.createdAt = new Date().toISOString();
+            data.eventType = '030 - Acuse de recibo de factura electronica';
+            return data;
+        }
+
+        function clearForm() {
+            form.reset();
+            document.getElementById('receivedDate').value = today;
+            document.getElementById('issueDate').value = today;
+        }
+
+        function statusLabel(status) {
+            const icons = { pendiente: 'ph-clock', listo: 'ph-check-circle', enviado: 'ph-paper-plane-tilt', done: 'ph-seal-check', error: 'ph-warning' };
+            const text = { pendiente: 'Pendiente', listo: 'Listo', enviado: 'Enviado API', done: 'Hecha DIAN', error: 'Error' };
+            return `<span class="pill ${status}"><i class="ph ${icons[status] || icons.pendiente}"></i>${text[status] || status}</span>`;
+        }
+
+        function invoiceCode(item) {
+            return `${item.prefix ? item.prefix + '-' : ''}${item.number}`;
+        }
+
+        function getActiveInvoice() {
+            return invoices.find(item => item.id === activeInvoiceId) || invoices.find(item => item.status !== 'done' && item.status !== 'enviado') || invoices[0];
+        }
+
+        function renderActiveInvoice() {
+            const item = getActiveInvoice();
+            const box = document.getElementById('activeInvoice');
+            if (!item) {
+                box.innerHTML = '<div style="color:#667085">Importa el archivo mensual de DIAN para iniciar la cola.</div>';
+                return;
+            }
+            activeInvoiceId = item.id;
+            localStorage.setItem('dimalcco_acuse_dian_active', item.id);
+            box.innerHTML = `
+                <div class="active-title">
+                    <strong>${invoiceCode(item)}</strong>
+                    ${statusLabel(item.status)}
+                </div>
+                <div class="facts">
+                    <div class="fact"><span>Emisor</span><strong>${item.supplierName}</strong></div>
+                    <div class="fact"><span>NIT emisor</span><strong>${item.supplierNit}</strong></div>
+                    <div class="fact"><span>Fecha emision</span><strong>${item.issueDate}</strong></div>
+                    <div class="fact"><span>Total</span><strong>${money(item.total, item.currency)}</strong></div>
+                    <div class="fact" style="grid-column:1/-1"><span>CUFE/CUDE</span><strong>${item.cufe}</strong></div>
+                </div>
+            `;
+        }
+
+        function render() {
+            const query = normalize(document.getElementById('searchBox').value).toLowerCase();
+            const visible = invoices.filter(item => JSON.stringify(item).toLowerCase().includes(query));
+            document.getElementById('rows').innerHTML = visible.map(item => `
+                <tr>
+                    <td>${statusLabel(item.status)}</td>
+                    <td><strong>${item.supplierName}</strong><br><span style="color:#667085">${item.supplierNit}</span></td>
+                    <td>${item.prefix ? item.prefix + '-' : ''}${item.number}</td>
+                    <td title="${item.cufe}">${item.cufe.slice(0, 18)}...</td>
+                    <td>${item.receivedDate}</td>
+                    <td>${money(item.total, item.currency)}</td>
+                    <td>
+                        <button class="small-btn" onclick="setActive('${item.id}')"><i class="ph ph-crosshair"></i></button>
+                        <button class="small-btn" onclick="copyText('${item.prefix ? item.prefix + '-' : ''}${item.number}', 'Factura copiada')"><i class="ph ph-copy"></i></button>
+                        <button class="small-btn" onclick="copyText('${item.supplierNit}', 'NIT copiado')"><i class="ph ph-identification-card"></i></button>
+                        <button class="small-btn" onclick="prepareOne('${item.id}')"><i class="ph ph-check"></i></button>
+                        <button class="small-btn" onclick="markDone('${item.id}')"><i class="ph ph-seal-check"></i></button>
+                        <button class="small-btn" onclick="downloadOne('${item.id}')"><i class="ph ph-download"></i></button>
+                        <button class="small-btn" onclick="removeOne('${item.id}')"><i class="ph ph-x"></i></button>
+                    </td>
+                </tr>
+            `).join('') || `<tr><td colspan="7" style="text-align:center;color:#667085;padding:26px">No hay facturas registradas.</td></tr>`;
+
+            document.getElementById('statTotal').textContent = invoices.length;
+            document.getElementById('statReady').textContent = invoices.filter(x => x.status === 'listo').length;
+            document.getElementById('statSent').textContent = invoices.filter(x => x.status === 'enviado' || x.status === 'done').length;
+            document.getElementById('statErrors').textContent = invoices.filter(x => x.status === 'error').length;
+            renderActiveInvoice();
+        }
+
+        async function copyText(value, message) {
+            await navigator.clipboard.writeText(normalize(value));
+            log(message);
+        }
+
+        function preparePayload(item) {
+            return {
+                ambiente: document.getElementById('environment').value,
+                nit_receptor: normalize(document.getElementById('receiverNit').value),
+                tipo_evento: item.eventType,
+                factura: {
+                    nit_proveedor: item.supplierNit,
+                    proveedor: item.supplierName,
+                    prefijo: item.prefix,
+                    numero: item.number,
+                    cufe: item.cufe,
+                    fecha_factura: item.issueDate,
+                    fecha_recibido: item.receivedDate,
+                    valor_total: item.total,
+                    moneda: item.currency
+                },
+                recibido_por: item.receivedBy,
+                observaciones: item.notes,
+                generado_en: new Date().toISOString()
+            };
+        }
+
+        function download(filename, content, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function toCsv(rows) {
+            const headers = ['estado','nit_proveedor','proveedor','prefijo','numero','cufe','fecha_factura','fecha_recibido','valor_total','moneda','recibido_por','observaciones'];
+            const lines = rows.map(item => headers.map(header => {
+                const map = {
+                    estado: item.status,
+                    nit_proveedor: item.supplierNit,
+                    proveedor: item.supplierName,
+                    prefijo: item.prefix,
+                    numero: item.number,
+                    cufe: item.cufe,
+                    fecha_factura: item.issueDate,
+                    fecha_recibido: item.receivedDate,
+                    valor_total: item.total,
+                    moneda: item.currency,
+                    recibido_por: item.receivedBy,
+                    observaciones: item.notes
+                };
+                return `"${String(map[header] ?? '').replace(/"/g, '""')}"`;
+            }).join(','));
+            return headers.join(',') + '\n' + lines.join('\n');
+        }
+
+        window.prepareOne = function(id) {
+            const item = invoices.find(x => x.id === id);
+            const errors = validateInvoice(item);
+            item.status = errors.length ? 'error' : 'listo';
+            item.errorMessage = errors.join(', ');
+            saveData();
+            log(errors.length ? `Factura ${item.number} con errores: ${item.errorMessage}` : `Factura ${item.number} lista para acuse.`);
+        };
+
+        window.downloadOne = function(id) {
+            const item = invoices.find(x => x.id === id);
+            download(`acuse_dian_${item.prefix || 'FE'}_${item.number}.json`, JSON.stringify(preparePayload(item), null, 2), 'application/json');
+        };
+
+        window.removeOne = function(id) {
+            invoices = invoices.filter(x => x.id !== id);
+            saveData();
+            log('Registro eliminado.');
+        };
+
+        window.markDone = function(id) {
+            const item = invoices.find(x => x.id === id);
+            item.status = 'done';
+            item.sentAt = new Date().toISOString();
+            const next = invoices.find(x => x.id !== id && x.status !== 'done' && x.status !== 'enviado');
+            if (next) activeInvoiceId = next.id;
+            saveData();
+            log(`Factura ${item.prefix ? item.prefix + '-' : ''}${item.number} marcada como acuse realizado en DIAN.`);
+        };
+
+        window.setActive = function(id) {
+            activeInvoiceId = id;
+            localStorage.setItem('dimalcco_acuse_dian_active', id);
+            renderActiveInvoice();
+            log('Factura activa actualizada.');
+        };
+
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            if (!form.reportValidity()) return;
+            const item = getFormData();
+            invoices.unshift(item);
+            saveData();
+            clearForm();
+            log(`Factura ${item.prefix ? item.prefix + '-' : ''}${item.number} agregada.`);
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', clearForm);
+        document.getElementById('searchBox').addEventListener('input', render);
+        document.getElementById('nextPendingBtn').addEventListener('click', () => {
+            const currentIndex = invoices.findIndex(x => x.id === activeInvoiceId);
+            const ordered = invoices.slice(currentIndex + 1).concat(invoices.slice(0, Math.max(currentIndex + 1, 0)));
+            const next = ordered.find(x => x.status !== 'done' && x.status !== 'enviado');
+            if (!next) return alert('No hay facturas pendientes en la cola.');
+            window.setActive(next.id);
+        });
+        document.getElementById('copyActiveInvoiceBtn').addEventListener('click', () => {
+            const item = getActiveInvoice();
+            if (item) copyText(invoiceCode(item), 'Factura activa copiada.');
+        });
+        document.getElementById('copyActiveNitBtn').addEventListener('click', () => {
+            const item = getActiveInvoice();
+            if (item) copyText(item.supplierNit, 'NIT emisor activo copiado.');
+        });
+        document.getElementById('copyActiveReceiverBtn').addEventListener('click', () => document.getElementById('copyReceiverBtn').click());
+        document.getElementById('markActiveDoneBtn').addEventListener('click', () => {
+            const item = getActiveInvoice();
+            if (item) window.markDone(item.id);
+        });
+        document.getElementById('markReadyBtn').addEventListener('click', () => {
+            invoices.forEach(item => {
+                const errors = validateInvoice(item);
+                item.status = errors.length ? 'error' : 'listo';
+                item.errorMessage = errors.join(', ');
+            });
+            saveData();
+            log('Lote validado.');
+        });
+
+        document.getElementById('csvBtn').addEventListener('click', () => download(`acuse_dian_lote_${today}.csv`, toCsv(invoices), 'text/csv'));
+        document.getElementById('jsonBtn').addEventListener('click', () => download(`acuse_dian_lote_${today}.json`, JSON.stringify(invoices.map(preparePayload), null, 2), 'application/json'));
+        document.getElementById('deleteBtn').addEventListener('click', () => {
+            if (confirm('Deseas borrar todas las facturas registradas?')) {
+                invoices = [];
+                saveData();
+                log('Lote borrado.');
+            }
+        });
+
+        document.getElementById('sendBtn').addEventListener('click', async () => {
+            const endpoint = normalize(document.getElementById('endpoint').value);
+            const token = normalize(document.getElementById('token').value);
+            const ready = invoices.filter(x => x.status === 'listo');
+            if (!ready.length) return alert('Primero valida el lote y deja facturas en estado Listo.');
+            if (!endpoint || !token) {
+                log('No hay endpoint/token. Se genero el paquete JSON para integracion manual.');
+                download(`acuse_dian_pendiente_envio_${today}.json`, JSON.stringify(ready.map(preparePayload), null, 2), 'application/json');
+                return;
+            }
+
+            for (const item of ready) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify(preparePayload(item))
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    item.status = 'enviado';
+                    item.sentAt = new Date().toISOString();
+                    log(`Acuse enviado para factura ${item.number}.`);
+                } catch (error) {
+                    item.status = 'error';
+                    item.errorMessage = error.message;
+                    log(`Error enviando factura ${item.number}: ${error.message}`);
+                }
+            }
+            saveData();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', event => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                let records = [];
+                if (file.name.toLowerCase().endsWith('.csv')) {
+                    const lines = e.target.result.split(/\r?\n/).filter(Boolean);
+                    const headers = lines.shift().split(',').map(x => x.replace(/"/g, '').trim().toLowerCase());
+                    records = lines.map(line => {
+                        const cells = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || [];
+                        return Object.fromEntries(headers.map((h, i) => [h, (cells[i] || '').replace(/^"|"$/g, '').replace(/""/g, '"')]));
+                    });
+                } else {
+                    const workbook = XLSX.read(e.target.result, { type: 'array' });
+                    records = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                }
+
+                const creditRecords = records.filter(isCreditInvoice);
+                const imported = creditRecords.map(row => ({
+                    id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+                    supplierNit: getCell(row, ['NIT Emisor', 'nit_proveedor', 'nit', 'supplierNit']),
+                    supplierName: getCell(row, ['Nombre Emisor', 'proveedor', 'supplierName']),
+                    prefix: getCell(row, ['Prefijo', 'prefijo', 'prefix']),
+                    number: getCell(row, ['Folio', 'numero', 'factura', 'number']),
+                    cufe: getCell(row, ['CUFE/CUDE', 'CUFE', 'cufe']),
+                    issueDate: getCell(row, ['Fecha Emisión', 'Fecha Emision', 'fecha_factura', 'issueDate']) || today,
+                    receivedDate: getCell(row, ['Fecha Recepción', 'Fecha Recepcion', 'fecha_recibido', 'receivedDate']) || today,
+                    total: Number(getCell(row, ['Total', 'valor_total', 'total']) || 0),
+                    currency: getCell(row, ['Divisa', 'moneda', 'currency']) || 'COP',
+                    receivedBy: getCell(row, ['Nombre Receptor', 'recibido_por', 'receivedBy']) || 'DIMALCCO SAS',
+                    notes: `Importado DIAN. Forma de Pago: ${getCell(row, ['Forma de Pago', 'forma_pago', 'formaPago'])}. Medio de Pago: ${getCell(row, ['Medio de Pago', 'medio_pago']) || 'N/A'}. Estado DIAN: ${getCell(row, ['Estado']) || 'N/A'}.`,
+                    status: 'pendiente',
+                    eventType: '030 - Acuse de recibo de factura electronica',
+                    createdAt: new Date().toISOString()
+                }));
+                invoices = imported.concat(invoices);
+                saveData();
+                log(`Se importaron ${imported.length} facturas a credito con Forma de Pago = 2. Omitidas: ${records.length - imported.length}.`);
+                event.target.value = '';
+            };
+            if (file.name.toLowerCase().endsWith('.csv')) reader.readAsText(file);
+            else reader.readAsArrayBuffer(file);
+        });
+
+        document.getElementById('copyReceiverBtn').addEventListener('click', () => {
+            const data = [
+                `Tipo documento: ${normalize(document.getElementById('receiverDocType').value)}`,
+                `Numero documento: ${normalize(document.getElementById('receiverDocNumber').value)}`,
+                `Nombres: ${normalize(document.getElementById('receiverNames').value)}`,
+                `Apellidos: ${normalize(document.getElementById('receiverLastNames').value)}`,
+                `Cargo: ${normalize(document.getElementById('receiverPosition').value)}`,
+                `Area: ${normalize(document.getElementById('receiverArea').value)}`
+            ].join('\n');
+            copyText(data, 'Datos del receptor copiados.');
+        });
+
+        const defaultReceiverConfig = {
+            receiverDocType: '31 - NIT',
+            receiverDocNumber: '900342175',
+            receiverNames: 'DIMALCCO SAS',
+            receiverLastNames: 'SAS',
+            receiverNit: '900342175'
+        };
+
+        ['endpoint', 'receiverNit', 'environment', 'receiverDocType', 'receiverDocNumber', 'receiverNames', 'receiverLastNames', 'receiverPosition', 'receiverArea'].forEach(id => {
+            const saved = JSON.parse(localStorage.getItem(configKey) || '{}');
+            document.getElementById(id).value = saved[id] || defaultReceiverConfig[id] || document.getElementById(id).value;
+            document.getElementById(id).addEventListener('change', () => {
+                const data = JSON.parse(localStorage.getItem(configKey) || '{}');
+                data[id] = document.getElementById(id).value;
+                localStorage.setItem(configKey, JSON.stringify(data));
+            });
+        });
+
+        render();
+    </script>
+</body>
+</html>

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Mantenimiento de Máquinas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg: #f5f7fb;
+            --panel: #ffffff;
+            --ink: #182235;
+            --muted: #667085;
+            --line: #d9e0ea;
+            --primary: #2563eb;
+            --primary-soft: #eaf1ff;
+            --ok: #059669;
+            --warn: #d97706;
+            --danger: #dc2626;
+            --shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: 'Sora', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        button, input, select, textarea { font: inherit; }
+        button { cursor: pointer; }
+
+        .app {
+            min-height: 100vh;
+            padding: 22px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .title-block h1 {
+            margin: 0;
+            font-size: 24px;
+            letter-spacing: 0;
+        }
+
+        .title-block p {
+            margin: 5px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            color: var(--ink);
+            border-radius: 8px;
+            min-height: 38px;
+            padding: 0 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 12px;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        }
+
+        .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .btn.danger { color: var(--danger); }
+        .btn.icon { width: 36px; padding: 0; justify-content: center; }
+
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .kpi {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 14px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+        }
+
+        .kpi span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .kpi strong {
+            display: block;
+            margin-top: 8px;
+            font-family: 'DM Mono', monospace;
+            font-size: 24px;
+        }
+
+        .workspace {
+            display: grid;
+            grid-template-columns: minmax(280px, 360px) 1fr;
+            gap: 14px;
+            align-items: start;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .panel-head {
+            padding: 14px;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .panel-head h2 {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .panel-body { padding: 14px; }
+
+        .field {
+            display: grid;
+            gap: 6px;
+            margin-bottom: 11px;
+        }
+
+        .field label {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            padding: 10px 11px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        textarea { min-height: 76px; resize: vertical; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: 1.4fr repeat(3, minmax(140px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .table-wrap { overflow: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 880px;
+        }
+
+        th, td {
+            padding: 11px 12px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            vertical-align: top;
+            font-size: 12px;
+        }
+
+        th {
+            color: var(--muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0;
+            background: #f8fafc;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .machine {
+            font-weight: 700;
+            color: var(--ink);
+        }
+
+        .subtle {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 5px 9px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .badge.ok { background: #ecfdf5; color: var(--ok); }
+        .badge.warn { background: #fff7ed; color: var(--warn); }
+        .badge.danger { background: #fef2f2; color: var(--danger); }
+        .badge.neutral { background: #eef2f7; color: #475467; }
+
+        .row-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px 18px;
+            color: var(--muted);
+        }
+
+        .empty i {
+            display: block;
+            font-size: 36px;
+            color: #98a2b3;
+            margin-bottom: 8px;
+        }
+
+        .hidden { display: none; }
+
+        @media (max-width: 980px) {
+            .workspace, .kpis, .filters { grid-template-columns: 1fr; }
+            .topbar { align-items: flex-start; flex-direction: column; }
+            .actions { justify-content: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <main class="app">
+        <header class="topbar">
+            <div class="title-block">
+                <h1>Registro de mantenimiento de máquinas</h1>
+                <p>Control interno de preventivos, correctivos, costos, técnicos y próximas fechas.</p>
+            </div>
+            <div class="actions">
+                <button class="btn" id="exportBtn"><i class="ph ph-download-simple"></i> Exportar CSV</button>
+                <button class="btn" id="backupBtn"><i class="ph ph-file-arrow-down"></i> Backup JSON</button>
+                <button class="btn" id="importBtn"><i class="ph ph-upload-simple"></i> Importar</button>
+                <input id="importFile" class="hidden" type="file" accept=".json">
+            </div>
+        </header>
+
+        <section class="kpis" aria-label="Indicadores">
+            <article class="kpi"><span><i class="ph ph-factory"></i> Máquinas</span><strong id="kpiMachines">0</strong></article>
+            <article class="kpi"><span><i class="ph ph-warning-circle"></i> Vencidos</span><strong id="kpiOverdue">0</strong></article>
+            <article class="kpi"><span><i class="ph ph-clock-countdown"></i> Próximos 15 días</span><strong id="kpiSoon">0</strong></article>
+            <article class="kpi"><span><i class="ph ph-currency-dollar"></i> Costo mes</span><strong id="kpiCost">$0</strong></article>
+        </section>
+
+        <section class="workspace">
+            <aside class="panel">
+                <div class="panel-head">
+                    <h2 id="formTitle">Nuevo mantenimiento</h2>
+                    <button class="btn icon" id="resetBtn" title="Limpiar formulario"><i class="ph ph-broom"></i></button>
+                </div>
+                <form class="panel-body" id="maintenanceForm">
+                    <input type="hidden" id="recordId">
+                    <div class="field">
+                        <label for="machineName">Máquina</label>
+                        <input id="machineName" required placeholder="Ej. Sierra escuadradora">
+                    </div>
+                    <div class="grid-2">
+                        <div class="field">
+                            <label for="machineCode">Código / placa</label>
+                            <input id="machineCode" placeholder="MQ-001">
+                        </div>
+                        <div class="field">
+                            <label for="area">Área</label>
+                            <input id="area" placeholder="Carpintería">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="field">
+                            <label for="maintenanceType">Tipo</label>
+                            <select id="maintenanceType">
+                                <option>Preventivo</option>
+                                <option>Correctivo</option>
+                                <option>Calibración</option>
+                                <option>Inspección</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="status">Estado</label>
+                            <select id="status">
+                                <option>Programado</option>
+                                <option>En proceso</option>
+                                <option>Completado</option>
+                                <option>Pendiente repuesto</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="field">
+                            <label for="maintenanceDate">Fecha mantenimiento</label>
+                            <input id="maintenanceDate" type="date" required>
+                        </div>
+                        <div class="field">
+                            <label for="nextDate">Próxima fecha</label>
+                            <input id="nextDate" type="date">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="field">
+                            <label for="technician">Técnico / responsable</label>
+                            <input id="technician" placeholder="Nombre">
+                        </div>
+                        <div class="field">
+                            <label for="cost">Costo</label>
+                            <input id="cost" type="number" min="0" step="1000" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="description">Trabajo realizado</label>
+                        <textarea id="description" placeholder="Lubricación, cambio de bandas, ajuste eléctrico..."></textarea>
+                    </div>
+                    <div class="field">
+                        <label for="parts">Repuestos / observaciones</label>
+                        <textarea id="parts" placeholder="Rodamientos, filtros, recomendaciones de seguimiento..."></textarea>
+                    </div>
+                    <button class="btn primary" type="submit"><i class="ph ph-floppy-disk"></i> Guardar registro</button>
+                </form>
+            </aside>
+
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Historial y programación</h2>
+                    <button class="btn danger" id="clearBtn"><i class="ph ph-trash"></i> Borrar todo</button>
+                </div>
+                <div class="panel-body">
+                    <div class="filters">
+                        <input id="searchInput" placeholder="Buscar máquina, código, técnico o nota">
+                        <select id="statusFilter">
+                            <option value="">Todos los estados</option>
+                            <option>Programado</option>
+                            <option>En proceso</option>
+                            <option>Completado</option>
+                            <option>Pendiente repuesto</option>
+                        </select>
+                        <select id="typeFilter">
+                            <option value="">Todos los tipos</option>
+                            <option>Preventivo</option>
+                            <option>Correctivo</option>
+                            <option>Calibración</option>
+                            <option>Inspección</option>
+                        </select>
+                        <select id="dueFilter">
+                            <option value="">Todas las fechas</option>
+                            <option value="overdue">Vencidos</option>
+                            <option value="soon">Próximos 15 días</option>
+                            <option value="done">Completados</option>
+                        </select>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Máquina</th>
+                                    <th>Tipo</th>
+                                    <th>Estado</th>
+                                    <th>Último mantenimiento</th>
+                                    <th>Próxima fecha</th>
+                                    <th>Técnico</th>
+                                    <th>Costo</th>
+                                    <th>Notas</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsBody"></tbody>
+                        </table>
+                        <div class="empty hidden" id="emptyState">
+                            <i class="ph ph-clipboard-text"></i>
+                            No hay registros con esos filtros.
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        const STORAGE_KEY = 'dim_machine_maintenance_records';
+        const recordsBody = document.getElementById('recordsBody');
+        const emptyState = document.getElementById('emptyState');
+        const form = document.getElementById('maintenanceForm');
+        const money = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 });
+        let records = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+
+        if (!records.length) {
+            records = [
+                {
+                    id: crypto.randomUUID(),
+                    machineName: 'Compresor principal',
+                    machineCode: 'MQ-001',
+                    area: 'Producción',
+                    maintenanceType: 'Preventivo',
+                    status: 'Programado',
+                    maintenanceDate: '2026-07-12',
+                    nextDate: '2026-08-10',
+                    technician: 'Equipo interno',
+                    cost: 0,
+                    description: 'Inspección general, limpieza de filtros y revisión de presión.',
+                    parts: 'Programar cambio de aceite en el próximo servicio.'
+                },
+                {
+                    id: crypto.randomUUID(),
+                    machineName: 'Sierra sinfín',
+                    machineCode: 'MQ-014',
+                    area: 'Carpintería',
+                    maintenanceType: 'Correctivo',
+                    status: 'Completado',
+                    maintenanceDate: '2026-07-03',
+                    nextDate: '2026-09-03',
+                    technician: 'Carlos R.',
+                    cost: 185000,
+                    description: 'Ajuste de guía, tensión de cinta y prueba de corte.',
+                    parts: 'Se recomienda mantener repuesto de cinta disponible.'
+                }
+            ];
+            saveRecords();
+        }
+
+        function saveRecords() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        }
+
+        function todayOnly() {
+            const now = new Date();
+            return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        }
+
+        function parseDate(value) {
+            if (!value) return null;
+            const [year, month, day] = value.split('-').map(Number);
+            return new Date(year, month - 1, day);
+        }
+
+        function dateLabel(value) {
+            if (!value) return '-';
+            return parseDate(value).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: '2-digit' });
+        }
+
+        function dueState(record) {
+            if (record.status === 'Completado') return 'done';
+            const next = parseDate(record.nextDate);
+            if (!next) return 'neutral';
+            const diff = Math.ceil((next - todayOnly()) / 86400000);
+            if (diff < 0) return 'overdue';
+            if (diff <= 15) return 'soon';
+            return 'ok';
+        }
+
+        function badgeClass(record) {
+            const due = dueState(record);
+            if (record.status === 'Pendiente repuesto' || due === 'overdue') return 'danger';
+            if (record.status === 'En proceso' || due === 'soon') return 'warn';
+            if (record.status === 'Completado' || due === 'ok') return 'ok';
+            return 'neutral';
+        }
+
+        function dueText(record) {
+            const due = dueState(record);
+            if (due === 'overdue') return 'Vencido';
+            if (due === 'soon') return 'Próximo';
+            return record.status;
+        }
+
+        function getFilteredRecords() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const type = document.getElementById('typeFilter').value;
+            const due = document.getElementById('dueFilter').value;
+
+            return records.filter(record => {
+                const haystack = [
+                    record.machineName, record.machineCode, record.area, record.technician,
+                    record.description, record.parts
+                ].join(' ').toLowerCase();
+                if (query && !haystack.includes(query)) return false;
+                if (status && record.status !== status) return false;
+                if (type && record.maintenanceType !== type) return false;
+                if (due === 'done' && record.status !== 'Completado') return false;
+                if (due === 'overdue' && dueState(record) !== 'overdue') return false;
+                if (due === 'soon' && dueState(record) !== 'soon') return false;
+                return true;
+            }).sort((a, b) => (a.nextDate || '9999-12-31').localeCompare(b.nextDate || '9999-12-31'));
+        }
+
+        function render() {
+            const filtered = getFilteredRecords();
+            recordsBody.innerHTML = filtered.map(record => `
+                <tr>
+                    <td>
+                        <div class="machine">${escapeHtml(record.machineName)}</div>
+                        <div class="subtle">${escapeHtml(record.machineCode || 'Sin código')} · ${escapeHtml(record.area || 'Sin área')}</div>
+                    </td>
+                    <td>${escapeHtml(record.maintenanceType)}</td>
+                    <td><span class="badge ${badgeClass(record)}">${escapeHtml(dueText(record))}</span></td>
+                    <td>${dateLabel(record.maintenanceDate)}</td>
+                    <td>${dateLabel(record.nextDate)}</td>
+                    <td>${escapeHtml(record.technician || '-')}</td>
+                    <td>${money.format(Number(record.cost || 0))}</td>
+                    <td>
+                        <div>${escapeHtml(record.description || '-')}</div>
+                        ${record.parts ? `<div class="subtle">${escapeHtml(record.parts)}</div>` : ''}
+                    </td>
+                    <td>
+                        <div class="row-actions">
+                            <button class="btn icon" title="Editar" data-action="edit" data-id="${escapeHtml(record.id)}"><i class="ph ph-pencil-simple"></i></button>
+                            <button class="btn icon danger" title="Eliminar" data-action="delete" data-id="${escapeHtml(record.id)}"><i class="ph ph-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            emptyState.classList.toggle('hidden', filtered.length > 0);
+            renderKpis();
+        }
+
+        function renderKpis() {
+            const machineCount = new Set(records.map(r => `${r.machineName}|${r.machineCode}`)).size;
+            const overdue = records.filter(r => dueState(r) === 'overdue').length;
+            const soon = records.filter(r => dueState(r) === 'soon').length;
+            const now = new Date();
+            const monthCost = records
+                .filter(r => {
+                    const date = parseDate(r.maintenanceDate);
+                    return date && date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth();
+                })
+                .reduce((sum, r) => sum + Number(r.cost || 0), 0);
+            document.getElementById('kpiMachines').textContent = machineCount;
+            document.getElementById('kpiOverdue').textContent = overdue;
+            document.getElementById('kpiSoon').textContent = soon;
+            document.getElementById('kpiCost').textContent = money.format(monthCost);
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            }[char]));
+        }
+
+        function formData() {
+            return {
+                id: document.getElementById('recordId').value || crypto.randomUUID(),
+                machineName: document.getElementById('machineName').value.trim(),
+                machineCode: document.getElementById('machineCode').value.trim(),
+                area: document.getElementById('area').value.trim(),
+                maintenanceType: document.getElementById('maintenanceType').value,
+                status: document.getElementById('status').value,
+                maintenanceDate: document.getElementById('maintenanceDate').value,
+                nextDate: document.getElementById('nextDate').value,
+                technician: document.getElementById('technician').value.trim(),
+                cost: Number(document.getElementById('cost').value || 0),
+                description: document.getElementById('description').value.trim(),
+                parts: document.getElementById('parts').value.trim()
+            };
+        }
+
+        function resetForm() {
+            form.reset();
+            document.getElementById('recordId').value = '';
+            document.getElementById('maintenanceDate').valueAsDate = todayOnly();
+            document.getElementById('formTitle').textContent = 'Nuevo mantenimiento';
+        }
+
+        function editRecord(id) {
+            const record = records.find(item => item.id === id);
+            if (!record) return;
+            document.getElementById('recordId').value = record.id;
+            Object.entries(record).forEach(([key, value]) => {
+                const input = document.getElementById(key);
+                if (input) input.value = value;
+            });
+            document.getElementById('formTitle').textContent = 'Editar mantenimiento';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteRecord(id) {
+            if (!confirm('¿Eliminar este registro de mantenimiento?')) return;
+            records = records.filter(record => record.id !== id);
+            saveRecords();
+            render();
+        }
+
+        function exportCsv() {
+            const headers = ['Maquina', 'Codigo', 'Area', 'Tipo', 'Estado', 'Fecha mantenimiento', 'Proxima fecha', 'Tecnico', 'Costo', 'Trabajo realizado', 'Repuestos observaciones'];
+            const rows = records.map(r => [
+                r.machineName, r.machineCode, r.area, r.maintenanceType, r.status, r.maintenanceDate,
+                r.nextDate, r.technician, r.cost, r.description, r.parts
+            ]);
+            const csv = [headers, ...rows].map(row => row.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+            downloadFile(csv, `mantenimiento_maquinas_${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv;charset=utf-8');
+        }
+
+        function backupJson() {
+            downloadFile(JSON.stringify(records, null, 2), `backup_mantenimiento_maquinas_${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            const data = formData();
+            const index = records.findIndex(record => record.id === data.id);
+            if (index >= 0) records[index] = data;
+            else records.unshift(data);
+            saveRecords();
+            resetForm();
+            render();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', resetForm);
+        document.getElementById('exportBtn').addEventListener('click', exportCsv);
+        document.getElementById('backupBtn').addEventListener('click', backupJson);
+        document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            if (!confirm('¿Borrar todos los registros de mantenimiento?')) return;
+            records = [];
+            saveRecords();
+            render();
+        });
+        ['searchInput', 'statusFilter', 'typeFilter', 'dueFilter'].forEach(id => {
+            document.getElementById(id).addEventListener('input', render);
+        });
+        recordsBody.addEventListener('click', event => {
+            const button = event.target.closest('button[data-action]');
+            if (!button) return;
+            if (button.dataset.action === 'edit') editRecord(button.dataset.id);
+            if (button.dataset.action === 'delete') deleteRecord(button.dataset.id);
+        });
+        document.getElementById('importFile').addEventListener('change', event => {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const imported = JSON.parse(reader.result);
+                    if (!Array.isArray(imported)) throw new Error('El archivo no contiene una lista de registros.');
+                    records = imported.map(item => ({ ...item, id: item.id || crypto.randomUUID() }));
+                    saveRecords();
+                    render();
+                    alert('Registros importados correctamente.');
+                } catch (error) {
+                    alert('No se pudo importar el archivo: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        });
+
+        resetForm();
+        render();
+    </script>
+</body>
+</html>

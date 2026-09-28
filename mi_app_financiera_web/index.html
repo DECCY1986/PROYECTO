@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Bolsa - Control de Gastos</title>
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for beautiful icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Link to our new modular CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- views container -->
+        <div class="views-container">
+            
+            <!-- ─── VISTA INICIO ─── -->
+            <div id="view-inicio" class="view active">
+                <!-- Header -->
+                <div class="header">
+                    <div class="header-top">
+                        <div class="user-info">
+                            <h2>Hola, Deccy 👋</h2>
+                            <h1>Mi Bolsa</h1>
+                        </div>
+                        <div class="notification-bell">
+                            <i class="fa-regular fa-bell"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="balance-value" id="balance-display">$0</div>
+                    <div class="balance-sub" id="balance-projected-display">Proyectado: $0</div>
+                    <div class="balance-label">Saldo disponible</div>
+                    
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-icon expense">
+                                <i class="fa-solid fa-arrow-down"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Gastos</span>
+                                <span class="stat-amount" id="total-expenses-display">$0</span>
+                                <span class="stat-projected" id="total-expenses-projected-display">Proy: $0</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon income">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-label">Ingresos</span>
+                                <span class="stat-amount" id="total-income-display">$0</span>
+                                <span class="stat-projected" id="total-income-projected-display">Proy: $0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Presupuestos -->
+                <div class="section-header">
+                    <h3>Presupuestos</h3>
+                    <a href="#" onclick="switchTab('presupuestos'); return false;">Ver todo</a>
+                </div>
+
+                <div class="horizontal-list" id="budgets-horizontal-list">
+                    <!-- Dynamic cards go here -->
+                </div>
+
+                <!-- Section Ultimos Movimientos -->
+                <div class="section-header">
+                    <h3>Últimos movimientos</h3>
+                </div>
+
+                <div class="transaction-list" id="recent-transactions-list">
+                    <!-- Dynamic transactions go here -->
+                </div>
+            </div>
+
+            <!-- ─── VISTA PRESUPUESTOS ─── -->
+            <div id="view-presupuestos" class="view">
+                <div class="view-title-bar" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Presupuestos</h2>
+                    <button class="btn-submit" id="open-add-cat-btn" style="margin: 0; width: auto; padding: 8px 16px; border-radius: 12px; font-size: 13px;">
+                        <i class="fa-solid fa-plus" style="margin-right: 4px;"></i> Nueva
+                    </button>
+                </div>
+                <div class="budget-list" id="large-budget-list">
+                    <!-- Dynamic full budgets go here -->
+                </div>
+            </div>
+
+            <!-- ─── VISTA MOVIMIENTOS ─── -->
+            <div id="view-movimientos" class="view">
+                <div class="view-title-bar">
+                    <h2>Movimientos</h2>
+                    <div class="filter-bar" style="display: flex; gap: 8px; margin-top: 12px; background-color: var(--primary-light); padding: 4px; border-radius: 12px;">
+                        <button class="filter-btn active" onclick="setTxFilter('todos', this)" style="flex: 1; border: none; background: transparent; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: var(--transition-smooth);">Todos</button>
+                        <button class="filter-btn" onclick="setTxFilter('ejecutado', this)" style="flex: 1; border: none; background: transparent; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: var(--transition-smooth);">Ejecutados</button>
+                        <button class="filter-btn" onclick="setTxFilter('proyectado', this)" style="flex: 1; border: none; background: transparent; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: var(--transition-smooth);">Proyectados</button>
+                    </div>
+                    <div class="filter-bar type-filter-bar" style="display: flex; gap: 8px; margin-top: 8px; background-color: var(--primary-light); padding: 4px; border-radius: 12px;">
+                        <button class="filter-btn type-btn active" onclick="setTxTypeFilter('todos', this)" style="flex: 1; border: none; background: transparent; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: var(--transition-smooth);">Todos</button>
+                        <button class="filter-btn type-btn" onclick="setTxTypeFilter('gastos', this)" style="flex: 1; border: none; background: transparent; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: var(--transition-smooth);"><i class="fa-solid fa-arrow-down-long" style="color: var(--expense-red); margin-right: 4px;"></i>Gastos</button>
+                        <button class="filter-btn type-btn" onclick="setTxTypeFilter('ingresos', this)" style="flex: 1; border: none; background: transparent; padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: var(--transition-smooth);"><i class="fa-solid fa-arrow-up-long" style="color: var(--income-green); margin-right: 4px;"></i>Ingresos</button>
+                    </div>
+                </div>
+                <div class="transaction-list" id="full-transactions-list">
+                    <!-- Dynamic full list of transactions goes here -->
+                </div>
+            </div>
+
+            <!-- ─── VISTA DEUDAS ─── -->
+            <div id="view-deudas" class="view">
+                <div class="view-title-bar" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Mis Deudas</h2>
+                    <button class="btn-submit" id="open-add-deuda-btn" style="margin: 0; width: auto; padding: 8px 16px; border-radius: 12px; font-size: 13px;">
+                        <i class="fa-solid fa-plus" style="margin-right: 4px;"></i> Nueva
+                    </button>
+                </div>
+                <div id="deudas-list" style="padding: 0 20px;"></div>
+            </div>
+        </div>
+
+        <!-- Floating Action Button -->
+        <div class="fab" id="open-modal-btn">
+            <i class="fa-solid fa-plus"></i>
+        </div>
+
+        <!-- Bottom Navbar -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('inicio')">
+                <i class="fa-solid fa-house"></i>
+                <span>Inicio</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('presupuestos')">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Presup.</span>
+            </div>
+            <!-- Empty item to create space for the FAB -->
+            <div style="width: 56px; visibility: hidden;"></div>
+            <div class="nav-item" onclick="switchTab('deudas')">
+                <i class="fa-solid fa-hand-holding-dollar"></i>
+                <span>Deudas</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('movimientos')">
+                <i class="fa-solid fa-list-ul"></i>
+                <span>Movim.</span>
+            </div>
+        </div>
+
+        <!-- Add Transaction Modal Overlay -->
+        <div class="modal-overlay" id="modal-overlay">
+            <div class="modal-card">
+                <div class="modal-drag-handle"></div>
+                <h3 class="modal-title">Nuevo movimiento</h3>
+
+                <!-- Type Selector (Gasto / Ingreso) -->
+                <div class="type-toggle">
+                    <button class="toggle-btn active expense" id="toggle-expense">Gasto</button>
+                    <button class="toggle-btn" id="toggle-income">Ingreso</button>
+                </div>
+
+                <!-- State Selector (Ejecutado / Proyectado) -->
+                <div class="type-toggle state-toggle" style="margin-bottom: 20px;">
+                    <button class="toggle-btn active executed" id="toggle-executed">Ejecutado</button>
+                    <button class="toggle-btn projected" id="toggle-projected">Proyectado</button>
+                </div>
+
+                <!-- Description Field -->
+                <div class="input-group">
+                    <i class="fa-solid fa-pen-nib"></i>
+                    <div class="input-wrapper">
+                        <label class="input-label">Descripción</label>
+                        <input type="text" id="input-desc" class="input-field" placeholder="Ej: Mercado, Gasolina...">
+                    </div>
+                </div>
+
+                <!-- Amount Field -->
+                <div class="input-group">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                    <div class="input-wrapper">
+                        <label class="input-label">Monto (COP)</label>
+                        <input type="number" id="input-monto" class="input-field" placeholder="0">
+                    </div>
+                </div>
+
+                <!-- Category Field -->
+                <div class="input-group">
+                    <i class="fa-solid fa-tags"></i>
+                    <div class="input-wrapper">
+                        <label class="input-label">Categoría</label>
+                        <select id="input-category" class="input-field">
+                            <!-- Dynamic category options -->
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn-submit" id="save-transaction-btn">Guardar movimiento</button>
+            </div>
+        </div>
+
+        <!-- Add/Edit Category Modal Overlay -->
+        <div class="modal-overlay" id="modal-category-overlay">
+            <div class="modal-card">
+                <div class="modal-drag-handle"></div>
+                <h3 class="modal-title" id="category-modal-title">Editar categoría</h3>
+
+                <!-- Name Field -->
+                <div class="input-group">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <div class="input-wrapper">
+                        <label class="input-label">Nombre de la categoría</label>
+                        <input type="text" id="cat-input-nombre" class="input-field" placeholder="Ej: 🍔 Comida, 🚘 Vehículo...">
+                    </div>
+                </div>
+
+                <!-- Limit Field -->
+                <div class="input-group">
+                    <i class="fa-solid fa-vault"></i>
+                    <div class="input-wrapper">
+                        <label class="input-label">Límite mensual (COP)</label>
+                        <input type="number" id="cat-input-limite" class="input-field" placeholder="0">
+                    </div>
+                </div>
+
+                <!-- Color Selection (Preset Colors) -->
+                <div style="margin-bottom: 20px;">
+                    <label class="input-label" style="display: block; margin-bottom: 8px;">Color de categoría</label>
+                    <div style="display: flex; gap: 10px;" id="cat-color-selector">
+                        <div class="color-dot active" data-color="#E8AEB7" style="background-color: #E8AEB7;"></div>
+                        <div class="color-dot" data-color="#B5E2FA" style="background-color: #B5E2FA;"></div>
+                        <div class="color-dot" data-color="#F1C0E8" style="background-color: #F1C0E8;"></div>
+                        <div class="color-dot" data-color="#CCD5AE" style="background-color: #CCD5AE;"></div>
+                        <div class="color-dot" data-color="#EDF2F4" style="background-color: #EDF2F4;"></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-submit" id="delete-category-btn" style="background-color: var(--expense-red); flex: 1; margin: 0;">Eliminar</button>
+                    <button class="btn-submit" id="save-category-btn" style="flex: 2; margin: 0;">Guardar</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Referenciando nuestros nuevos archivos JS modularizados -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

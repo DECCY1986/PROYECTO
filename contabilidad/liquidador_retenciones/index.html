@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquidador de Retenciones - TaxFlow</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Iconos Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="../../style.css?v=20260612">
+    <link rel="stylesheet" href="styles.css?v=20260612">
+</head>
+
+<body>
+
+        <!-- Sidebar removed for workspace integration -->
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Header -->
+            <header class="topbot-header">
+                <div>
+                    <p class="subtitle">Calcula las deducciones aplicables a tus facturas de compra.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="primary-btn" id="btnExport">
+                        <i class="ph ph-download-simple"></i> Exportar PDF
+                    </button>
+                    <button class="primary-btn" id="btnPrint" style="background: var(--color-text-secondary);">
+                        <i class="ph ph-printer"></i> Imprimir
+                    </button>
+                </div>
+            </header>
+
+            <div class="calculator-grid">
+                <!-- Input Section -->
+                <section class="card input-card">
+                    <div class="card-header">
+                        <h3><i class="ph ph-pencil-line"></i> Datos de la Factura</h3>
+                    </div>
+                    <form id="liquidadorForm" class="form-container">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="providerName">Nombre del Proveedor</label>
+                                <input type="text" id="providerName" placeholder="Ej. Dimalcco S.A.S.">
+                            </div>
+                            <div class="form-group">
+                                <label for="invoiceNum">N° de Factura</label>
+                                <input type="text" id="invoiceNum" placeholder="Ej. FE-1234">
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Items Section -->
+                        <div id="items-section" style="margin-bottom: 20px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                                <label class="section-title" style="margin:0; font-size:0.85rem; font-weight:600; color:var(--color-text-secondary);">Detalle de Ítems / Productos</label>
+                                <button type="button" class="primary-btn" id="btnAddItem" style="padding:5px 10px; font-size:11px; background:var(--color-accent-primary, #3b82f6); border:none; display:flex; align-items:center; gap:4px; border-radius:6px; cursor:pointer; font-weight:600; color:#fff">
+                                    <i class="ph ph-plus-circle"></i> Agregar Ítem
+                                </button>
+                            </div>
+                            
+                            <!-- Items List Container -->
+                            <div id="itemsList" style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+                                <!-- Loaded dynamically via JS -->
+                            </div>
+
+                            <!-- Totals from items -->
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; background:var(--bg-card-secondary, #f8fafc); padding:12px; border-radius:8px; border:1px solid var(--border-color, #e2e8f0); margin-top:10px;">
+                                <div>
+                                    <span style="font-size:10px; font-weight:700; color:var(--color-text-secondary); text-transform:uppercase; display:block; margin-bottom:4px">Subtotal Calculado</span>
+                                    <span style="font-family:'Inter',monospace; font-weight:600; font-size:13px; color:var(--text-primary, #1e293b)" id="lblSubtotalSum">$ 0.00</span>
+                                    <input type="hidden" id="subtotal" value="0">
+                                </div>
+                                <div>
+                                    <span style="font-size:10px; font-weight:700; color:var(--color-text-secondary); text-transform:uppercase; display:block; margin-bottom:4px">IVA Calculado</span>
+                                    <span style="font-family:'Inter',monospace; font-weight:600; font-size:13px; color:var(--text-primary, #1e293b)" id="lblIvaSum">$ 0.00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group checkbox-group" style="margin-top: 10px;">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="isAIU">
+                                <span class="checkmark"></span>
+                                Factura con AIU
+                            </label>
+                        </div>
+
+                        <div id="aiuFields" style="display: none; background: var(--bg-color); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px dashed var(--border-color);">
+                            <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px; color: var(--color-text-primary);">Detalle AIU</div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="aiuAdmin">Administración (A)</label>
+                                    <div class="input-wrapper">
+                                        <span class="currency-symbol">$</span>
+                                        <input type="number" id="aiuAdmin" placeholder="0.00" step="0.01">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="aiuImprev">Imprevistos (I)</label>
+                                    <div class="input-wrapper">
+                                        <span class="currency-symbol">$</span>
+                                        <input type="number" id="aiuImprev" placeholder="0.00" step="0.01">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="aiuUtilidad">Utilidad (U)</label>
+                                    <div class="input-wrapper">
+                                        <span class="currency-symbol">$</span>
+                                        <input type="number" id="aiuUtilidad" placeholder="0.00" step="0.01">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label for="aiuBaseTax">Base para Retenciones (El IVA siempre se calcula sobre la Utilidad)</label>
+                                <select id="aiuBaseTax" class="custom-select">
+                                    <option value="total_aiu">Total AIU (A+I+U) - Aseo, Vigilancia, Temporales</option>
+                                    <option value="utilidad">Solo Utilidad (U) - Obras Civiles</option>
+                                    <option value="subtotal">Subtotal completo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="divider">
+
+                        <div class="section-title">Las Dos Partes</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="iProveedor">Tipo de Proveedor (al que compras)</label>
+                                <select id="iProveedor" class="custom-select">
+                                    <option value="pn_no_decl">PN no obligada a declarar renta</option>
+                                    <option value="pn_decl">PN obligada a declarar / oblig. llevar contabilidad</option>
+                                    <option value="pj" selected>Persona jurídica régimen ordinario</option>
+                                    <option value="rst">Régimen Simple de Tributación (RST)</option>
+                                    <option value="no_residente">No residente / del exterior</option>
+                                    <option value="autorretenedor">Autorretenedor de renta</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="iComprador">Tipo de Comprador (tú)</label>
+                                <select id="iComprador" class="custom-select">
+                                    <option value="agente" selected>Responsable IVA régimen ordinario (Art. 368 ET)</option>
+                                    <option value="gran">Gran contribuyente designado por DIAN</option>
+                                    <option value="publico">Entidad pública (Estado)</option>
+                                    <option value="rst_compr">Régimen Simple (RST)</option>
+                                    <option value="no_agente">No agente retenedor (PN sin patrimonio &gt;30.000 UVT)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="divider">
+
+                        <div class="section-title">Configuración de Retenciones</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="iTipoOp">Tipo de Operación</label>
+                                <select id="iTipoOp" class="custom-select">
+                                    <option value="bien" selected>Compra de bien</option>
+                                    <option value="servicio">Prestación de servicio</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="iConcepto">Concepto Específico</label>
+                                <select id="iConcepto" class="custom-select"></select>
+                                <input type="number" id="customRetefuente" placeholder="Porcentaje % personalizado" step="0.01" class="hidden-input">
+                            </div>
+                        </div>
+
+                        <hr class="divider">
+
+                        <div class="section-title">ICA y Autorretención</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="iCiudad">Ciudad de Operación</label>
+                                <select id="iCiudad" class="custom-select">
+                                    <option value="9.66">Bogotá</option>
+                                    <option value="7.00">Medellín</option>
+                                    <option value="11.00">Cali</option>
+                                    <option value="6.90">Barranquilla</option>
+                                    <option value="7.00">Bucaramanga</option>
+                                    <option value="10.00">Cartagena</option>
+                                    <option value="8.00">Pereira</option>
+                                    <option value="7.00">Manizales</option>
+                                    <option value="7.00">Ibagué</option>
+                                    <option value="8.00">Pasto</option>
+                                    <option value="0">Otra (no aplica)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="iICA">Tarifa ICA (por mil)</label>
+                                <input type="number" id="iICA" value="9.66" step="0.01" min="0">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-container">
+                                    <input type="checkbox" id="iAplicaICA" checked>
+                                    <span class="checkmark"></span>
+                                    Aplicar ReteICA
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="iAutorret">¿Eres autorretenedor de renta?</label>
+                                <select id="iAutorret" class="custom-select">
+                                    <option value="no" selected>No soy autorretenedor</option>
+                                    <option value="si">Sí, soy autorretenedor</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row" id="gCIIU" style="display:none">
+                            <div class="form-group" style="grid-column: 1 / span 2;">
+                                <label for="iCIIU">Actividad / sector (autorret CIIU)</label>
+                                <select id="iCIIU" class="custom-select">
+                                    <option value="0.0040">Comercio al por menor (0.40 %)</option>
+                                    <option value="0.0040">Salud y educación (0.40 %)</option>
+                                    <option value="0.0055" selected>Industria manufacturera (0.55 %)</option>
+                                    <option value="0.0055">Construcción (0.55 %)</option>
+                                    <option value="0.0055">Comercio al por mayor (0.55 %)</option>
+                                    <option value="0.0055">Transporte y logística (0.55 %)</option>
+                                    <option value="0.0055">Alojamiento y restaurantes (0.55 %)</option>
+                                    <option value="0.0080">Agricultura, pesca y silvicultura (0.80 %)</option>
+                                    <option value="0.0110">Profesionales, científicas y técnicas (1.10 %)</option>
+                                    <option value="0.0110">Administrativas y de apoyo (1.10 %)</option>
+                                    <option value="0.0110">Inmobiliarias (1.10 %)</option>
+                                    <option value="0.0110">Información y comunicaciones (1.10 %)</option>
+                                    <option value="0.0110">Suministro electricidad, gas, agua (1.10 %)</option>
+                                    <option value="0.0160">Actividades financieras (1.60 %)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="divider">
+                        <div class="form-row">
+                            <div class="form-group" style="grid-column: 1 / span 2;">
+                                <label for="abonos">Abonos Realizados</label>
+                                <div class="input-wrapper">
+                                    <span class="currency-symbol">$</span>
+                                    <input type="number" id="abonos" placeholder="0.00" step="1000" style="padding-left: 28px !important;">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Results Section -->
+                <section class="results-container">
+                    <div class="card summary-card">
+                        <div class="card-header">
+                            <h3><i class="ph ph-chart-pie"></i> Resumen de Liquidación</h3>
+                        </div>
+                        <div class="summary-list">
+                            <div class="summary-item">
+                                <span>Subtotal</span>
+                                <span id="resSubtotal" class="amount">$ 0.00</span>
+                            </div>
+                            <div class="summary-item" id="summaryAiu" style="display:none; font-size: 0.85em; color: var(--color-text-secondary); margin-top: -5px; margin-bottom: 5px;">
+                                <span>Base IVA/Retenciones (AIU)</span>
+                                <span id="resBaseAIU" class="amount">$ 0.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>IVA</span>
+                                <span id="resIVA" class="amount">$ 0.00</span>
+                            </div>
+                            <div class="summary-item total-gross">
+                                <span>Total Bruto</span>
+                                <span id="resTotalGross" class="amount">$ 0.00</span>
+                            </div>
+                            <hr class="divider">
+                            <div class="summary-item deduction">
+                                <span>(-) Retefuente</span>
+                                <span id="resRetefuente" class="amount negative">$ 0.00</span>
+                            </div>
+                            <div class="summary-item deduction">
+                                <span>(-) ReteIVA</span>
+                                <span id="resReteIVA" class="amount negative">$ 0.00</span>
+                            </div>
+                            <div class="summary-item deduction">
+                                <span>(-) ReteICA</span>
+                                <span id="resReteICA" class="amount negative">$ 0.00</span>
+                            </div>
+                            <div class="summary-item total-deductions">
+                                <span>Total Retenciones</span>
+                                <span id="resTotalDeductions" class="amount negative">$ 0.00</span>
+                            </div>
+                            <hr class="divider">
+                            <div class="summary-item final-total">
+                                <span>NETO A PAGAR</span>
+                                <span id="resNetToPay" class="amount highlight">$ 0.00</span>
+                            </div>
+                            <div class="summary-item deduction" style="color: var(--color-accent-primary);">
+                                <span>(-) Abonos</span>
+                                <span id="resAbonos" class="amount">$ 0.00</span>
+                            </div>
+                            <div class="summary-item final-total" style="color: var(--color-success); border-top: 2px solid var(--border-color); padding-top: 10px;">
+                                <span>SALDO RESTANTE</span>
+                                <span id="resBalance" class="amount highlight">$ 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card summary-card" id="matrizCard" style="padding: 20px;">
+                        <div class="card-header" style="margin-bottom: 10px;">
+                            <h3><i class="ph ph-table"></i> Detalle de Retenciones (DIAN 2026)</h3>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="matriz-table" id="matriz">
+                                <!-- Generated dynamically via JS -->
+                            </table>
+                        </div>
+                        <div class="notas-disclaimer" id="notas" style="margin-top: 15px; display: none;"></div>
+                    </div>
+
+                    <div class="card" style="padding: 20px;">
+                        <details class="normativa-list" style="margin: 0;" open>
+                            <summary style="cursor:pointer; font-weight:700; color:var(--text-primary); font-size:0.85rem; display:flex; align-items:center; gap:6px">
+                                <i class="ph ph-scales"></i> Normativa aplicada (Vigente 2026)
+                            </summary>
+                            <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 8px; padding: 10px; margin: 10px 0; color: #fbbf24; font-size: 0.75rem; line-height: 1.5;">
+                                <strong>⚠ Decreto 0572 de 2025 — REACTIVADO (actualizado 2-jun-2026).</strong> El Consejo de Estado (Sección Cuarta, exp. 30229) <strong>revocó el 2 de junio de 2026</strong> la suspensión provisional que había decretado el 7 de mayo, por lo que el Decreto 0572/2025 <strong>vuelve a regir</strong>. La reactivación es <strong>gradual</strong>: las nuevas bases mínimas (compras 10 UVT, servicios 2 UVT) y las tarifas de autorretención del 572 aplican <strong>desde el 1 de julio de 2026</strong>. Hasta esa fecha rigen las bases de transición: compras generales 27 UVT, servicios 4 UVT, productos agrícolas 92 UVT. <strong>Esta calculadora refleja las bases de transición (27/4 UVT)</strong>.
+                            </div>
+                            <ul style="margin-top: 8px; padding-left: 18px; font-size: 0.75rem; color: var(--color-text-secondary); line-height: 1.6; display: flex; flex-direction: column; gap: 6px;">
+                                <li><strong>Retefuente renta:</strong> Art. 392 y siguientes del ET. Bases mínimas en transición (hasta 30-jun-2026): compras generales 27 UVT, servicios 4 UVT, productos agrícolas sin proceso industrial 92 UVT. <strong>Desde el 1-jul-2026</strong> rigen las del D0572/2025: compras 10 UVT, servicios 2 UVT.</li>
+                                <li><strong>ReteIVA:</strong> Art. 437-2 ET. Solo se practica en casos taxativos:
+                                    <ul style="margin-top: 2px; padding-left: 14px; list-style-type: circle;">
+                                        <li>Num 1 — Entidades estatales → 15% al responsable común.</li>
+                                        <li>Num 2 — Grandes contribuyentes → 15% al responsable común.</li>
+                                        <li>Num 3 — Compras al exterior (no residentes) → 100% del IVA teórico.</li>
+                                        <li>Num 9 — Cualquier responsable del IVA al adquirir bienes/servicios gravados a contribuyente del <strong>Régimen Simple</strong> → 15%.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>ReteICA:</strong> Acuerdos municipales. Tarifa por mil sobre el ingreso. RST exento (Art. 911 ET).</li>
+                                <li><strong>Autorretención especial de renta:</strong> Rigen tarifas CIIU del Dec. 1123/2024 (transición) y Dec. 0572/2025 (desde 1-jul-2026). Solo sociedades nacionales contribuyentes de renta.</li>
+                                <li><strong>Régimen Simple (Art. 911 ET):</strong> No sujetos a retefuente renta ni reteICA (salvo laboral). Sí reciben reteIVA por num 9 Art. 437-2 cuando venden a responsable del IVA.</li>
+                            </ul>
+                            <p style="margin-top: 10px; font-size: 0.7rem; color: var(--color-text-tertiary);"><strong>UVT 2026:</strong> $52.374 (Resolución DIAN 000238/2025). <strong>Tarifa general reteIVA:</strong> 15% del IVA facturado.</p>
+                        </details>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js?v=20260612"></script>
+</body>
+
+</html>

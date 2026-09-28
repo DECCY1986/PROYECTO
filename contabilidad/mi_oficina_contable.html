@@ -1,0 +1,3244 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8"><link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="dns-prefetch" href="https://cdnjs.cloudflare.com"><link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#059669">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Oficina Contable — DIMALCCO SAS</title>
+<meta name="description" content="Gestiona las obligaciones tributarias de todos tus clientes desde un solo lugar. Calendario DIAN 2026, semáforos de vencimiento, control de presentación. Mini CRM contable gratis.">
+<meta name="keywords" content="oficina contable, CRM contable, gestión clientes contador, vencimientos DIAN, calendario tributario clientes, control obligaciones tributarias, exógena DIAN, renta personas jurídicas, IVA, retención fuente">
+<meta name="author" content="DIMALCCO SAS">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mi Oficina Contable — Gestiona clientes y obligaciones DIAN">
+<meta property="og:description" content="Mini CRM para contadores colombianos. Controla vencimientos DIAN 2026 de todos tus clientes: exógena, renta, IVA, retención.">
+<meta property="og:site_name" content="DIMALCCO SAS">
+<meta property="og:locale" content="es_CO">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mi Oficina Contable — DIMALCCO SAS">
+<meta name="twitter:description" content="Gestiona obligaciones tributarias de todos tus clientes. Calendario DIAN 2026, semáforos de vencimiento.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --g50:#ECFDF5;--g100:#D1FAE5;--g200:#A7F3D0;--g300:#6EE7B7;--g400:#34D399;--g500:#10B981;--g600:#059669;--g700:#047857;--g800:#065F46;--g900:#064E3B;
+  --f50:#F9FAFB;--f100:#F3F4F6;--f200:#E5E7EB;--f300:#D1D5DB;--f400:#9CA3AF;--f500:#6B7280;--f600:#4B5563;--f700:#374151;--f800:#1F2937;--f900:#111827;
+  --red:#EF4444;--red50:#FEF2F2;--amber:#F59E0B;--amber50:#FFFBEB;--blue:#3B82F6;--blue50:#EFF6FF;
+  --r:12px;--shadow:0 2px 12px rgba(0,0,0,.06);
+  --font:'Outfit',sans-serif
+}
+body{font-family:var(--font);background:var(--f50);color:var(--f900);min-height:100vh}
+.container{max-width:1400px;margin:0 auto;padding:24px 20px}
+/* Backup banner */
+.backup-banner{display:none;align-items:center;gap:14px;padding:12px 16px;border-radius:var(--r);margin-bottom:16px;font-size:.88rem;font-weight:600}
+.backup-banner.show{display:flex}
+.backup-banner.warning{background:var(--amber50);border:1px solid #FCD34D;color:#92400E}
+.backup-banner.danger{background:var(--red50);border:1px solid #FCA5A5;color:#991B1B}
+.backup-banner .backup-icon{font-size:1.3rem;flex-shrink:0}
+.backup-banner .backup-msg{flex:1;line-height:1.4}
+.backup-banner .backup-cta{flex-shrink:0;padding:7px 14px;border-radius:8px;font-weight:700;cursor:pointer;font-family:var(--font);font-size:.8rem;white-space:nowrap;background:#fff;border:1px solid currentColor;color:inherit}
+.backup-banner .backup-cta:hover{filter:brightness(.95)}
+.backup-banner.warning .backup-cta:hover{background:#92400E;color:#fff;border-color:#92400E}
+.backup-banner.danger .backup-cta:hover{background:#991B1B;color:#fff;border-color:#991B1B}
+@media(max-width:640px){
+  .backup-banner{flex-wrap:wrap}
+  .backup-banner .backup-msg{flex:1 1 100%;order:2}
+  .backup-banner .backup-cta{order:3;margin-left:auto}
+}
+/* Header */
+.page-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.page-header h1{font-size:1.5rem;font-weight:800;color:var(--f900);display:flex;align-items:center;gap:10px}
+.page-header h1 span{font-size:1.6rem}
+.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.client-counter{font-size:.82rem;color:var(--f500);font-weight:700;padding:7px 12px;background:var(--f100);border-radius:8px;white-space:nowrap}
+.client-counter.warning{color:#92400E;background:var(--amber50)}
+.client-counter.danger{color:#991B1B;background:var(--red50)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;font-family:var(--font);font-weight:600;font-size:.88rem;cursor:pointer;border:none;transition:all .2s;text-decoration:none}
+.btn-primary{background:var(--g600);color:#fff}
+.btn-primary:hover{background:var(--g700);transform:translateY(-1px);box-shadow:0 4px 16px rgba(5,150,105,.25)}
+.btn-sm{padding:6px 14px;font-size:.8rem;border-radius:8px}
+.btn-outline{background:#fff;color:var(--f700);border:1px solid var(--f200)}
+.btn-outline:hover{border-color:var(--g600);color:var(--g700);background:var(--g50)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#DC2626}
+/* Stat cards */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:var(--r);border:1px solid var(--f200);padding:18px 20px;box-shadow:var(--shadow)}
+.stat-card .stat-label{font-size:.78rem;font-weight:600;color:var(--f400);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.stat-card .stat-value{font-size:1.5rem;font-weight:800;color:var(--f900)}
+.stat-card .stat-detail{font-size:.82rem;color:var(--f500);margin-top:2px;line-height:1.4}
+.stat-card.danger .stat-value{color:var(--red)}
+.stat-card.warning .stat-value{color:var(--amber)}
+.stat-card.clickable{cursor:pointer;transition:transform .12s,box-shadow .15s,border-color .15s;-webkit-tap-highlight-color:transparent}
+.stat-card.clickable:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(0,0,0,.10)}
+.stat-card.clickable:active{transform:translateY(0)}
+.stat-card.active{border-color:var(--g600);box-shadow:0 0 0 2px var(--g600) inset,0 4px 14px rgba(16,185,129,.18)}
+.stat-card.danger.active{border-color:var(--red);box-shadow:0 0 0 2px var(--red) inset,0 4px 14px rgba(239,68,68,.18)}
+.stat-hint{display:block;margin-top:6px;font-size:.68rem;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.04em;opacity:.85}
+.stat-card.danger .stat-hint{color:var(--red)}
+.stat-card.active .stat-hint::before{content:"● "}
+.pill-count{display:inline-block;margin-left:5px;padding:0 6px;border-radius:999px;background:var(--f100);color:var(--f500);font-size:.72rem;font-weight:800}
+.filter-pill.active .pill-count{background:rgba(255,255,255,.28);color:#fff}
+.clear-filters{padding:6px 12px;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid var(--red);background:#FEF2F2;color:var(--red);font-family:var(--font);transition:all .15s}
+.clear-filters:hover{background:var(--red);color:#fff}
+.row-overdue td:first-child{box-shadow:inset 4px 0 0 var(--red)}
+@keyframes flash-row{0%,100%{background:#fff}30%{background:#FEF3C7}}
+.row-flash td{animation:flash-row 1.1s ease-in-out 2}
+/* Filters */
+.filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:#fff;border-radius:var(--r);border:1px solid var(--f200)}
+.filter-pill{padding:6px 14px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid var(--f200);background:#fff;color:var(--f600);font-family:var(--font);transition:all .15s}
+.filter-pill:hover{border-color:var(--g500);color:var(--g700)}
+.filter-pill.active{background:var(--g600);color:#fff;border-color:var(--g600)}
+.filter-select{padding:6px 12px;border-radius:8px;font-size:.82rem;font-weight:500;border:1px solid var(--f200);background:#fff;color:var(--f700);font-family:var(--font);cursor:pointer}
+.filter-select:focus{outline:2px solid var(--g500);outline-offset:1px}
+.filter-search{flex:1 1 260px;min-width:220px;max-width:380px;padding:9px 14px 9px 34px;border-radius:8px;font-size:.88rem;font-weight:500;border:1.5px solid var(--f200);background:#fff url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' fill='none' stroke='%23059669' stroke-width='2.2' stroke-linecap='round' viewBox='0 0 24 24'%3e%3ccircle cx='11' cy='11' r='8'/%3e%3cpath d='m21 21-4.35-4.35'/%3e%3c/svg%3e") 11px center no-repeat;color:var(--f800);font-family:var(--font);transition:border-color .15s,box-shadow .15s}
+.filter-search:focus{outline:none;border-color:var(--g500);box-shadow:0 0 0 3px rgba(5,150,105,.12)}
+.filter-search:hover{border-color:var(--g500)}
+.filter-search::placeholder{color:var(--f400);font-weight:400}
+.filter-count{margin-left:auto;font-size:.78rem;color:var(--f500);font-weight:600;white-space:nowrap;padding:6px 10px;background:var(--f50);border-radius:6px;display:none}
+.filter-count.show{display:inline-block}
+.filter-count strong{color:var(--g700)}
+/* Table */
+.table-wrap{overflow:auto;max-height:calc(100vh - 80px);background:#fff;border-radius:var(--r);border:1px solid var(--f200);box-shadow:var(--shadow)}
+.obl-table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:900px}
+.obl-table thead{background:var(--f50);position:sticky;top:0;z-index:2}
+.obl-table th{padding:10px 8px;font-weight:700;color:var(--f600);text-align:center;border-bottom:2px solid var(--f200);white-space:nowrap;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em}
+.obl-table th:first-child{text-align:left;padding-left:16px;position:sticky;left:0;background:var(--f50);z-index:3;min-width:160px}
+.obl-table td{padding:6px 6px;text-align:center;border-bottom:1px solid var(--f100);vertical-align:middle}
+.obl-table td:first-child{text-align:left;padding-left:16px;position:sticky;left:0;background:#fff;z-index:1;font-weight:600;color:var(--f800)}
+.obl-table tbody tr:hover td{background:var(--f50)}
+.obl-table th.sortable{cursor:pointer;user-select:none;position:relative}
+.obl-table th.sortable:hover{color:var(--g700);background:var(--g50)}
+.obl-table th.sortable:hover:first-child{background:var(--g50)}
+.obl-table th .sort-arrow{display:inline-block;margin-left:4px;color:var(--g600);font-size:.7rem}
+.obl-table th .sort-arrow.inactive{color:var(--f300);opacity:0}
+.obl-table th.sortable:hover .sort-arrow.inactive{opacity:1}
+.obl-table tbody tr:hover td:first-child{background:var(--f50)}
+/* Cells */
+.obl-cell{display:inline-flex;flex-direction:column;align-items:center;gap:2px;padding:4px 6px;border-radius:8px;cursor:pointer;min-width:64px;transition:background .15s;position:relative}
+.obl-cell:hover{background:var(--f100)}
+.obl-cell .date-text{font-size:.72rem;font-weight:600;color:var(--f600);line-height:1.2}
+.obl-cell .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.dot-green{background:#10B981}
+.dot-red{background:#EF4444;animation:pulse-red 1.5s ease-in-out infinite}
+.dot-orange{background:#F97316}
+.dot-yellow{background:#F59E0B}
+.dot-gray{background:#D1D5DB}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 4px rgba(239,68,68,0)}}
+.obl-cell .quick-link{font-size:.65rem;color:var(--g600);text-decoration:none;font-weight:600;opacity:0;transition:opacity .15s}
+.obl-cell:hover .quick-link{opacity:1}
+.obl-na{color:var(--f300);font-size:.72rem;font-style:italic}
+/* Client row actions */
+.client-actions{display:flex;gap:4px;margin-top:2px}
+.client-actions button{background:none;border:none;cursor:pointer;font-size:.75rem;padding:2px 4px;border-radius:4px;color:var(--f400);transition:all .15s}
+.client-actions button:hover{color:var(--g700);background:var(--g50)}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--f200)}
+.modal-header h2{font-size:1.1rem;font-weight:700}
+.modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--f400);padding:4px}
+.modal-close:hover{color:var(--f900)}
+.modal-body{padding:20px 24px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:.82rem;font-weight:600;color:var(--f700);margin-bottom:5px}
+.form-group input,.form-group select{width:100%;padding:10px 12px;border:1px solid var(--f200);border-radius:8px;font-size:.9rem;font-family:var(--font);color:var(--f800);transition:border-color .2s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--g500);box-shadow:0 0 0 3px rgba(5,150,105,.1)}
+.form-group .hint{font-size:.72rem;color:var(--f400);margin-top:3px}
+.form-group .error{font-size:.72rem;color:var(--red);margin-top:3px;display:none}
+.checkbox-group{display:flex;flex-wrap:wrap;gap:10px}
+.checkbox-item{display:flex;align-items:center;gap:6px;font-size:.85rem;font-weight:500;color:var(--f700);cursor:pointer}
+.checkbox-item input[type="checkbox"]{accent-color:var(--g600);width:16px;height:16px;cursor:pointer}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--f200);display:flex;justify-content:flex-end;gap:10px}
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--f400)}
+.empty-state .empty-icon{font-size:3rem;margin-bottom:12px}
+.empty-state h3{font-size:1.1rem;font-weight:700;color:var(--f600);margin-bottom:6px}
+.empty-state p{font-size:.88rem;max-width:400px;margin:0 auto 16px;line-height:1.5}
+/* PRO badge */
+.pro-limit{background:var(--amber50);border:1px solid #FCD34D;border-radius:var(--r);padding:14px 20px;text-align:center;margin-top:16px}
+.pro-limit .pro-text{font-size:.88rem;color:#92400E;font-weight:600}
+.pro-limit a{color:var(--g700);font-weight:700;text-decoration:underline}
+/* Mobile cards (hidden on desktop) */
+.client-cards{display:none}
+.client-card{background:#fff;border:1px solid var(--f200);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:12px 14px;border-bottom:1px solid var(--f100);background:var(--f50)}
+.card-head .card-title{font-weight:700;font-size:.95rem;color:var(--f900);line-height:1.3}
+.card-head .card-sub{font-size:.75rem;color:var(--f500);margin-top:2px;display:flex;align-items:center;gap:6px}
+.card-head .card-sub .gc-badge{background:#FEF3C7;color:#92400E;padding:1px 5px;border-radius:4px;font-size:.65rem;font-weight:700}
+.card-head .card-actions{display:flex;gap:4px;flex-shrink:0}
+.card-head .card-actions button{background:none;border:none;cursor:pointer;font-size:.95rem;padding:4px 6px;border-radius:6px;color:var(--f500)}
+.card-head .card-actions button:hover{color:var(--g700);background:var(--g50)}
+.card-obls{display:grid;grid-template-columns:1fr 1fr;gap:0;padding:0}
+.card-obl{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--f100);border-right:1px solid var(--f100);cursor:pointer;background:#fff;min-height:48px}
+.card-obl:nth-child(2n){border-right:none}
+.card-obl:hover{background:var(--f50)}
+.card-obl .dot{flex-shrink:0;width:10px;height:10px;border-radius:50%}
+.card-obl .obl-info{flex:1;min-width:0}
+.card-obl .obl-label{font-size:.72rem;font-weight:700;color:var(--f700);text-transform:uppercase;letter-spacing:.03em;line-height:1.2}
+.card-obl .obl-date{font-size:.78rem;color:var(--f500);font-weight:600;margin-top:1px}
+.card-obl .obl-link{font-size:.7rem;color:var(--g600);font-weight:700;text-decoration:none;flex-shrink:0;padding:3px 7px;border-radius:5px;background:var(--g50)}
+.card-obl .obl-link:hover{background:var(--g100)}
+.card-obl.presentada .obl-label,.card-obl.presentada .obl-date{color:var(--f400);text-decoration:line-through}
+/* Responsive */
+@media(max-width:768px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .page-header h1{font-size:1.2rem}
+  .container{padding:16px 12px}
+  .table-wrap{display:none}
+  .client-cards{display:block}
+  .filters{padding:10px 12px}
+  .filter-search{min-width:100%;max-width:100%;order:-1}
+}
+@media(max-width:480px){
+  .page-header{flex-direction:column;align-items:flex-start}
+  .card-obls{grid-template-columns:1fr}
+  .card-obl:nth-child(n){border-right:none}
+}
+/* Column group headers */
+.col-group-exogena{background:#EEF2FF!important;color:#3730A3!important}
+.col-group-renta{background:#EFF6FF!important;color:#1E40AF!important}
+.col-group-iva{background:#F5F3FF!important;color:#5B21B6!important}
+.col-group-ret{background:#FFFBEB!important;color:#92400E!important}
+.col-group-f2516{background:#ECFEFF!important;color:#155E75!important}
+.col-group-rst{background:#F5F3FF!important;color:#5B21B6!important}
+.col-group-patrimonio{background:#FEE2E2!important;color:#991B1B!important}
+.col-group-activos{background:#CFFAFE!important;color:#155E75!important}
+.col-group-ica{background:#FFF1F2!important;color:#9F1239!important}
+.col-group-inc{background:#FFF7ED!important;color:#9A3412!important}
+.obl-table .group-header{font-size:.7rem!important;font-weight:800!important;text-transform:uppercase;letter-spacing:.5px;text-align:center!important;border-bottom:2px solid currentColor!important;padding:8px 6px!important;cursor:default}
+.obl-table .group-row th{position:sticky;top:0;z-index:3}
+/* Print-friendly */
+.print-header{display:none}
+@media print{
+  @page{size:A4 landscape;margin:12mm}
+  body{background:#fff;color:#000;font-size:10pt;margin:0;padding:0}
+  body > *:not(.container){display:none!important}
+  .header-actions,.filters,.modal-overlay,.client-actions,.quick-link,.pro-limit,.client-cards,.no-print{display:none!important}
+  .container{max-width:none;padding:0;margin:0}
+  .page-header{margin-bottom:8px;page-break-after:avoid}
+  .page-header h1{font-size:14pt}
+  .print-header{display:block;font-size:9pt;color:#444;margin-bottom:10px;border-bottom:1px solid #ccc;padding-bottom:6px}
+  .stats{grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;page-break-inside:avoid}
+  .stat-card{box-shadow:none;border:1px solid #ddd;padding:8px 10px}
+  .stat-card .stat-value{font-size:11pt;color:#000!important}
+  .stat-card .stat-label{font-size:8pt}
+  .stat-card .stat-detail{font-size:8pt}
+  .table-wrap{box-shadow:none;border:1px solid #999;overflow:visible;display:block!important}
+  .obl-table{min-width:0;font-size:8pt;page-break-inside:auto}
+  .obl-table thead{display:table-header-group}
+  .obl-table tbody tr{page-break-inside:avoid;page-break-after:auto}
+  .obl-table th{background:#f0f0f0!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;border:1px solid #999;padding:4px 5px;font-size:7pt}
+  .obl-table th:first-child{position:static;background:#f0f0f0!important}
+  .obl-table td{border:1px solid #ccc;padding:3px 4px}
+  .obl-table td:first-child{position:static;background:#fff!important}
+  .obl-table th .sort-arrow{display:none}
+  .obl-cell{padding:0;cursor:default}
+  .obl-cell .date-text{font-size:8pt;color:#000;font-weight:600}
+  .obl-cell .dot{width:8px;height:8px;border:1px solid #444;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .dot-green{background:#10B981!important}
+  .dot-red{background:#EF4444!important;animation:none}
+  .dot-orange{background:#F97316!important}
+  .dot-yellow{background:#F59E0B!important}
+  .dot-gray{background:#fff!important}
+  .col-group-exogena,.col-group-renta,.col-group-iva,.col-group-ret,.col-group-f2516,.col-group-rst,.col-group-patrimonio,.col-group-activos,.col-group-ica,.col-group-inc{background:#f0f0f0!important;color:#000!important}
+  a{color:#000!important;text-decoration:none}
+}
+</style>
+<style id="exo-loading-css">
+#exo-loading{position:fixed;inset:0;z-index:999999;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-family:'Outfit','DM Sans',-apple-system,system-ui,sans-serif;color:#065F46;transition:opacity .25s ease}
+#exo-loading.hide{opacity:0;pointer-events:none}
+#exo-loading .exo-spin{width:36px;height:36px;border:3px solid #D1FAE5;border-top-color:#059669;border-radius:50%;animation:exo-rot .8s linear infinite}
+#exo-loading .exo-txt{font-size:.92rem;font-weight:500;letter-spacing:.01em;color:#475569}
+@keyframes exo-rot{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){#exo-loading .exo-spin{animation:none;border-top-color:#059669}}
+</style><script id="exo-loading-js">
+(function(){
+  if(document.getElementById('exo-loading'))return;
+  var d=document.createElement('div');
+  d.id='exo-loading';
+  d.setAttribute('aria-live','polite');
+  d.innerHTML='<div class="exo-spin" aria-hidden="true"></div><div class="exo-txt">Cargando…</div>';
+  // Insertar al inicio del body en cuanto exista
+  function inject(){
+    if(!document.body){setTimeout(inject,10);return}
+    if(!document.getElementById('exo-loading'))document.body.insertBefore(d,document.body.firstChild);
+  }
+  inject();
+  function hide(){
+    var el=document.getElementById('exo-loading');
+    if(!el)return;
+    el.classList.add('hide');
+    setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el)},350);
+  }
+  if(document.readyState==='complete'||document.readyState==='interactive'){
+    setTimeout(hide,30);
+  }else{
+    document.addEventListener('DOMContentLoaded',function(){setTimeout(hide,30)});
+  }
+  // Failsafe: nunca dejar el overlay más de 4s
+  setTimeout(hide,4000);
+})();
+</script></head>
+<body>
+<div id="hubHeader" style="padding: 14px 24px; background: #fff; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 16px;">
+    <a href="../index.html" style="text-decoration: none; color: #4B5563; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+        🏠 Volver al Hub
+    </a>
+    <span style="color: #D1D5DB;">|</span>
+    <span style="font-weight: 700; color: #111827; font-size: 16px;">DIMALCCO SAS</span>
+</div>
+<main id="main" class="container">
+  <div class="print-header" id="printHeader"></div>
+  <div class="backup-banner no-print" id="backupBanner">
+    <span class="backup-icon" id="backupIcon">&#9888;&#65039;</span>
+    <span class="backup-msg" id="backupMsg"></span>
+    <button class="backup-cta" onclick="exportData()" id="backupCta">Descargar respaldo</button>
+  </div>
+  <div class="no-print" id="vencImportBanner" style="display:none;align-items:center;gap:12px;flex-wrap:wrap;background:linear-gradient(90deg,#EEF2FF,#ECFDF5);border:1px solid #C7D2FE;border-radius:10px;padding:12px 16px;margin:0 0 14px">
+    <span style="font-size:1.3rem">&#128229;</span>
+    <span class="vencImportMsg" id="vencImportMsg" style="flex:1;min-width:220px;font-size:.9rem;color:#1E293B"></span>
+    <button class="btn btn-primary btn-sm" onclick="importVencEmpresas()">Importar a Mi Oficina</button>
+    <button class="btn btn-outline btn-sm" onclick="dismissVencImport()">Ahora no</button>
+  </div>
+  <div class="page-header">
+    <h1><span>&#128188;</span> Mi Oficina Contable</h1>
+    <div class="header-actions" id="headerActions">
+      <span class="client-counter" id="clientCounter">0 clientes</span>
+      <button class="btn btn-outline btn-sm" onclick="exportData()" title="Descargar respaldo JSON con todos tus clientes y estados">&#128190; Respaldar</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('importFile').click()" title="Cargar respaldo JSON">&#128194; Restaurar</button>
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()" title="Descargar lista de obligaciones en CSV (Excel)">&#128202; CSV</button>
+      <button class="btn btn-outline btn-sm" onclick="exportICS()" title="Descargar calendario .ics importable a Google Calendar / Outlook">&#128197; .ics</button>
+      <button class="btn btn-outline btn-sm" onclick="openBulkModal()" title="Pegar lista de clientes desde Excel">&#128203; Pegar lista</button>
+      <button class="btn btn-outline btn-sm no-print" onclick="window.print()" title="Imprimir calendario">&#128424; Imprimir</button>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importData(event)">
+      <button class="btn btn-primary" id="btnAddClient" onclick="openModal()">+ Agregar cliente</button>
+    </div>
+  </div>
+  <div class="stats" id="statsCards">
+    <div class="stat-card danger clickable" id="statOverdue" data-filter="overdue" onclick="cardFilter('overdue')" title="Ver solo las obligaciones vencidas">
+      <div class="stat-label">⚠ Vencidas</div>
+      <div class="stat-value" id="statOverdueVal">0</div>
+      <div class="stat-detail" id="statOverdueDetail" style="font-size:.78rem">Sin presentar</div>
+      <span class="stat-hint" id="statOverdueHint">clic: ver vencidas</span>
+    </div>
+    <div class="stat-card clickable" id="statDone" data-filter="done" onclick="cardDoneToggle()" style="background:#ECFDF5;border-color:#A7F3D0" title="Alternar: presentadas / pendientes / todo">
+      <div class="stat-label" style="color:#047857">✓ Realizadas</div>
+      <div class="stat-value" id="statDoneVal" style="color:#065F46">0 / 0</div>
+      <div class="stat-detail" id="statDoneDetail" style="font-size:.78rem;color:#047857">0%</div>
+      <div style="margin-top:6px;height:4px;background:#D1FAE5;border-radius:2px;overflow:hidden"><div id="statDoneBar" style="height:100%;background:linear-gradient(90deg,#10B981,#34D399);width:0%;transition:width .3s"></div></div>
+      <span class="stat-hint" id="statDoneHint" style="color:#047857">clic: ver presentadas</span>
+    </div>
+    <div class="stat-card clickable" id="statToday" data-filter="today" onclick="cardFilter('today')" title="Ver lo que vence hoy">
+      <div class="stat-label">Hoy vencen</div>
+      <div class="stat-value" id="statTodayVal">0 obligaciones</div>
+      <span class="stat-hint" id="statTodayHint">clic: ver de hoy</span>
+    </div>
+    <div class="stat-card clickable" id="statWeek" data-filter="week" onclick="cardFilter('week')" title="Ver lo que vence en los próximos 7 días">
+      <div class="stat-label">Esta semana</div>
+      <div class="stat-value" id="statWeekVal">0 pendientes</div>
+      <span class="stat-hint" id="statWeekHint">clic: ver 7 días</span>
+    </div>
+    <div class="stat-card clickable" id="statNext" onclick="jumpToNext()" title="Ir a la próxima obligación por vencer">
+      <div class="stat-label">Pr&oacute;xima</div>
+      <div class="stat-detail" id="statNextVal">Sin obligaciones registradas</div>
+      <span class="stat-hint" id="statNextHint" style="display:none">clic: ir a esa empresa</span>
+    </div>
+  </div>
+  <div class="filters" id="filtersRow">
+    <button class="filter-pill active" data-filter="all" onclick="setFilter('all',this)">Todos</button>
+    <button class="filter-pill" data-filter="pending" onclick="setFilter('pending',this)">Solo pendientes<span class="pill-count" id="cntPending">0</span></button>
+    <button class="filter-pill" data-filter="week" onclick="setFilter('week',this)">Pr&oacute;ximos 7 d&iacute;as<span class="pill-count" id="cntWeek">0</span></button>
+    <button class="clear-filters" id="clearFiltersBtn" onclick="clearAllFilters()" style="display:none">&#10005; Limpiar filtros</button>
+    <input type="search" class="filter-search" id="filterSearch" placeholder="Buscar empresa por nombre o NIT…" autocomplete="off" aria-label="Buscar empresa">
+    <span class="filter-count" id="filterCount" aria-live="polite"></span>
+    <select class="filter-select" id="filterClient" onchange="applyFilters()">
+      <option value="">Todos los clientes</option>
+    </select>
+    <select class="filter-select" id="filterObl" onchange="applyFilters()">
+      <option value="">Todas las obligaciones</option>
+      <option value="exogena">Ex&oacute;gena</option>
+      <option value="renta">Renta</option>
+      <option value="iva">IVA</option>
+      <option value="retefte">ReteFte</option>
+      <option value="f2516">F.2516</option>
+      <option value="rst">RST</option>
+      <option value="patrimonio">Patrimonio</option>
+      <option value="activosExt">Activos exterior</option>
+      <option value="ica">ICA</option>
+      <option value="inc">Imp. al Consumo</option>
+    </select>
+  </div>
+  <div class="no-print" id="semLegend" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:-6px 2px 14px;font-size:.74rem;color:var(--f500);font-weight:600">
+    <span><span class="dot dot-green" style="display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle;margin-right:4px"></span>Presentada</span>
+    <span><span class="dot dot-yellow" style="display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle;margin-right:4px"></span>Pendiente</span>
+    <span><span class="dot dot-orange" style="display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle;margin-right:4px"></span>Urgente (&le;5 d&iacute;as)</span>
+    <span><span class="dot dot-red" style="display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:middle;margin-right:4px;animation:none"></span>Vencida</span>
+    <span style="color:var(--f400);font-weight:500">Clic en una celda = marcar/desmarcar presentada</span>
+  </div>
+  <div class="empty-state-wrap" id="emptyState" style="display:none;background:#fff;border-radius:var(--r);border:1px solid var(--f200);box-shadow:var(--shadow)">
+    <div class="empty-state">
+      <div class="empty-icon">&#128203;</div>
+      <h3>No hay clientes registrados</h3>
+      <p>Agrega tu primer cliente para ver el calendario de obligaciones tributarias DIAN 2026.</p>
+      <button class="btn btn-primary" onclick="openModal()">+ Agregar primer cliente</button>
+    </div>
+  </div>
+  <div class="table-wrap" id="tableWrap">
+    <table class="obl-table" id="oblTable">
+      <thead id="oblHead"></thead>
+      <tbody id="oblBody"></tbody>
+    </table>
+  </div>
+  <div class="client-cards" id="oblCards"></div>
+
+
+  <details id="vistaCalendarioClientes" open style="margin-top:24px;background:var(--white);border:1px solid var(--f200);border-radius:12px;overflow:hidden">
+    <summary style="padding:16px 20px;cursor:pointer;font-weight:600;color:var(--f700);display:flex;align-items:center;justify-content:space-between;list-style:none;font-size:.95rem">
+      <span>🗓️ Calendario de vencimientos de mis clientes</span>
+      <span style="font-size:.78rem;color:var(--f500);font-weight:500">Click para ocultar</span>
+    </summary>
+    <div style="padding:18px;border-top:1px solid var(--f100)">
+      <div id="cv-clientes"></div>
+      <p style="margin:10px 0 0;font-size:.78rem;color:var(--f500);text-align:center">Hover sobre un día para ver el detalle. Los puntos son obligaciones por color de tipo. Marca como presentadas desde la vista de tabla arriba.</p>
+    </div>
+  </details>
+  <script>
+    window.exoCalendar = {
+      render: function(containerId, events, options) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+        
+        if (!container.dataset.initialized) {
+          container.dataset.initialized = "true";
+          container.dataset.viewMode = options.viewMode || "month";
+          var initialDate = new Date(2026, 5, 12); // June 12, 2026
+          container.dataset.currentDate = initialDate.toISOString();
+        }
+        
+        var viewMode = container.dataset.viewMode;
+        var currentDate = new Date(container.dataset.currentDate);
+        
+        var html = `
+          <style>
+            .calendar-component {
+              background: #fff;
+              border-radius: 12px;
+              color: var(--f900);
+              font-family: var(--font);
+            }
+            .calendar-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 16px;
+              flex-wrap: wrap;
+              gap: 12px;
+            }
+            .calendar-title-nav {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+            }
+            .cal-btn {
+              background: #fff;
+              border: 1px solid var(--f200);
+              padding: 6px 12px;
+              border-radius: 8px;
+              cursor: pointer;
+              font-weight: 700;
+              color: var(--f700);
+              transition: all 0.15s;
+              font-size: 0.85rem;
+            }
+            .cal-btn:hover {
+              border-color: var(--g600);
+              color: var(--g700);
+              background: var(--g50);
+            }
+            .calendar-month-year {
+              font-weight: 800;
+              font-size: 1.1rem;
+              color: var(--f900);
+              min-width: 120px;
+              text-align: center;
+            }
+            .calendar-controls {
+              display: flex;
+              gap: 6px;
+            }
+            .cal-toggle-btn {
+              background: #fff;
+              border: 1px solid var(--f200);
+              padding: 6px 14px;
+              border-radius: 8px;
+              cursor: pointer;
+              font-size: 0.8rem;
+              font-weight: 700;
+              color: var(--f600);
+              transition: all 0.15s;
+            }
+            .cal-toggle-btn:hover {
+              border-color: var(--g500);
+              color: var(--g700);
+            }
+            .cal-toggle-btn.active {
+              background: var(--g600);
+              color: #fff;
+              border-color: var(--g600);
+            }
+            .calendar-weekdays {
+              display: grid;
+              grid-template-columns: repeat(7, 1fr);
+              text-align: center;
+              font-weight: 700;
+              font-size: 0.75rem;
+              color: var(--f400);
+              text-transform: uppercase;
+              margin-bottom: 8px;
+              border-bottom: 1px solid var(--f100);
+              padding-bottom: 8px;
+            }
+            .calendar-days {
+              display: grid;
+              grid-template-columns: repeat(7, 1fr);
+              gap: 8px;
+            }
+            .calendar-day {
+              min-height: 85px;
+              border: 1px solid var(--f200);
+              border-radius: 10px;
+              padding: 8px;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+              position: relative;
+              cursor: pointer;
+              transition: all 0.15s;
+              background: #fff;
+            }
+            .calendar-day:hover {
+              border-color: var(--g400);
+              box-shadow: 0 4px 12px rgba(16,185,129,0.06);
+              background: var(--f50);
+            }
+            .calendar-day.other-month {
+              background: var(--f50);
+              border-color: var(--f100);
+              opacity: 0.5;
+            }
+            .calendar-day.selected {
+              border-color: var(--g600);
+              box-shadow: 0 0 0 1px var(--g600) inset, 0 4px 12px rgba(16,185,129,0.1);
+            }
+            .calendar-day.today {
+              background: var(--g50);
+              border-color: var(--g500);
+            }
+            .calendar-day-num {
+              font-size: 0.9rem;
+              font-weight: 700;
+              color: var(--f800);
+              align-self: flex-start;
+            }
+            .calendar-day.today .calendar-day-num {
+              color: var(--g800);
+              background: var(--g200);
+              width: 22px;
+              height: 22px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: -2px 0 0 -2px;
+            }
+            .calendar-day-events {
+              display: flex;
+              flex-direction: column;
+              gap: 4px;
+              margin-top: 6px;
+              overflow: hidden;
+            }
+            .calendar-event-pill {
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              font-size: 0.68rem;
+              font-weight: 700;
+              padding: 2px 6px;
+              border-radius: 6px;
+              color: #fff;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              text-transform: uppercase;
+            }
+            .calendar-event-pill.presentada {
+              background: #10B981 !important;
+              text-decoration: line-through;
+              opacity: 0.75;
+            }
+            .calendar-event-dot-container {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 3px;
+              margin-top: 4px;
+            }
+            .calendar-event-dot {
+              width: 8px;
+              height: 8px;
+              border-radius: 50%;
+            }
+            .calendar-event-dot.presentada {
+              background: #10B981 !important;
+            }
+            .calendar-day-details-panel {
+              margin-top: 20px;
+              padding: 16px;
+              background: var(--f50);
+              border-radius: 12px;
+              border: 1px solid var(--f200);
+            }
+            .calendar-details-title {
+              font-size: 0.88rem;
+              font-weight: 700;
+              color: var(--f800);
+              margin-bottom: 12px;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+            }
+            .calendar-details-list {
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+            }
+            .calendar-detail-row {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              padding: 10px 12px;
+              background: #fff;
+              border-radius: 8px;
+              border: 1px solid var(--f200);
+              transition: all 0.15s;
+              cursor: pointer;
+            }
+            .calendar-detail-row:hover {
+              border-color: var(--g500);
+              transform: translateY(-1px);
+              box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            }
+            .calendar-detail-left {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+              min-width: 0;
+            }
+            .calendar-detail-indicator {
+              width: 10px;
+              height: 10px;
+              border-radius: 50%;
+              flex-shrink: 0;
+            }
+            .calendar-detail-indicator.presentada {
+              background: #10B981 !important;
+            }
+            .calendar-detail-info {
+              display: flex;
+              flex-direction: column;
+              min-width: 0;
+            }
+            .calendar-detail-client-name {
+              font-weight: 700;
+              font-size: 0.82rem;
+              color: var(--f800);
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+            .calendar-detail-obl-name {
+              font-size: 0.72rem;
+              color: var(--f500);
+              font-weight: 600;
+              margin-top: 1px;
+            }
+            .calendar-detail-status-badge {
+              font-size: 0.7rem;
+              font-weight: 700;
+              padding: 3px 8px;
+              border-radius: 12px;
+              text-transform: uppercase;
+            }
+            .calendar-detail-status-badge.presentada { background: #D1FAE5; color: #065F46; }
+            .calendar-detail-status-badge.pendiente { background: #FEF3C7; color: #92400E; }
+            .calendar-detail-status-badge.urgente { background: #FFEDD5; color: #C2410C; }
+            .calendar-detail-status-badge.vencida { background: #FEE2E2; color: #991B1B; }
+            
+            @media(max-width: 640px) {
+              .calendar-day {
+                min-height: 60px;
+                padding: 4px;
+              }
+              .calendar-event-pill {
+                display: none;
+              }
+              .calendar-event-dot-container {
+                display: flex;
+              }
+            }
+            @media(min-width: 641px) {
+              .calendar-event-dot-container {
+                display: none;
+              }
+            }
+          </style>
+          <div class="calendar-component">
+            <div class="calendar-header">
+              <div class="calendar-title-nav">
+                <button class="cal-btn prev-btn">&#9664; Anterior</button>
+                <span class="calendar-month-year" id="calMonthYear"></span>
+                <button class="cal-btn next-btn">Siguiente &#9654;</button>
+              </div>
+              <div class="calendar-controls">
+                <button class="cal-toggle-btn" id="btnToggleMonth">Mes</button>
+                <button class="cal-toggle-btn" id="btnToggleWeek">Semana</button>
+              </div>
+            </div>
+            <div class="calendar-grid-container">
+              <div class="calendar-weekdays">
+                <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+              </div>
+              <div class="calendar-days" id="calDaysGrid"></div>
+            </div>
+            <div class="calendar-day-details-panel" id="calDetailsPanel" style="display:none;">
+              <div class="calendar-details-title">
+                <span>📅 Detalle de Obligaciones — </span>
+                <span id="calDetailsDate" style="color:var(--g700)"></span>
+              </div>
+              <div class="calendar-details-list" id="calDetailsList"></div>
+            </div>
+          </div>
+        `;
+        
+        container.innerHTML = html;
+        
+        var prevBtn = container.querySelector('.prev-btn');
+        var nextBtn = container.querySelector('.next-btn');
+        var btnMonth = container.querySelector('#btnToggleMonth');
+        var btnWeek = container.querySelector('#btnToggleWeek');
+        
+        if (viewMode === 'month') {
+          btnMonth.classList.add('active');
+        } else {
+          btnWeek.classList.add('active');
+        }
+        
+        prevBtn.onclick = function() {
+          if (viewMode === 'month') {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+          } else {
+            currentDate.setDate(currentDate.getDate() - 7);
+          }
+          container.dataset.currentDate = currentDate.toISOString();
+          exoCalendar.render(containerId, events, options);
+        };
+        
+        nextBtn.onclick = function() {
+          if (viewMode === 'month') {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+          } else {
+            currentDate.setDate(currentDate.getDate() + 7);
+          }
+          container.dataset.currentDate = currentDate.toISOString();
+          exoCalendar.render(containerId, events, options);
+        };
+        
+        btnMonth.onclick = function() {
+          container.dataset.viewMode = 'month';
+          exoCalendar.render(containerId, events, options);
+        };
+        
+        btnWeek.onclick = function() {
+          container.dataset.viewMode = 'week';
+          exoCalendar.render(containerId, events, options);
+        };
+        
+        var MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        var titleEl = container.querySelector('#calMonthYear');
+        if (viewMode === 'month') {
+          titleEl.textContent = MONTH_NAMES[currentDate.getMonth()] + ' ' + currentDate.getFullYear();
+        } else {
+          var dayOfWeek = currentDate.getDay();
+          var startOfWeek = new Date(currentDate);
+          startOfWeek.setDate(currentDate.getDate() - dayOfWeek);
+          var endOfWeek = new Date(currentDate);
+          endOfWeek.setDate(currentDate.getDate() - dayOfWeek + 6);
+          titleEl.textContent = startOfWeek.getDate() + ' ' + MONTH_NAMES[startOfWeek.getMonth()].slice(0,3) + ' - ' + endOfWeek.getDate() + ' ' + MONTH_NAMES[endOfWeek.getMonth()].slice(0,3);
+        }
+        
+        var gridEl = container.querySelector('#calDaysGrid');
+        gridEl.innerHTML = '';
+        
+        var todayVal = new Date();
+        todayVal.setHours(0,0,0,0);
+        
+        var selectedDayStr = container.dataset.selectedDay || '';
+        
+        if (viewMode === 'month') {
+          var year = currentDate.getFullYear();
+          var month = currentDate.getMonth();
+          var firstDay = new Date(year, month, 1);
+          var startDayIndex = firstDay.getDay();
+          var numDays = new Date(year, month + 1, 0).getDate();
+          var prevNumDays = new Date(year, month, 0).getDate();
+          
+          for (var i = startDayIndex - 1; i >= 0; i--) {
+            var d = new Date(year, month - 1, prevNumDays - i);
+            renderDayCell(gridEl, d, false);
+          }
+          for (var i = 1; i <= numDays; i++) {
+            var d = new Date(year, month, i);
+            renderDayCell(gridEl, d, true);
+          }
+          var totalCells = startDayIndex + numDays;
+          var remainingCells = 42 - totalCells;
+          if (totalCells <= 35) {
+            remainingCells = 35 - totalCells;
+          }
+          for (var i = 1; i <= remainingCells; i++) {
+            var d = new Date(year, month + 1, i);
+            renderDayCell(gridEl, d, false);
+          }
+        } else {
+          var startOfWeek = new Date(currentDate);
+          startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+          for (var i = 0; i < 7; i++) {
+            var d = new Date(startOfWeek);
+            d.setDate(startOfWeek.getDate() + i);
+            renderDayCell(gridEl, d, true);
+          }
+        }
+        
+        function renderDayCell(parent, dateObj, isCurrentMonth) {
+          dateObj.setHours(0,0,0,0);
+          var dateISO = dateObj.toISOString().slice(0,10);
+          
+          var cell = document.createElement('div');
+          cell.className = 'calendar-day';
+          if (!isCurrentMonth) cell.classList.add('other-month');
+          if (isSameDate(dateObj, todayVal)) cell.classList.add('today');
+          if (selectedDayStr === dateISO) cell.classList.add('selected');
+          
+          cell.dataset.date = dateISO;
+          
+          var numEl = document.createElement('div');
+          numEl.className = 'calendar-day-num';
+          numEl.textContent = dateObj.getDate();
+          cell.appendChild(numEl);
+          
+          var dayEvents = events.filter(function(e) {
+            var evDate = new Date(e.fecha);
+            evDate.setHours(0,0,0,0);
+            return isSameDate(evDate, dateObj);
+          });
+          
+          if (dayEvents.length > 0) {
+            var pillsContainer = document.createElement('div');
+            pillsContainer.className = 'calendar-day-events';
+            
+            var displayEvents = dayEvents.slice(0, 2);
+            displayEvents.forEach(function(ev) {
+              var pill = document.createElement('div');
+              pill.className = 'calendar-event-pill';
+              if (ev.presentada) pill.classList.add('presentada');
+              pill.style.backgroundColor = ev.color;
+              pill.textContent = ev.short + ': ' + ev.cliente.slice(0, 8);
+              pill.title = ev.cliente + ' - ' + ev.label + ' (' + ev.periodo + ')' + (ev.presentada ? ' - Presentada' : ' - Pendiente');
+              pillsContainer.appendChild(pill);
+            });
+            
+            if (dayEvents.length > 2) {
+              var morePill = document.createElement('div');
+              morePill.className = 'calendar-event-pill';
+              morePill.style.backgroundColor = '#64748b';
+              morePill.textContent = '+' + (dayEvents.length - 2) + ' MÁS';
+              pillsContainer.appendChild(morePill);
+            }
+            
+            cell.appendChild(pillsContainer);
+            
+            var dotsContainer = document.createElement('div');
+            dotsContainer.className = 'calendar-event-dot-container';
+            dayEvents.forEach(function(ev) {
+              var dot = document.createElement('div');
+              dot.className = 'calendar-event-dot';
+              if (ev.presentada) dot.classList.add('presentada');
+              dot.style.backgroundColor = ev.color;
+              dot.title = ev.cliente + ' - ' + ev.label + ' (' + ev.periodo + ')';
+              dotsContainer.appendChild(dot);
+            });
+            cell.appendChild(dotsContainer);
+          }
+          
+          cell.onclick = function() {
+            container.querySelectorAll('.calendar-day').forEach(function(c) {
+              c.classList.remove('selected');
+            });
+            cell.classList.add('selected');
+            container.dataset.selectedDay = dateISO;
+            showDayDetails(dateObj, dayEvents);
+          };
+          
+          parent.appendChild(cell);
+        }
+        
+        function isSameDate(d1, d2) {
+          return d1.getFullYear() === d2.getFullYear() &&
+                 d1.getMonth() === d2.getMonth() &&
+                 d1.getDate() === d2.getDate();
+        }
+        
+        function showDayDetails(dateObj, dayEvents) {
+          var panel = container.querySelector('#calDetailsPanel');
+          var dateEl = container.querySelector('#calDetailsDate');
+          var listEl = container.querySelector('#calDetailsList');
+          
+          if (dayEvents.length === 0) {
+            panel.style.display = 'none';
+            return;
+          }
+          
+          panel.style.display = 'block';
+          dateEl.textContent = dateObj.toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+          listEl.innerHTML = '';
+          
+          dayEvents.forEach(function(ev) {
+            var row = document.createElement('div');
+            row.className = 'calendar-detail-row';
+            
+            var statusClass = 'pendiente';
+            var statusText = 'Pendiente';
+            
+            if (ev.presentada) {
+              statusClass = 'presentada';
+              statusText = 'Presentada';
+            } else {
+              var diff = daysUntil(ev.fecha);
+              if (diff < 0) {
+                statusClass = 'vencida';
+                statusText = 'Vencida';
+              } else if (diff <= 5) {
+                statusClass = 'urgente';
+                statusText = 'Urgente';
+              }
+            }
+            
+            row.innerHTML = `
+              <div class="calendar-detail-left">
+                <div class="calendar-detail-indicator" style="background-color:${ev.color}"></div>
+                <div class="calendar-detail-info">
+                  <span class="calendar-detail-client-name">${escapeHTML(ev.cliente)}</span>
+                  <span class="calendar-detail-obl-name">${escapeHTML(ev.label)} &middot; ${escapeHTML(ev.periodo)}</span>
+                </div>
+              </div>
+              <span class="calendar-detail-status-badge ${statusClass}">${statusText}</span>
+            `;
+            
+            row.onclick = function(e) {
+              e.stopPropagation();
+              if (typeof window.openCalConfirmModal === 'function') {
+                window.openCalConfirmModal(ev.nit, ev.oblId);
+              }
+            };
+            
+            listEl.appendChild(row);
+          });
+        }
+        
+        function daysUntil(date){
+          var t = new Date(); t.setHours(0,0,0,0);
+          var now = t.getTime();
+          var d = new Date(date); d.setHours(0,0,0,0);
+          return Math.round((d.getTime()-now)/86400000);
+        }
+        
+        function escapeHTML(s){
+          var d=document.createElement('div');
+          d.textContent=s;
+          return d.innerHTML;
+        }
+      }
+    };
+  </script>
+  <script>
+    (function(){
+      if (window.self !== window.top) {
+        var hh = document.getElementById('hubHeader');
+        if (hh) hh.style.display = 'none';
+      }
+      var dropdown=document.getElementById('vistaCalendarioClientes');
+      if(!dropdown)return;
+      // Paleta alineada con vencimientos.html (Ex=índigo, RST=lila). Verde reservado a "presentado".
+      var COLORS={exogena:'#6366F1',renta:'#3B82F6',iva:'#8B5CF6',ret:'#F59E0B',f2516:'#06B6D4',rst:'#A78BFA',patrimonio:'#F43F5E',activos:'#0EA5E9',ica:'#EC4899',inc:'#F97316'};
+      var LABELS={exogena:'Exógena',renta:'Renta',iva:'IVA',ret:'Retención',f2516:'F.2516',rst:'Régimen Simple',patrimonio:'Patrimonio',activos:'Activos exterior',ica:'ICA',inc:'Imp. al Consumo'};
+      var SHORTS={exogena:'EXO',renta:'R',iva:'IVA',ret:'Ret',f2516:'2516',rst:'RST',patrimonio:'Pat',activos:'AE',ica:'ICA',inc:'INC'};
+      function buildEvents(){
+        var clients;
+        try{clients=JSON.parse(localStorage.getItem('oficina_clientes'))||[]}catch(e){clients=[]}
+        var estado;
+        try{estado=JSON.parse(localStorage.getItem('oficina_estado'))||{}}catch(e){estado={}}
+        var events=[];
+        if(typeof buildObligations!=='function')return events;
+        clients.forEach(function(client){
+          var obls=buildObligations(client);
+          obls.forEach(function(o){
+            if(!o.date)return;
+            var key=client.nit.replace(/\D/g,'')+'_'+o.id;
+            events.push({
+              fecha:o.date,
+              label:LABELS[o.group]||o.group,
+              color:COLORS[o.group]||'#6B7280',
+              short:SHORTS[o.group]||'',
+              group:o.group,
+              periodo:o.label,
+              cliente:client.nombre,
+              presentada:!!estado[key],
+              nit:client.nit,
+              oblId:o.id
+            });
+          });
+        });
+        return events;
+      }
+      function renderCal(){
+        if(typeof exoCalendar==='undefined')return;
+        if(typeof window.buildObligations!=='function'){
+          document.getElementById('cv-clientes').innerHTML='<p style="text-align:center;color:#6B7280;padding:32px 16px">Cargando…</p>';
+          return;
+        }
+        var events=buildEvents();
+        if(!events.length){
+          document.getElementById('cv-clientes').innerHTML='<p style="text-align:center;color:#6B7280;padding:32px 16px">No hay clientes con obligaciones registradas. Agrega un cliente arriba para ver su calendario.</p>';
+        } else {
+          exoCalendar.render('cv-clientes',events,{showDashboard:true,showLegend:true,showFilters:true,viewMode:'week'});
+        }
+      }
+      var rendered=false, stale=false;
+      dropdown.addEventListener('toggle',function(){
+        // Render al abrir si nunca se renderizó o si hay cambios pendientes (estaba cerrado cuando se marcó algo).
+        if(dropdown.open && (!rendered || stale)){
+          renderCal();
+          rendered=true;
+          stale=false;
+        }
+      });
+      // Re-render al guardar/borrar/marcar; también hace el render inicial
+      // cuando el calendario queda abierto por defecto (no dispara 'toggle').
+      document.addEventListener('oficinaClientesUpdated',function(){
+        if(dropdown.open){
+          renderCal();
+          rendered=true;
+          stale=false;
+        } else {
+          // Calendario colapsado: marca pendiente para refrescar al abrirlo.
+          stale=true;
+        }
+      });
+    })();
+  </script>
+
+  <details class="calendario-dropdown" id="calDianDropdown" style="margin-top:32px;background:var(--white);border:1px solid var(--f200);border-radius:12px;overflow:hidden">
+    <summary style="padding:16px 20px;cursor:pointer;font-weight:600;color:var(--f700);display:flex;align-items:center;justify-content:space-between;list-style:none;font-size:.95rem">
+      <span>📅 Calendario Tributario DIAN 2026 completo</span>
+      <span style="font-size:.78rem;color:var(--f500);font-weight:500">Click para ver</span>
+    </summary>
+    <div style="padding:20px;border-top:1px solid var(--f100)">
+      <div id="cal-dian-2026"></div>
+    </div>
+  </details>
+  <script>
+    window.renderCalendarioDIAN2026 = function(containerId) {
+      var container = document.getElementById(containerId);
+      if (!container) return;
+      
+      var html = `
+        <div class="dian-calendar-interactive" style="background:#fff; border-radius:12px; font-family:var(--font);">
+          <div style="font-size:0.85rem; color:#64748b; margin-bottom: 16px; font-weight: 500; line-height: 1.4;">
+            Selecciona un impuesto y digita los últimos números del NIT de tu cliente para calcular al instante todos sus vencimientos DIAN para el año 2026.
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; align-items: end;">
+             <div class="form-group" style="margin-bottom:0;">
+                <label style="display:block; font-size:0.8rem; font-weight:700; color:var(--f700); margin-bottom:6px">Impuesto / Obligación</label>
+                <select id="dianImpuesto" class="filter-select" style="width:100%; height:38px; font-size:0.85rem; font-weight:500; border-radius:8px; border:1.5px solid var(--f200); background:#fff; cursor:pointer;">
+                   <option value="exogena_pj">Exógena — Personas Jurídicas</option>
+                   <option value="exogena_gc">Exógena — Gran Contribuyente</option>
+                   <option value="renta_pj">Renta — Personas Jurídicas</option>
+                   <option value="renta_pn">Renta — Personas Naturales</option>
+                   <option value="renta_gc">Renta — Gran Contribuyente</option>
+                   <option value="iva_bim">IVA — Bimestral</option>
+                   <option value="iva_cua">IVA — Cuatrimestral</option>
+                   <option value="retencion">Retención Fuente — Mensual</option>
+                   <option value="rst_bim">SIMPLE (RST) — Bimestral</option>
+                   <option value="f260_anual">SIMPLE (RST) — F260 Anual</option>
+                   <option value="patrimonio">Patrimonio (F420)</option>
+                   <option value="activos_ext_pj">Activos Exterior — Personas Jurídicas</option>
+                   <option value="activos_ext_pn">Activos Exterior — Personas Naturales</option>
+                   <option value="activos_ext_gc">Activos Exterior — Gran Contribuyente</option>
+                </select>
+             </div>
+             <div class="form-group" style="margin-bottom:0;" id="dianNitGroup">
+                <label id="dianNitLabel" style="display:block; font-size:0.8rem; font-weight:700; color:var(--f700); margin-bottom:6px">NIT (Últimos 2 dígitos)</label>
+                <input type="number" id="dianNitInput" min="0" max="99" value="15" class="filter-select" style="width:100%; height:38px; font-size:0.85rem; font-weight:500; border-radius:8px; border:1.5px solid var(--f200); padding: 8px 12px;" autocomplete="off">
+             </div>
+          </div>
+          <div class="dian-results" id="dianResultsList" style="display:flex; flex-direction:column; gap:10px;">
+             <!-- Calculated dates will go here -->
+          </div>
+        </div>
+      `;
+      
+      container.innerHTML = html;
+      
+      var selectImpuesto = container.querySelector('#dianImpuesto');
+      var inputNit = container.querySelector('#dianNitInput');
+      var labelNit = container.querySelector('#dianNitLabel');
+      
+      function updateInputLimits() {
+        var type = selectImpuesto.value;
+        var isTwoDigits = (type === 'renta_pn' || type === 'exogena_pj' || type === 'activos_ext_pn');
+        
+        if (isTwoDigits) {
+          labelNit.textContent = 'NIT (Últimos 2 dígitos)';
+          inputNit.max = 99;
+          if (parseInt(inputNit.value, 10) > 99) {
+            inputNit.value = 99;
+          }
+        } else {
+          labelNit.textContent = 'NIT (Último dígito)';
+          inputNit.max = 9;
+          if (parseInt(inputNit.value, 10) > 9) {
+            inputNit.value = 9;
+          }
+        }
+        
+        updateDianCalculator();
+      }
+      
+      function updateDianCalculator() {
+        var taxType = selectImpuesto.value;
+        var nitVal = parseInt(inputNit.value, 10) || 0;
+        
+        var nitStr = String(nitVal);
+        if (nitStr.length < 2) {
+          nitStr = '0' + nitStr;
+        }
+        
+        var mockClient = {
+          nit: nitStr,
+          tipo: (taxType.includes('pn') ? 'PN' : 'PJ'),
+          granContribuyente: taxType.includes('gc'),
+          regimen: (taxType.includes('cua') ? 'cuatrimestral' : 'bimestral'),
+          obligaciones: {
+            exogena: true,
+            renta: true,
+            iva: true,
+            retefte: true,
+            f2516: true,
+            rst: true,
+            patrimonio: true,
+            activosExt: true,
+            ica: true,
+            inc: true
+          }
+        };
+        
+        var obls = [];
+        if (typeof window.buildObligations === 'function') {
+          obls = window.buildObligations(mockClient);
+        }
+        
+        var filtered = [];
+        if (taxType.startsWith('exogena')) {
+          filtered = obls.filter(function(o) { return o.group === 'exogena'; });
+        } else if (taxType.startsWith('renta')) {
+          filtered = obls.filter(function(o) { return o.group === 'renta'; });
+        } else if (taxType === 'iva_bim' || taxType === 'iva_cua') {
+          filtered = obls.filter(function(o) { return o.group === 'iva'; });
+        } else if (taxType === 'retencion') {
+          filtered = obls.filter(function(o) { return o.group === 'ret'; });
+        } else if (taxType === 'rst_bim') {
+          filtered = obls.filter(function(o) { return o.group === 'rst' && o.id !== 'f260'; });
+        } else if (taxType === 'f260_anual') {
+          filtered = obls.filter(function(o) { return o.id === 'f260'; });
+        } else if (taxType === 'patrimonio') {
+          filtered = obls.filter(function(o) { return o.group === 'patrimonio'; });
+        } else if (taxType.startsWith('activos_ext')) {
+          filtered = obls.filter(function(o) { return o.group === 'activos'; });
+        }
+        
+        var listEl = container.querySelector('#dianResultsList');
+        if (!listEl) return;
+        listEl.innerHTML = '';
+        
+        if (filtered.length === 0) {
+          listEl.innerHTML = '<div style="color:var(--f400); font-size:0.85rem; padding: 12px; text-align:center;">No hay fechas para esta combinación.</div>';
+          return;
+        }
+        
+        var today = new Date();
+        today.setHours(0,0,0,0);
+        
+        var MES_NAMES_SHORT = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+        
+        filtered.forEach(function(item) {
+          if (!item.date) return;
+          var d = new Date(item.date);
+          d.setHours(0,0,0,0);
+          
+          var diff = Math.round((d.getTime() - today.getTime()) / 86400000);
+          var statusText = '';
+          var badgeClass = '';
+          
+          if (diff < 0) {
+            statusText = 'Vencido hace ' + Math.abs(diff) + ' día' + (Math.abs(diff) !== 1 ? 's' : '');
+            badgeClass = 'vencida';
+          } else if (diff === 0) {
+            statusText = 'Vence hoy';
+            badgeClass = 'urgente';
+          } else {
+            statusText = 'Vence en ' + diff + ' día' + (diff !== 1 ? 's' : '');
+            badgeClass = diff <= 5 ? 'urgente' : 'pendiente';
+          }
+          
+          var row = document.createElement('div');
+          row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; font-size:0.8rem;';
+          
+          row.innerHTML = `
+            <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
+              <span style="font-weight:700; color:#1e293b;">${escapeHTML(item.label)}</span>
+              <span style="color:#64748b; font-size:0.75rem; font-weight:500;">Fecha: ${d.getDate()}/${MES_NAMES_SHORT[d.getMonth()]}/${d.getFullYear()}</span>
+            </div>
+            <span class="calendar-detail-status-badge ${badgeClass}" style="flex-shrink:0; font-size:0.7rem; font-weight:700; padding:3px 8px; border-radius:12px; text-transform:uppercase;">${statusText}</span>
+          `;
+          
+          listEl.appendChild(row);
+        });
+      }
+      
+      function escapeHTML(s){
+        var d=document.createElement('div');
+        d.textContent=s;
+        return d.innerHTML;
+      }
+      
+      selectImpuesto.onchange = updateInputLimits;
+      inputNit.oninput = updateDianCalculator;
+      
+      updateInputLimits();
+    };
+  </script>
+  <script>
+    (function(){
+      var dropdown=document.getElementById('calDianDropdown');
+      if(!dropdown)return;
+      var rendered=false;
+      dropdown.addEventListener('toggle',function(){
+        if(dropdown.open && !rendered && typeof renderCalendarioDIAN2026==='function'){
+          renderCalendarioDIAN2026('cal-dian-2026');
+          rendered=true;
+        }
+      });
+    })();
+  </script>
+  <div id="calConfirmModal" class="modal-overlay" style="z-index:10000">
+    <div class="modal" style="max-width:440px">
+      <div class="modal-header" id="calConfirmHeader" style="border-top:4px solid #6B7280">
+        <h2 id="calConfirmTitle">—</h2>
+        <button type="button" class="modal-close" onclick="closeCalConfirmModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="calConfirmStatus" style="padding:10px 14px;border-radius:8px;font-size:.88rem;font-weight:600;margin-bottom:14px"></div>
+        <div style="display:grid;grid-template-columns:90px 1fr;gap:6px 14px;font-size:.88rem;color:var(--f700)">
+          <div style="color:var(--f500)">Empresa</div><div id="calConfirmEmpresa" style="font-weight:600"></div>
+          <div style="color:var(--f500)">NIT</div><div id="calConfirmNit"></div>
+          <div style="color:var(--f500)">Cuota</div><div id="calConfirmCuota"></div>
+          <div style="color:var(--f500)">Vencimiento</div><div id="calConfirmFecha" style="font-weight:600"></div>
+          <div style="color:var(--f500)" id="calConfirmMarcadoLbl">Marcada</div><div id="calConfirmMarcado"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeCalConfirmModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="calConfirmToggleBtn" onclick="calConfirmToggle()">✓ Marcar como presentada</button>
+      </div>
+    </div>
+  </div>
+</main>
+<div class="modal-overlay" id="clientModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Agregar cliente</h2>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editIndex" value="-1">
+      <div class="form-group">
+        <label for="cNombre">Nombre o raz&oacute;n social</label>
+        <input type="text" id="cNombre" placeholder="Ej: Distribuciones Acme S.A.S." autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="cNIT">NIT</label>
+        <input type="text" id="cNIT" placeholder="Ej: 900123456-7" autocomplete="off" maxlength="15">
+        <div class="hint">Se formatea y valida autom&aacute;ticamente el d&iacute;gito de verificaci&oacute;n</div>
+        <div class="error" id="nitError">D&iacute;gito de verificaci&oacute;n incorrecto</div>
+      </div>
+      <div class="form-group">
+        <label for="cTipo">Tipo de persona</label>
+        <select id="cTipo">
+          <option value="PJ">Persona Jur&iacute;dica</option>
+          <option value="PN">Persona Natural</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="cRegimen">R&eacute;gimen IVA</label>
+        <select id="cRegimen">
+          <option value="bimestral">Responsable IVA Bimestral</option>
+          <option value="cuatrimestral">Responsable IVA Cuatrimestral</option>
+          <option value="no">No responsable de IVA</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="checkbox-group">
+          <label class="checkbox-item"><input type="checkbox" id="cGC"> Gran Contribuyente</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Obligaciones</label>
+        <div class="checkbox-group">
+          <label class="checkbox-item"><input type="checkbox" id="oblExogena" checked> Ex&oacute;gena</label>
+          <label class="checkbox-item"><input type="checkbox" id="oblRenta" checked> Renta</label>
+          <label class="checkbox-item"><input type="checkbox" id="oblIva" checked> IVA</label>
+          <label class="checkbox-item"><input type="checkbox" id="oblRetefte" checked> ReteFte</label>
+          <label class="checkbox-item"><input type="checkbox" id="oblF2516"> F.2516</label>
+          <label class="checkbox-item"><input type="checkbox" id="oblRst"> RST (F2593+F260)</label>
+          <label class="checkbox-item"><input type="checkbox" id="oblPatrimonio"> Patrimonio F420</label>
+          <label class="checkbox-item"><input type="checkbox" id="oblActivosExt"> Activos exterior F160</label>
+          <label class="checkbox-item"><input type="checkbox" id="oblIca"> ICA</label>
+          <select id="cIcaMunicipio" title="Municipio del ICA (bimestral)" style="padding:6px 8px;border:1.5px solid var(--f200,#e2e8f0);border-radius:8px;font-size:.82rem;background:#fff">
+            <option value="none">ICA: municipio…</option>
+            <option value="bog">ICA Bogotá</option>
+            <option value="cali">ICA Cali</option>
+            <option value="ctg">ICA Cartagena</option>
+          </select>
+          <label class="checkbox-item"><input type="checkbox" id="oblInc"> Imp. al Consumo (F.310)</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" id="btnSave" onclick="saveClient()">Guardar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="bulkModal">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <h2>Pegar lista de clientes</h2>
+      <button class="modal-close" onclick="closeBulkModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;flex-wrap:wrap">
+          <label for="bulkText" style="margin:0">Pega desde Excel: una l&iacute;nea por cliente con <strong>Nombre</strong> y <strong>NIT</strong> separados por tab, coma o punto y coma.</label>
+          <button type="button" class="btn btn-outline btn-sm" onclick="downloadBulkTemplate()" title="Descargar plantilla CSV (se abre en Excel) con columnas Nombre y NIT, lista para llenar y pegar." style="white-space:nowrap;flex-shrink:0">&#128229; Plantilla Excel</button>
+        </div>
+        <textarea id="bulkText" rows="8" style="width:100%;padding:10px 12px;border:1px solid var(--f200);border-radius:8px;font-family:'Courier New',monospace;font-size:.82rem;resize:vertical" placeholder="Distribuciones Acme S.A.S.&#9;900123456&#10;Servicios XYZ S.A.S.&#9;901234567-8&#10;..."></textarea>
+        <div class="hint">El DV (d&iacute;gito de verificaci&oacute;n) se calcula autom&aacute;ticamente. Si lo incluyes, se valida. &iquest;Primer&nbsp;uso? Descarga la plantilla, ll&eacute;nala en Excel y pega aqu&iacute; las filas.</div>
+      </div>
+      <div class="form-group">
+        <label>Aplicar a todos:</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <select id="bulkTipo" class="filter-select" style="width:100%">
+            <option value="PJ">Persona Jur&iacute;dica</option>
+            <option value="PN">Persona Natural</option>
+          </select>
+          <select id="bulkRegimen" class="filter-select" style="width:100%">
+            <option value="bimestral">IVA Bimestral</option>
+            <option value="cuatrimestral">IVA Cuatrimestral</option>
+            <option value="no">No responsable IVA</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="checkbox-group">
+          <label class="checkbox-item"><input type="checkbox" id="bulkGC"> Gran Contribuyente</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Obligaciones</label>
+        <div class="checkbox-group">
+          <label class="checkbox-item"><input type="checkbox" id="bulkExogena" checked> Ex&oacute;gena</label>
+          <label class="checkbox-item"><input type="checkbox" id="bulkRenta" checked> Renta</label>
+          <label class="checkbox-item"><input type="checkbox" id="bulkIva" checked> IVA</label>
+          <label class="checkbox-item"><input type="checkbox" id="bulkRetefte" checked> ReteFte</label>
+          <label class="checkbox-item"><input type="checkbox" id="bulkF2516"> F.2516</label>
+          <label class="checkbox-item"><input type="checkbox" id="bulkRst"> RST</label>
+          <label class="checkbox-item"><input type="checkbox" id="bulkPatrimonio"> Patrimonio</label>
+          <label class="checkbox-item"><input type="checkbox" id="bulkActivosExt"> Activos ext.</label>
+          <label class="checkbox-item"><input type="checkbox" id="bulkIca"> ICA</label>
+          <label class="checkbox-item"><input type="checkbox" id="bulkInc"> Imp. al Consumo</label>
+        </div>
+      </div>
+      <div id="bulkPreview" style="display:none;max-height:240px;overflow-y:auto;border:1px solid var(--f200);border-radius:8px;background:var(--f50)">
+        <table style="width:100%;font-size:.78rem;border-collapse:collapse">
+          <thead style="position:sticky;top:0;background:var(--f100)"><tr>
+            <th style="padding:6px 8px;text-align:left">Nombre</th>
+            <th style="padding:6px 8px">NIT</th>
+            <th style="padding:6px 8px">Estado</th>
+          </tr></thead>
+          <tbody id="bulkPreviewBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeBulkModal()">Cancelar</button>
+      <button class="btn btn-outline" onclick="bulkPreview()">Vista previa</button>
+      <button class="btn btn-primary" id="btnBulkImport" onclick="bulkImport()" disabled style="opacity:.5">Importar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="importModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h2>Restaurar respaldo</h2>
+      <button class="modal-close" onclick="closeImportModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.9rem;color:var(--f600);line-height:1.5" id="importSummary"></p>
+      <div style="margin-top:12px;padding:10px 12px;background:var(--amber50);border:1px solid #FCD34D;border-radius:8px">
+        <p style="font-size:.82rem;color:#92400E;font-weight:600;margin:0">&#9888;&#65039; Esto reemplazar&aacute; todos los clientes y estados actuales.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeImportModal()">Cancelar</button>
+      <button class="btn btn-primary" id="btnConfirmImport" onclick="confirmImport()">Restaurar</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h2>Eliminar cliente</h2>
+      <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.9rem;color:var(--f600)">Se eliminar&aacute;n todos los datos y estados de presentaci&oacute;n de este cliente. Esta acci&oacute;n no se puede deshacer.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeDeleteModal()">Cancelar</button>
+      <button class="btn btn-danger" id="btnConfirmDelete" onclick="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
+<script>
+/* Toast simple para notificaciones */
+window.exoToast = function(msg, type) {
+  var t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;padding:12px 20px;border-radius:10px;font-family:var(--font);font-size:.88rem;font-weight:600;color:#fff;background:' + (type==='success'?'#059669':type==='warning'?'#F59E0B':'#EF4444') + ';box-shadow:0 4px 16px rgba(0,0,0,.15);transition:opacity .3s';
+  document.body.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove()},300)},3000);
+};
+</script>
+<script>
+(function(){
+'use strict';
+/* ═══ DIAN 2026 DEADLINE DATA ═══ */
+// arr[0..9] = fechas en orden cronológico (DIAN: NIT 1 vence primero, NIT 0 último).
+// Devolvemos un objeto indexado por último dígito: m[1]=arr[0], m[2]=arr[1], ..., m[0]=arr[9].
+function dm(arr){
+  var m={};
+  for(var i=0;i<10;i++){m[(i+1)%10]=new Date(arr[i]+'T00:00:00')}
+  return m;
+}
+var D_RENTA_PJ_1 = dm(['2026-05-12','2026-05-13','2026-05-14','2026-05-15','2026-05-19','2026-05-20','2026-05-21','2026-05-22','2026-05-25','2026-05-26']);
+var D_RENTA_PJ_2 = dm(['2026-07-09','2026-07-10','2026-07-13','2026-07-14','2026-07-15','2026-07-16','2026-07-17','2026-07-21','2026-07-22','2026-07-23']);
+var D_RENTA_GC_1 = dm(['2026-02-10','2026-02-11','2026-02-12','2026-02-13','2026-02-16','2026-02-17','2026-02-18','2026-02-19','2026-02-20','2026-02-23']);
+// Renta GC 2da cuota (corregido 11-may-2026: faltaba 17-abr en la secuencia). Sincronizado con vencimientos.html.
+var D_RENTA_GC_2 = dm(['2026-04-13','2026-04-14','2026-04-15','2026-04-16','2026-04-17','2026-04-20','2026-04-21','2026-04-22','2026-04-23','2026-04-24']);
+var D_RENTA_GC_3 = dm(['2026-06-10','2026-06-11','2026-06-12','2026-06-16','2026-06-17','2026-06-18','2026-06-19','2026-06-22','2026-06-23','2026-06-24']);
+var D_IVA_B1 = dm(['2026-03-10','2026-03-11','2026-03-12','2026-03-13','2026-03-16','2026-03-17','2026-03-18','2026-03-19','2026-03-20','2026-03-24']);
+var D_IVA_B2 = dm(['2026-05-12','2026-05-13','2026-05-14','2026-05-15','2026-05-19','2026-05-20','2026-05-21','2026-05-22','2026-05-25','2026-05-26']);
+var D_IVA_B3 = dm(['2026-07-09','2026-07-10','2026-07-13','2026-07-14','2026-07-15','2026-07-16','2026-07-17','2026-07-21','2026-07-22','2026-07-23']);
+var D_IVA_B4 = dm(['2026-09-09','2026-09-10','2026-09-11','2026-09-14','2026-09-15','2026-09-16','2026-09-17','2026-09-18','2026-09-21','2026-09-22']);
+var D_IVA_B5 = dm(['2026-11-11','2026-11-12','2026-11-13','2026-11-17','2026-11-18','2026-11-19','2026-11-20','2026-11-23','2026-11-24','2026-11-25']);
+var D_IVA_B6 = dm(['2027-01-13','2027-01-14','2027-01-15','2027-01-18','2027-01-19','2027-01-20','2027-01-21','2027-01-22','2027-01-25','2027-01-26']);
+// ─── ICA / ReteICA municipal bimestral 2026 (fechas como Date, igual que dm) ──────
+// Impuesto territorial: cada ciudad fija sus propios plazos. Verificado contra la
+// norma oficial de cada municipio (dic-2025).
+var ICA_BIMS = ['Bim 1 (Ene-Feb)','Bim 2 (Mar-Abr)','Bim 3 (May-Jun)','Bim 4 (Jul-Ago)','Bim 5 (Sep-Oct)','Bim 6 (Nov-Dic)'];
+function _dts(a){return a.map(function(s){return new Date(s+'T00:00:00')})}
+// BOGOTÁ — Resolución SDH-000195 del 12-dic-2025. Fechas ÚNICAS (no dependen del NIT).
+var ICA_BOG     = _dts(['2026-04-10','2026-06-12','2026-08-21','2026-10-09','2026-12-11','2027-02-12']);
+var RETEICA_BOG = _dts(['2026-03-20','2026-05-22','2026-07-17','2026-09-18','2026-11-20','2027-01-15']);
+// CALI — Resolución 4131.010.21.0607 del 22-dic-2025. ICA bimestral = ReteICA, por
+// último dígito del NIT (sin DV). Pares: 1-2,3-4,5-6,7-8,9-0.
+var ICA_CALI = [
+  dm(['2026-03-09','2026-03-09','2026-03-10','2026-03-10','2026-03-11','2026-03-11','2026-03-12','2026-03-12','2026-03-13','2026-03-13']),
+  dm(['2026-05-11','2026-05-11','2026-05-12','2026-05-12','2026-05-13','2026-05-13','2026-05-14','2026-05-14','2026-05-15','2026-05-15']),
+  dm(['2026-07-13','2026-07-13','2026-07-14','2026-07-14','2026-07-15','2026-07-15','2026-07-16','2026-07-16','2026-07-17','2026-07-17']),
+  dm(['2026-09-07','2026-09-07','2026-09-08','2026-09-08','2026-09-09','2026-09-09','2026-09-10','2026-09-10','2026-09-11','2026-09-11']),
+  dm(['2026-11-09','2026-11-09','2026-11-10','2026-11-10','2026-11-11','2026-11-11','2026-11-12','2026-11-12','2026-11-13','2026-11-13']),
+  dm(['2027-01-18','2027-01-18','2027-01-19','2027-01-19','2027-01-20','2027-01-20','2027-01-21','2027-01-21','2027-01-22','2027-01-22'])
+];
+// CARTAGENA — Decreto 2289 del 16-dic-2025. ICA principal ANUAL (vence 29-may-2026,
+// fecha única) + ReteICA / pago voluntario bimestral.
+var ICA_CTG_ANUAL = new Date('2026-05-29T00:00:00');
+var RETEICA_CTG   = _dts(['2026-03-26','2026-05-27','2026-07-29','2026-09-24','2026-11-26','2027-01-28']);
+var RET_ALL = [
+  {label:'Ene',d:D_RENTA_GC_1},{label:'Feb',d:D_IVA_B1},{label:'Mar',d:D_RENTA_GC_2},
+  {label:'Abr',d:D_IVA_B2},{label:'May',d:D_RENTA_GC_3},
+  {label:'Jun',d:dm(['2026-07-09','2026-07-10','2026-07-13','2026-07-14','2026-07-15','2026-07-16','2026-07-17','2026-07-21','2026-07-22','2026-07-23'])},
+  {label:'Jul',d:dm(['2026-08-11','2026-08-12','2026-08-13','2026-08-14','2026-08-18','2026-08-19','2026-08-20','2026-08-21','2026-08-24','2026-08-25'])},
+  {label:'Ago',d:dm(['2026-09-09','2026-09-10','2026-09-11','2026-09-14','2026-09-15','2026-09-16','2026-09-17','2026-09-18','2026-09-21','2026-09-22'])},
+  {label:'Sep',d:dm(['2026-10-13','2026-10-14','2026-10-15','2026-10-16','2026-10-19','2026-10-20','2026-10-21','2026-10-22','2026-10-23','2026-10-26'])},
+  {label:'Oct',d:dm(['2026-11-11','2026-11-12','2026-11-13','2026-11-17','2026-11-18','2026-11-19','2026-11-20','2026-11-23','2026-11-24','2026-11-25'])},
+  {label:'Nov',d:dm(['2026-12-10','2026-12-11','2026-12-14','2026-12-15','2026-12-16','2026-12-17','2026-12-18','2026-12-21','2026-12-22','2026-12-23'])},
+  {label:'Dic',d:dm(['2027-01-13','2027-01-14','2027-01-15','2027-01-18','2027-01-19','2027-01-20','2027-01-21','2027-01-22','2027-01-25','2027-01-26'])}
+];
+// Exógena GC con prórroga Res. DIAN 000012 del 29-abr-2026 (dígitos 1/2/3 -> 14/15/19 may). Sincronizado con vencimientos.html.
+var EXOG_GC = dm(['2026-05-14','2026-05-15','2026-05-19','2026-05-05','2026-05-06','2026-05-07','2026-05-08','2026-05-11','2026-05-12','2026-05-13']);
+// RST Anticipo Bimestral AG 2026 (verificado contra dian.gov.co/PublishingImages/Vencimientos/10-RST-anticipo-bimestral.jpg)
+// Nota: B1 ene-feb vence MAYO (no marzo como IVA). B2 mar-abr vence JUNIO. De B3 en adelante coinciden con IVA bimestral.
+var D_RST_B1 = dm(['2026-05-12','2026-05-13','2026-05-14','2026-05-15','2026-05-19','2026-05-20','2026-05-21','2026-05-22','2026-05-25','2026-05-26']);
+var D_RST_B2 = dm(['2026-06-10','2026-06-11','2026-06-12','2026-06-16','2026-06-17','2026-06-18','2026-06-19','2026-06-22','2026-06-23','2026-06-24']);
+var D_RST_B3 = dm(['2026-07-09','2026-07-10','2026-07-13','2026-07-14','2026-07-15','2026-07-16','2026-07-17','2026-07-21','2026-07-22','2026-07-23']);
+var D_RST_B4 = dm(['2026-09-09','2026-09-10','2026-09-11','2026-09-14','2026-09-15','2026-09-16','2026-09-17','2026-09-18','2026-09-21','2026-09-22']);
+var D_RST_B5 = dm(['2026-11-11','2026-11-12','2026-11-13','2026-11-17','2026-11-18','2026-11-19','2026-11-20','2026-11-23','2026-11-24','2026-11-25']);
+var D_RST_B6 = dm(['2027-01-13','2027-01-14','2027-01-15','2027-01-18','2027-01-19','2027-01-20','2027-01-21','2027-01-22','2027-01-25','2027-01-26']);
+// Renta Personas Naturales AG 2025 — vence 12-ago a 26-oct 2026, según últimos 2 dígitos del NIT
+var D_RENTA_PN = [
+  {lo:1,hi:2,d:'2026-08-12'},{lo:3,hi:4,d:'2026-08-13'},{lo:5,hi:6,d:'2026-08-14'},
+  {lo:7,hi:8,d:'2026-08-18'},{lo:9,hi:10,d:'2026-08-19'},{lo:11,hi:12,d:'2026-08-20'},
+  {lo:13,hi:14,d:'2026-08-21'},{lo:15,hi:16,d:'2026-08-24'},{lo:17,hi:18,d:'2026-08-25'},
+  {lo:19,hi:20,d:'2026-08-26'},{lo:21,hi:22,d:'2026-08-27'},{lo:23,hi:24,d:'2026-08-28'},
+  {lo:25,hi:26,d:'2026-08-31'},{lo:27,hi:28,d:'2026-09-01'},{lo:29,hi:30,d:'2026-09-02'},
+  {lo:31,hi:32,d:'2026-09-03'},{lo:33,hi:34,d:'2026-09-04'},{lo:35,hi:36,d:'2026-09-07'},
+  {lo:37,hi:38,d:'2026-09-08'},{lo:39,hi:40,d:'2026-09-09'},{lo:41,hi:42,d:'2026-09-10'},
+  {lo:43,hi:44,d:'2026-09-11'},{lo:45,hi:46,d:'2026-09-14'},{lo:47,hi:48,d:'2026-09-15'},
+  {lo:49,hi:50,d:'2026-09-16'},{lo:51,hi:52,d:'2026-09-17'},{lo:53,hi:54,d:'2026-09-18'},
+  {lo:55,hi:56,d:'2026-09-21'},{lo:57,hi:58,d:'2026-09-22'},{lo:59,hi:60,d:'2026-09-23'},
+  {lo:61,hi:62,d:'2026-09-24'},{lo:63,hi:64,d:'2026-09-25'},{lo:65,hi:66,d:'2026-09-28'},
+  {lo:67,hi:68,d:'2026-10-01'},{lo:69,hi:70,d:'2026-10-02'},{lo:71,hi:72,d:'2026-10-05'},
+  {lo:73,hi:74,d:'2026-10-06'},{lo:75,hi:76,d:'2026-10-07'},{lo:77,hi:78,d:'2026-10-08'},
+  {lo:79,hi:80,d:'2026-10-09'},{lo:81,hi:82,d:'2026-10-13'},{lo:83,hi:84,d:'2026-10-14'},
+  {lo:85,hi:86,d:'2026-10-15'},{lo:87,hi:88,d:'2026-10-16'},{lo:89,hi:90,d:'2026-10-19'},
+  {lo:91,hi:92,d:'2026-10-20'},{lo:93,hi:94,d:'2026-10-21'},{lo:95,hi:96,d:'2026-10-22'},
+  {lo:97,hi:98,d:'2026-10-23'},{lo:99,hi:0,d:'2026-10-26'}
+];
+var EXOG_PJ = [
+  {lo:1,hi:5,d:'2026-05-14'},{lo:6,hi:10,d:'2026-05-15'},{lo:11,hi:15,d:'2026-05-19'},
+  {lo:16,hi:20,d:'2026-05-20'},{lo:21,hi:25,d:'2026-05-21'},{lo:26,hi:30,d:'2026-05-22'},
+  {lo:31,hi:35,d:'2026-05-25'},{lo:36,hi:40,d:'2026-05-26'},{lo:41,hi:45,d:'2026-05-27'},
+  {lo:46,hi:50,d:'2026-05-28'},{lo:51,hi:55,d:'2026-05-29'},{lo:56,hi:60,d:'2026-06-01'},
+  {lo:61,hi:65,d:'2026-06-02'},{lo:66,hi:70,d:'2026-06-03'},{lo:71,hi:75,d:'2026-06-04'},
+  {lo:76,hi:80,d:'2026-06-05'},{lo:81,hi:85,d:'2026-06-09'},{lo:86,hi:90,d:'2026-06-10'},
+  {lo:91,hi:95,d:'2026-06-11'},{lo:96,hi:0,d:'2026-06-12'}
+];
+var MESES_CORTO=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+var FREE_LIMIT=Infinity;
+/* ═══ NIT UTILITIES ═══ */
+var DV_WEIGHTS=[3,7,13,17,19,23,29,37,41,43,47,53,59,67,71];
+function calcDV(nit){
+  var digits=String(nit).replace(/\D/g,'');
+  var len=digits.length;
+  var sum=0;
+  for(var i=0;i<len;i++){
+    sum+=parseInt(digits[len-1-i],10)*DV_WEIGHTS[i];
+  }
+  var rem=sum%11;
+  if(rem===0)return 0;
+  if(rem===1)return 1;
+  return 11-rem;
+}
+function parseNIT(raw){
+  var clean=raw.replace(/[.\-\s]/g,'');
+  var parts=raw.split('-');
+  var dv=null;
+  var base=clean;
+  if(parts.length===2&&parts[1].trim().length<=1){
+    dv=parts[1].trim();
+    base=parts[0].replace(/[.\-\s]/g,'');
+  } else if(clean.length>2){
+    // If user entered digits without dash, assume last digit might be DV
+    // But we can't be sure, so just use the whole thing as base
+    base=clean;
+  }
+  return{base:base,dv:dv};
+}
+function formatNIT(base,dv){
+  var s=String(base);
+  var formatted='';
+  var rev=s.split('').reverse();
+  for(var i=0;i<rev.length;i++){
+    if(i>0&&i%3===0)formatted='.'+formatted;
+    formatted=rev[i]+formatted;
+  }
+  return formatted+'-'+dv;
+}
+function getLastDigit(nit){
+  var d=String(nit).replace(/\D/g,'');
+  return parseInt(d[d.length-1],10);
+}
+function getLast2Digits(nit){
+  var d=String(nit).replace(/\D/g,'');
+  if(d.length<2)return parseInt(d,10);
+  return parseInt(d.slice(-2),10);
+}
+/* ═══ DATE LOOKUP FUNCTIONS ═══ */
+function getDateByLastDigit(arr,nit){
+  var ld=getLastDigit(nit);
+  return arr[ld];
+}
+function getExogenaDate(client){
+  if(client.granContribuyente){
+    return getDateByLastDigit(EXOG_GC,client.nit);
+  }
+  var l2=getLast2Digits(client.nit);
+  for(var i=0;i<EXOG_PJ.length;i++){
+    var r=EXOG_PJ[i];
+    if(r.hi===0){
+      if(l2>=r.lo||l2===0)return new Date(r.d+'T00:00:00');
+    } else {
+      if(l2>=r.lo&&l2<=r.hi)return new Date(r.d+'T00:00:00');
+    }
+  }
+  return null;
+}
+function getRentaDates(client){
+  if(client.granContribuyente){
+    return [
+      {label:'Renta C1',date:getDateByLastDigit(D_RENTA_GC_1,client.nit)},
+      {label:'Renta C2',date:getDateByLastDigit(D_RENTA_GC_2,client.nit)},
+      {label:'Renta C3',date:getDateByLastDigit(D_RENTA_GC_3,client.nit)}
+    ];
+  }
+  if(client.tipo==='PN'){
+    // Personas naturales: cuota única según últimos 2 dígitos
+    return [{label:'Renta',date:lookupByLast2(D_RENTA_PN,client.nit)}];
+  }
+  return [
+    {label:'Renta C1',date:getDateByLastDigit(D_RENTA_PJ_1,client.nit)},
+    {label:'Renta C2',date:getDateByLastDigit(D_RENTA_PJ_2,client.nit)}
+  ];
+}
+function lookupByLast2(ranges,nit){
+  var v=getLast2Digits(nit);
+  for(var i=0;i<ranges.length;i++){
+    var r=ranges[i];
+    if(r.hi===0){if(v>=r.lo||v===0)return new Date(r.d+'T00:00:00')}
+    else{if(v>=r.lo&&v<=r.hi)return new Date(r.d+'T00:00:00')}
+  }
+  return null;
+}
+function getIVADates(client){
+  if(client.regimen==='no')return [];
+  var periods;
+  if(client.regimen==='cuatrimestral'){
+    // C1 ene-abr vence may (B2), C2 may-ago vence sep (B4), C3 sep-dic vence ene 2027 (B6)
+    periods=[
+      {label:'IVA C1',dates:D_IVA_B2},
+      {label:'IVA C2',dates:D_IVA_B4},
+      {label:'IVA C3',dates:D_IVA_B6}
+    ];
+  } else {
+    periods=[
+      {label:'IVA B1',dates:D_IVA_B1},
+      {label:'IVA B2',dates:D_IVA_B2},
+      {label:'IVA B3',dates:D_IVA_B3},
+      {label:'IVA B4',dates:D_IVA_B4},
+      {label:'IVA B5',dates:D_IVA_B5},
+      {label:'IVA B6',dates:D_IVA_B6}
+    ];
+  }
+  return periods.map(function(p){
+    return {label:p.label,date:getDateByLastDigit(p.dates,client.nit)};
+  });
+}
+function getRetDates(client){
+  return RET_ALL.map(function(r){
+    return {label:'Ret '+r.label,date:getDateByLastDigit(r.d,client.nit)};
+  });
+}
+function getF2516Date(client){
+  // Same as renta cuota 1
+  if(client.granContribuyente){
+    return getDateByLastDigit(D_RENTA_GC_1,client.nit);
+  }
+  return getDateByLastDigit(D_RENTA_PJ_1,client.nit);
+}
+function getRSTDates(client){
+  // 6 anticipos bimestrales del SIMPLE (F2593)
+  return [
+    {label:'RST B1',date:getDateByLastDigit(D_RST_B1,client.nit)},
+    {label:'RST B2',date:getDateByLastDigit(D_RST_B2,client.nit)},
+    {label:'RST B3',date:getDateByLastDigit(D_RST_B3,client.nit)},
+    {label:'RST B4',date:getDateByLastDigit(D_RST_B4,client.nit)},
+    {label:'RST B5',date:getDateByLastDigit(D_RST_B5,client.nit)},
+    {label:'RST B6',date:getDateByLastDigit(D_RST_B6,client.nit)}
+  ];
+}
+function getF260Date(client){
+  // F260 - Declaración consolidada anual SIMPLE. Abril 2026, grupos de 2 dígitos.
+  var ld=getLastDigit(client.nit);
+  if(ld===1||ld===2)return new Date('2026-04-20T00:00:00');
+  if(ld===3||ld===4)return new Date('2026-04-21T00:00:00');
+  if(ld===5||ld===6)return new Date('2026-04-22T00:00:00');
+  if(ld===7||ld===8)return new Date('2026-04-23T00:00:00');
+  return new Date('2026-04-24T00:00:00'); // 9 ó 0
+}
+function getPatrimonioDates(client){
+  // F420 Patrimonio (verificado contra Calendario_Tributario_2026.pdf):
+  // C1 mayo (mismas fechas que renta PJ 1ra, según último dígito).
+  // C2 fecha FIJA 14-sep-2026, independiente del NIT.
+  return [
+    {label:'Patrimonio C1',date:getDateByLastDigit(D_RENTA_PJ_1,client.nit)},
+    {label:'Patrimonio C2',date:new Date('2026-09-14T00:00:00')}
+  ];
+}
+function getActivosExtDate(client){
+  // F160 Activos en el exterior (verificado contra dian.gov.co)
+  // GC: 13-27 abr (= renta GC 2da cuota). PJ: 12-26 may (= renta PJ 1ra). PN: 12 ago - 26 oct por últimos 2 dígitos.
+  if(client.granContribuyente){
+    return getDateByLastDigit(D_RENTA_GC_2,client.nit);
+  }
+  if(client.tipo==='PN'){
+    return lookupByLast2(D_RENTA_PN,client.nit);
+  }
+  return getDateByLastDigit(D_RENTA_PJ_1,client.nit);
+}
+/* ═══ Build all obligations for a client ═══ */
+function buildObligations(client){
+  var obls=[];
+  // Exogena
+  if(client.obligaciones.exogena){
+    obls.push({id:'exogena',group:'exogena',label:'Exogena',date:getExogenaDate(client),link:'exogena.html',linkText:'Generar'});
+  }
+  // Renta
+  if(client.obligaciones.renta){
+    getRentaDates(client).forEach(function(r){
+      obls.push({id:'renta_'+r.label.replace(/\s/g,'_').toLowerCase(),group:'renta',label:r.label,date:r.date,link:'renta110.html',linkText:'F110'});
+    });
+  }
+  // IVA
+  if(client.obligaciones.iva){
+    var ivaDates=getIVADates(client);
+    ivaDates.forEach(function(iv){
+      obls.push({id:'iva_'+iv.label.replace(/\s/g,'_').toLowerCase(),group:'iva',label:iv.label,date:iv.date,link:'iva300.html',linkText:'IVA'});
+    });
+  }
+  // ReteFte
+  if(client.obligaciones.retefte){
+    getRetDates(client).forEach(function(r){
+      obls.push({id:'ret_'+r.label.replace(/\s/g,'_').toLowerCase(),group:'ret',label:r.label,date:r.date,link:'retencion350.html',linkText:'Ret'});
+    });
+  }
+  // F2516
+  if(client.obligaciones.f2516){
+    obls.push({id:'f2516',group:'f2516',label:'F.2516',date:getF2516Date(client),link:'formato2516.html',linkText:'2516'});
+  }
+  // RST F2593 (anticipos bimestrales) + F260 (anual)
+  if(client.obligaciones.rst){
+    getRSTDates(client).forEach(function(r){
+      obls.push({id:'rst_'+r.label.replace(/\s/g,'_').toLowerCase(),group:'rst',label:r.label,date:r.date,link:'formato2593.html',linkText:'F2593'});
+    });
+    obls.push({id:'f260',group:'rst',label:'F260 Anual',date:getF260Date(client),link:'formato2593.html',linkText:'F260'});
+  }
+  // Patrimonio F420
+  if(client.obligaciones.patrimonio){
+    getPatrimonioDates(client).forEach(function(p){
+      obls.push({id:'patri_'+p.label.replace(/\s/g,'_').toLowerCase(),group:'patrimonio',label:p.label,date:p.date,link:'patrimonio420.html',linkText:'F420'});
+    });
+  }
+  // Activos en el exterior F160
+  if(client.obligaciones.activosExt){
+    obls.push({id:'activos_ext',group:'activos',label:'Activos Ext.',date:getActivosExtDate(client),link:null,linkText:'F160'});
+  }
+  // ICA municipal (bimestral). El municipio determina las fechas; sin municipio → manual.
+  if(client.obligaciones.ica){
+    var icaM = client.icaMunicipio || 'none';
+    if(icaM==='bog'){
+      // Bogotá: fechas únicas. ICA bimestral + ReteICA bimestral (Res. SDH-000195/2025).
+      ICA_BOG.forEach(function(d,i){obls.push({id:'ica_bog_'+i,group:'ica',label:'ICA '+ICA_BIMS[i],date:d,link:null,linkText:'Bogotá'})});
+      RETEICA_BOG.forEach(function(d,i){obls.push({id:'reteica_bog_'+i,group:'ica',label:'ReteICA '+ICA_BIMS[i],date:d,link:null,linkText:'Bogotá'})});
+    } else if(icaM==='cali'){
+      // Cali: ICA bimestral = ReteICA, por último dígito del NIT (Res. 4131.010.21.0607/2025).
+      ICA_CALI.forEach(function(m,i){obls.push({id:'ica_cali_'+i,group:'ica',label:'ICA/ReteICA '+ICA_BIMS[i],date:getDateByLastDigit(m,client.nit),link:null,linkText:'Cali'})});
+    } else if(icaM==='ctg'){
+      // Cartagena: ICA anual (29-may) + ReteICA bimestral (Decreto 2289/2025).
+      obls.push({id:'ica_ctg_anual',group:'ica',label:'ICA Anual (vig.2025 + ant.40%)',date:ICA_CTG_ANUAL,link:null,linkText:'Cartagena'});
+      RETEICA_CTG.forEach(function(d,i){obls.push({id:'reteica_ctg_'+i,group:'ica',label:'ReteICA '+ICA_BIMS[i],date:d,link:null,linkText:'Cartagena'})});
+    } else {
+      obls.push({id:'ica',group:'ica',label:'ICA',date:null,link:null,linkText:'Manual'});
+    }
+  }
+  // Impuesto Nacional al Consumo F.310 (bimestral). Mismas fechas que IVA bimestral
+  // por último dígito del NIT (Art. 1.6.1.13.2.30 DUR 1625/2016).
+  if(client.obligaciones.inc){
+    var incBims=[
+      {label:'INC B1 (Ene-Feb)',dates:D_IVA_B1},{label:'INC B2 (Mar-Abr)',dates:D_IVA_B2},
+      {label:'INC B3 (May-Jun)',dates:D_IVA_B3},{label:'INC B4 (Jul-Ago)',dates:D_IVA_B4},
+      {label:'INC B5 (Sep-Oct)',dates:D_IVA_B5},{label:'INC B6 (Nov-Dic)',dates:D_IVA_B6}
+    ];
+    incBims.forEach(function(b){
+      obls.push({id:'inc_'+b.label.replace(/\s/g,'_').toLowerCase(),group:'inc',label:b.label,date:getDateByLastDigit(b.dates,client.nit),link:null,linkText:'F310'});
+    });
+  }
+  return obls;
+}
+/* ═══ STATE MANAGEMENT ═══ */
+function loadClients(){
+  try{return JSON.parse(localStorage.getItem('oficina_clientes'))||[]}catch(e){return[]}
+}
+function saveClients(arr){
+  localStorage.setItem('oficina_clientes',JSON.stringify(arr));
+  localStorage.setItem('oficina_last_save',String(Date.now()));
+  if(typeof ExoDriveUI!=='undefined')ExoDriveUI.scheduleSave();
+}
+function loadEstado(){
+  try{return JSON.parse(localStorage.getItem('oficina_estado'))||{}}catch(e){return{}}
+}
+function saveEstado(obj){
+  localStorage.setItem('oficina_estado',JSON.stringify(obj));
+  localStorage.setItem('oficina_last_save',String(Date.now()));
+  if(typeof ExoDriveUI!=='undefined')ExoDriveUI.scheduleSave();
+}
+function stateKey(nit,oblId){
+  return nit.replace(/\D/g,'')+'_'+oblId;
+}
+function isPresentada(nit,oblId){
+  return !!loadEstado()[stateKey(nit,oblId)];
+}
+function togglePresentada(nit,oblId){
+  var estado=loadEstado();
+  var k=stateKey(nit,oblId);
+  estado[k]=!estado[k];
+  saveEstado(estado);
+  if(typeof gtag==='function'){
+    gtag('event','oficina_marcar_presentada',{obligation:oblId,status:estado[k]?'presentada':'pendiente'});
+  }
+  return estado[k];
+}
+/* ═══ PRO CHECK (deshabilitado — siempre PRO) ═══ */
+var isPro=true;
+function checkPro(cb){
+  isPro=true;if(cb)cb();
+}
+/* ═══ SEMAFORO ═══ */
+function today(){var d=new Date();d.setHours(0,0,0,0);return d}
+function getSemaforo(date,nit,oblId){
+  if(!date)return{dot:'dot-gray',status:'na'};
+  if(isPresentada(nit,oblId))return{dot:'dot-green',status:'presentada'};
+  var now=today().getTime();
+  var due=new Date(date);due.setHours(0,0,0,0);
+  var diff=(due.getTime()-now)/(1000*60*60*24);
+  if(diff<0)return{dot:'dot-red',status:'vencida'};
+  if(diff<=5)return{dot:'dot-orange',status:'urgente'};
+  return{dot:'dot-yellow',status:'pendiente'};
+}
+function fmtDate(d){
+  if(!d)return'';
+  return d.getDate()+'/'+MESES_CORTO[d.getMonth()];
+}
+/* ═══ GET ALL COLUMN DEFINITIONS ═══ */
+function getAllColumns(clients){
+  // Collect all unique obligation columns across clients
+  var colMap={};
+  var colOrder=[];
+  clients.forEach(function(c){
+    var obls=buildObligations(c);
+    obls.forEach(function(o){
+      if(!colMap[o.id]){
+        colMap[o.id]={id:o.id,group:o.group,label:o.label};
+        colOrder.push(o.id);
+      }
+    });
+  });
+  // Sort by group then by natural order
+  var groupOrder={exogena:0,renta:1,iva:2,inc:3,ret:4,f2516:5,rst:6,patrimonio:7,activos:8,ica:9};
+  colOrder.sort(function(a,b){
+    var ga=groupOrder[colMap[a].group]||0;
+    var gb=groupOrder[colMap[b].group]||0;
+    if(ga!==gb)return ga-gb;
+    return colOrder.indexOf(a)-colOrder.indexOf(b);
+  });
+  // Remove duplicates while preserving sort
+  var seen={};var unique=[];
+  colOrder.forEach(function(id){if(!seen[id]){seen[id]=true;unique.push(id)}});
+  return unique.map(function(id){return colMap[id]});
+}
+/* ═══ FILTER PERSISTENCE ═══ */
+function loadFilters(){
+  try{return JSON.parse(localStorage.getItem('oficina_filtros'))||{}}catch(e){return{}}
+}
+function saveFilters(){
+  localStorage.setItem('oficina_filtros',JSON.stringify({
+    currentFilter:currentFilter,
+    filterClient:filterClient,
+    filterObl:filterObl,
+    searchQuery:searchQuery,
+    sortKey:sortKey,
+    sortDir:sortDir
+  }));
+}
+function normalize(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+/* ═══ RENDER ═══ */
+var currentFilter='all';
+var filterClient='';
+var filterObl='';
+var searchQuery='';
+var sortKey='cliente'; // default alfabético; click en otra columna lo cambia y persiste
+var sortDir='asc';    // 'asc' | 'desc'
+window.handleSort=function(key){
+  if(sortKey===key){
+    if(sortDir==='asc'){sortDir='desc'}
+    else{sortKey=null;sortDir='asc'}
+  } else {
+    sortKey=key;sortDir='asc';
+  }
+  saveFilters();
+  if(typeof gtag==='function')gtag('event','oficina_sort',{key:key||'reset',dir:sortDir});
+  render();
+};
+// Días enteros entre hoy y la fecha (negativo = ya pasó).
+function daysUntil(date){
+  var now=today().getTime();
+  var d=new Date(date);d.setHours(0,0,0,0);
+  return Math.round((d.getTime()-now)/86400000);
+}
+// ¿Esta obligación (con su semáforo) pasa el filtro de estado activo?
+// Solo aplica a celdas con fecha; las sin fecha se manejan aparte.
+function cellPassesFilter(obl,sem){
+  if(!obl||!obl.date)return currentFilter==='all';
+  if(currentFilter==='all')return true;
+  var st=sem.status;
+  if(currentFilter==='pending')return st!=='presentada';
+  if(currentFilter==='done')return st==='presentada';
+  if(currentFilter==='overdue')return st==='vencida';
+  if(currentFilter==='today')return st!=='presentada'&&daysUntil(obl.date)===0;
+  if(currentFilter==='week'){
+    if(st==='presentada')return false;
+    var df=daysUntil(obl.date);
+    return df>=0&&df<=7;
+  }
+  return true;
+}
+// Sincroniza el resaltado activo de pills y tarjetas + botón limpiar + pistas.
+function syncFilterUI(){
+  document.querySelectorAll('.filter-pill').forEach(function(p){
+    p.classList.toggle('active',p.getAttribute('data-filter')===currentFilter);
+  });
+  [['statOverdue','overdue'],['statToday','today'],['statWeek','week']].forEach(function(pair){
+    var el=document.getElementById(pair[0]);
+    if(el)el.classList.toggle('active',currentFilter===pair[1]);
+  });
+  var done=document.getElementById('statDone');
+  if(done)done.classList.toggle('active',currentFilter==='done'||currentFilter==='pending');
+  var dh=document.getElementById('statDoneHint');
+  if(dh)dh.textContent=currentFilter==='done'?'clic: ver pendientes':currentFilter==='pending'?'clic: quitar filtro':'clic: ver presentadas';
+  var anyFilter=currentFilter!=='all'||!!filterClient||!!filterObl||!!(searchQuery&&searchQuery.length);
+  var cb=document.getElementById('clearFiltersBtn');
+  if(cb)cb.style.display=anyFilter?'':'none';
+}
+window.setFilter=function(f,el){
+  currentFilter=f;
+  saveFilters();
+  if(typeof gtag==='function')gtag('event','oficina_filtro',{filter:f});
+  render();
+};
+// Clic en tarjeta: aplica el modo; si ya estaba activo, vuelve a "todo" (toggle).
+window.cardFilter=function(mode){
+  currentFilter=(currentFilter===mode)?'all':mode;
+  saveFilters();
+  if(typeof gtag==='function')gtag('event','oficina_card_filtro',{filter:currentFilter});
+  render();
+};
+// Tarjeta Realizadas: ciclo presentadas -> pendientes -> todo.
+window.cardDoneToggle=function(){
+  currentFilter=currentFilter==='done'?'pending':currentFilter==='pending'?'all':'done';
+  saveFilters();
+  if(typeof gtag==='function')gtag('event','oficina_card_done',{filter:currentFilter});
+  render();
+};
+// Tarjeta Próxima: limpia filtros de estado y salta/resalta esa empresa.
+var lastNextNit=null;
+window.jumpToNext=function(){
+  if(!lastNextNit)return;
+  currentFilter='all';
+  filterClient='';filterObl='';searchQuery='';
+  var fc=document.getElementById('filterClient');if(fc)fc.value='';
+  var fo=document.getElementById('filterObl');if(fo)fo.value='';
+  var fs=document.getElementById('filterSearch');if(fs)fs.value='';
+  saveFilters();
+  render();
+  setTimeout(function(){
+    var row=document.querySelector('#oblBody tr[data-nit="'+CSS.escape(lastNextNit)+'"]');
+    if(row){
+      row.scrollIntoView({behavior:'smooth',block:'center'});
+      row.classList.remove('row-flash');void row.offsetWidth;row.classList.add('row-flash');
+    }
+  },60);
+};
+window.clearAllFilters=function(){
+  currentFilter='all';
+  filterClient='';filterObl='';searchQuery='';
+  var fc=document.getElementById('filterClient');if(fc)fc.value='';
+  var fo=document.getElementById('filterObl');if(fo)fo.value='';
+  var fs=document.getElementById('filterSearch');if(fs)fs.value='';
+  saveFilters();
+  render();
+};
+window.applyFilters=function(){
+  filterClient=document.getElementById('filterClient').value;
+  filterObl=document.getElementById('filterObl').value;
+  saveFilters();
+  render();
+};
+function render(){
+  var clients=loadClients();
+  var emptyEl=document.getElementById('emptyState');
+  var tableWrapEl=document.getElementById('tableWrap');
+  var cardsEl=document.getElementById('oblCards');
+
+  // Backup banner
+  renderBackupBanner();
+  // Counter
+  var counterEl=document.getElementById('clientCounter');
+  var n=clients.length;
+  counterEl.textContent=n+' '+(n===1?'cliente':'clientes');
+  counterEl.className='client-counter';
+  // Contador de resultados visibles (solo cuando hay filtros)
+  var fcEl=document.getElementById('filterCount');
+  if(fcEl){
+    var anyFilter=currentFilter!=='all'||!!filterClient||!!filterObl||!!(searchQuery&&searchQuery.length);
+    if(anyFilter&&clients.length){
+      // Calcula cuántos clientes pasan el filtro de nombre/NIT (no el de estado celda a celda)
+      var visibles=clients;
+      if(filterClient)visibles=visibles.filter(function(c){return c.nit===filterClient});
+      if(searchQuery){
+        var qq=normalize(searchQuery);
+        visibles=visibles.filter(function(c){
+          return normalize(c.nombre).indexOf(qq)>=0||normalize(c.nit).indexOf(qq)>=0||normalize(c.nitFormatted||'').indexOf(qq)>=0;
+        });
+      }
+      fcEl.innerHTML='<strong>'+visibles.length+'</strong> de '+clients.length+' visibles';
+      fcEl.classList.add('show');
+    } else {
+      fcEl.classList.remove('show');
+      fcEl.textContent='';
+    }
+  }
+  // Client dropdown
+  var sel=document.getElementById('filterClient');
+  var curVal=sel.value;
+  sel.innerHTML='<option value="">Todos los clientes</option>';
+  var sortedForDropdown=clients.slice().sort(function(a,b){
+    return (a.nombre||'').localeCompare(b.nombre||'','es',{sensitivity:'base'});
+  });
+  sortedForDropdown.forEach(function(c){
+    var o=document.createElement('option');o.value=c.nit;o.textContent=c.nombre;
+    sel.appendChild(o);
+  });
+  sel.value=curVal;
+  filterClient=sel.value;
+  if(!clients.length){
+    emptyEl.style.display='';
+    tableWrapEl.style.display='none';
+    cardsEl.style.display='none';
+
+    updateStats(clients);
+    return;
+  }
+  emptyEl.style.display='none';
+  tableWrapEl.style.display='';
+  cardsEl.style.display='';
+
+  // Filter clients
+  var filtered=clients;
+  if(filterClient){
+    filtered=filtered.filter(function(c){return c.nit===filterClient});
+  }
+  if(searchQuery){
+    var q=normalize(searchQuery);
+    filtered=filtered.filter(function(c){
+      return normalize(c.nombre).indexOf(q)>=0 ||
+             normalize(c.nit).indexOf(q)>=0 ||
+             normalize(c.nitFormatted||'').indexOf(q)>=0;
+    });
+  }
+  // Sort
+  if(sortKey){
+    var dir=sortDir==='desc'?-1:1;
+    if(sortKey==='cliente'){
+      filtered=filtered.slice().sort(function(a,b){
+        return normalize(a.nombre).localeCompare(normalize(b.nombre))*dir;
+      });
+    } else {
+      filtered=filtered.slice().sort(function(a,b){
+        var oa=buildObligations(a).filter(function(o){return o.id===sortKey})[0];
+        var ob=buildObligations(b).filter(function(o){return o.id===sortKey})[0];
+        var da=oa&&oa.date?oa.date.getTime():Infinity;
+        var db=ob&&ob.date?ob.date.getTime():Infinity;
+        if(da===db)return normalize(a.nombre).localeCompare(normalize(b.nombre));
+        return (da-db)*dir;
+      });
+    }
+  }
+  // Build columns from ALL clients (so table is consistent)
+  var columns=getAllColumns(clients);
+  // Filter columns by obligation type
+  if(filterObl){
+    columns=columns.filter(function(col){return col.group===filterObl||(filterObl==='retefte'&&col.group==='ret')});
+  }
+  // Render header con encabezados agrupados (2 filas: meta-grupo + columna)
+  function arrow(key){
+    if(sortKey===key)return '<span class="sort-arrow">'+(sortDir==='asc'?'&#9650;':'&#9660;')+'</span>';
+    return '<span class="sort-arrow inactive">&#9650;</span>';
+  }
+  var GROUP_LABELS={exogena:'Exógena',renta:'Renta',iva:'IVA',inc:'Imp. al Consumo',ret:'Retención mensual',f2516:'F.2516',rst:'Régimen Simple',patrimonio:'Patrimonio',activos:'Activos exterior',ica:'ICA'};
+  // Calcular colspans contiguos por grupo
+  var groupRuns=[];
+  columns.forEach(function(col){
+    var last=groupRuns[groupRuns.length-1];
+    if(last && last.group===col.group) last.span++;
+    else groupRuns.push({group:col.group,span:1});
+  });
+  var groupRow='<tr class="group-row"><th rowspan="2" class="sortable" onclick="handleSort(\'cliente\')" title="Ordenar por nombre">Cliente'+arrow('cliente')+'</th>';
+  groupRuns.forEach(function(g){
+    groupRow+='<th colspan="'+g.span+'" class="col-group-'+g.group+' group-header">'+escapeHTML(GROUP_LABELS[g.group]||g.group)+'</th>';
+  });
+  groupRow+='</tr>';
+  var subRow='<tr>';
+  columns.forEach(function(col){
+    var cls='col-group-'+col.group+' sortable';
+    subRow+='<th class="'+cls+'" onclick="handleSort(\''+col.id+'\')" title="Ordenar por fecha de '+escapeHTML(col.label)+'">'+col.label+arrow(col.id)+'</th>';
+  });
+  subRow+='</tr>';
+  document.getElementById('oblHead').innerHTML=groupRow+subRow;
+  // Render rows
+  var bodyHTML='';
+  filtered.forEach(function(client){
+    var clientObls=buildObligations(client);
+    var oblMap={};
+    clientObls.forEach(function(o){oblMap[o.id]=o});
+    // Visibilidad de fila según filtro + detección de vencidas (borde rojo)
+    var showRow=true;
+    var rowOverdue=false;
+    var hasVisible=false;
+    columns.forEach(function(col){
+      var o=oblMap[col.id];
+      if(!o||!o.date)return;
+      var s=getSemaforo(o.date,client.nit,o.id);
+      if(s.status==='vencida')rowOverdue=true;
+      if(cellPassesFilter(o,s))hasVisible=true;
+    });
+    if(currentFilter!=='all'&&!hasVisible)showRow=false;
+    if(!showRow)return;
+    bodyHTML+='<tr data-nit="'+escapeHTML(client.nit)+'"'+(rowOverdue?' class="row-overdue"':'')+'>';
+    bodyHTML+='<td><div style="font-weight:700;font-size:.85rem">'+escapeHTML(client.nombre)+'</div>';
+    bodyHTML+='<div style="font-size:.72rem;color:var(--f400)">'+escapeHTML(client.nitFormatted||client.nit);
+    if(client.granContribuyente)bodyHTML+=' <span style="background:#FEF3C7;color:#92400E;padding:1px 5px;border-radius:4px;font-size:.65rem;font-weight:700">GC</span>';
+    bodyHTML+='</div>';
+    bodyHTML+='<div class="client-actions">';
+    bodyHTML+='<button onclick="editClient('+clients.indexOf(client)+')" title="Editar">&#9998;</button>';
+    bodyHTML+='<button onclick="deleteClient('+clients.indexOf(client)+')" title="Eliminar">&#128465;</button>';
+    bodyHTML+='</div></td>';
+    columns.forEach(function(col){
+      var obl=oblMap[col.id];
+      if(!obl){
+        // Client doesn't have this obligation
+        bodyHTML+='<td><span class="obl-na">--</span></td>';
+        return;
+      }
+      if(!obl.date&&obl.group==='ica'){
+        bodyHTML+='<td><span class="obl-na">Manual</span></td>';
+        return;
+      }
+      if(!obl.date){
+        bodyHTML+='<td><span class="obl-na">--</span></td>';
+        return;
+      }
+      var sem=getSemaforo(obl.date,client.nit,obl.id);
+      // Visibilidad de celda según filtro de estado activo
+      if(currentFilter!=='all'&&!cellPassesFilter(obl,sem)){
+        bodyHTML+='<td><span class="obl-na">--</span></td>';
+        return;
+      }
+      bodyHTML+='<td>';
+      bodyHTML+='<div class="obl-cell" onclick="toggleCell(\''+escapeHTML(client.nit)+'\',\''+obl.id+'\')" title="'+(sem.status==='presentada'?'Presentada - clic para desmarcar':'Clic para marcar como presentada')+'">';
+      bodyHTML+='<span class="date-text">'+fmtDate(obl.date)+'</span>';
+      bodyHTML+='<span class="dot '+sem.dot+'"></span>';
+      if(obl.link){
+        bodyHTML+='<a href="'+obl.link+'" class="quick-link" onclick="event.stopPropagation()">'+obl.linkText+' &rarr;</a>';
+      }
+      bodyHTML+='</div></td>';
+    });
+    bodyHTML+='</tr>';
+  });
+  if(!bodyHTML&&(searchQuery||filterClient||currentFilter!=='all')){
+    var colspan=columns.length+1;
+    bodyHTML='<tr><td colspan="'+colspan+'" style="text-align:center;padding:32px 16px;color:var(--f400);font-size:.88rem">Sin resultados con los filtros actuales.</td></tr>';
+  }
+  document.getElementById('oblBody').innerHTML=bodyHTML;
+  // Mobile cards (same data, different layout)
+  var cardsHTML='';
+  filtered.forEach(function(client){
+    var clientObls=buildObligations(client);
+    var oblMap={};
+    clientObls.forEach(function(o){oblMap[o.id]=o});
+    // Build visible obls for this card (respecting filters)
+    var visibleObls=[];
+    columns.forEach(function(col){
+      var obl=oblMap[col.id];
+      if(!obl)return;
+      if(!obl.date&&obl.group!=='ica')return;
+      if(obl.date){
+        var sem=getSemaforo(obl.date,client.nit,obl.id);
+        if(currentFilter!=='all'&&!cellPassesFilter(obl,sem))return;
+        visibleObls.push({col:col,obl:obl,sem:sem});
+      } else {
+        // ICA manual
+        if(currentFilter!=='all')return;
+        visibleObls.push({col:col,obl:obl,sem:{dot:'dot-gray',status:'manual'}});
+      }
+    });
+    if(!visibleObls.length&&currentFilter!=='all')return;
+    var idx=clients.indexOf(client);
+    cardsHTML+='<div class="client-card">';
+    cardsHTML+='<div class="card-head"><div><div class="card-title">'+escapeHTML(client.nombre)+'</div>';
+    cardsHTML+='<div class="card-sub">'+escapeHTML(client.nitFormatted||client.nit);
+    if(client.granContribuyente)cardsHTML+=' <span class="gc-badge">GC</span>';
+    cardsHTML+='</div></div>';
+    cardsHTML+='<div class="card-actions">';
+    cardsHTML+='<button onclick="editClient('+idx+')" title="Editar">&#9998;</button>';
+    cardsHTML+='<button onclick="deleteClient('+idx+')" title="Eliminar">&#128465;</button>';
+    cardsHTML+='</div></div>';
+    if(visibleObls.length){
+      cardsHTML+='<div class="card-obls">';
+      visibleObls.forEach(function(v){
+        var presentadaCls=v.sem.status==='presentada'?' presentada':'';
+        var dateText=v.obl.date?fmtDate(v.obl.date):'Manual';
+        cardsHTML+='<div class="card-obl'+presentadaCls+'" onclick="toggleCell(\''+escapeHTML(client.nit)+'\',\''+v.obl.id+'\')">';
+        cardsHTML+='<span class="dot '+v.sem.dot+'"></span>';
+        cardsHTML+='<div class="obl-info"><div class="obl-label">'+escapeHTML(v.col.label)+'</div>';
+        cardsHTML+='<div class="obl-date">'+dateText+'</div></div>';
+        if(v.obl.link){
+          cardsHTML+='<a href="'+v.obl.link+'" class="obl-link" onclick="event.stopPropagation()">'+v.obl.linkText+'</a>';
+        }
+        cardsHTML+='</div>';
+      });
+      cardsHTML+='</div>';
+    } else {
+      cardsHTML+='<div style="padding:14px;font-size:.82rem;color:var(--f400);text-align:center">Sin obligaciones visibles con los filtros actuales.</div>';
+    }
+    cardsHTML+='</div>';
+  });
+  if(!cardsHTML&&(searchQuery||filterClient||currentFilter!=='all')){
+    cardsHTML='<div style="text-align:center;padding:32px 16px;color:var(--f400);font-size:.88rem;background:#fff;border:1px solid var(--f200);border-radius:var(--r)">Sin resultados con los filtros actuales.</div>';
+  }
+  document.getElementById('oblCards').innerHTML=cardsHTML;
+  updateStats(clients);
+}
+function escapeHTML(s){
+  var d=document.createElement('div');d.textContent=s;return d.innerHTML;
+}
+/* ═══ STATS ═══ */
+function updateStats(clients){
+  var now=today().getTime();
+  var weekEnd=now+7*24*60*60*1000;
+  var overdueCount=0;
+  var overdueClients={};
+  var todayCount=0;
+  var weekCount=0;
+  var nextObl=null;
+  var nextDate=Infinity;
+  var totalObls=0;
+  var doneObls=0;
+  clients.forEach(function(client){
+    var obls=buildObligations(client);
+    obls.forEach(function(obl){
+      if(!obl.date)return;
+      totalObls++;
+      if(isPresentada(client.nit,obl.id)){doneObls++;return}
+      var d=new Date(obl.date);d.setHours(0,0,0,0);
+      var dt=d.getTime();
+      if(dt<now){overdueCount++;overdueClients[client.nit]=true}
+      if(dt===now)todayCount++;
+      if(dt>=now&&dt<=weekEnd)weekCount++;
+      if(dt>=now&&dt<nextDate){
+        nextDate=dt;
+        nextObl={obl:obl,client:client,date:d};
+      }
+    });
+  });
+  var pendingCount=totalObls-doneObls;
+  var statDoneEl=document.getElementById('statDoneVal');
+  if(statDoneEl){
+    var pct=totalObls?Math.round(doneObls/totalObls*100):0;
+    statDoneEl.textContent=doneObls+' / '+totalObls;
+    document.getElementById('statDoneDetail').textContent=pct+'% completado · '+pendingCount+' pendiente'+(pendingCount!==1?'s':'');
+    var bar=document.getElementById('statDoneBar');
+    if(bar)bar.style.width=pct+'%';
+  }
+  // Mantener clases 'clickable'/'active'; solo alternar danger/warning con classList.
+  var statOverdueEl=document.getElementById('statOverdueVal');
+  if(statOverdueEl){
+    statOverdueEl.textContent=overdueCount;
+    var nClients=Object.keys(overdueClients).length;
+    document.getElementById('statOverdueDetail').textContent=overdueCount===0?'Sin atrasos ✓':'en '+nClients+' cliente'+(nClients!==1?'s':'');
+    document.getElementById('statOverdue').classList.toggle('danger',overdueCount>0);
+  }
+  var statTodayEl=document.getElementById('statTodayVal');
+  statTodayEl.textContent=todayCount===0?'Nada hoy ✓':todayCount+' obligacion'+(todayCount!==1?'es':'');
+  var statTodayCard=document.getElementById('statToday');
+  statTodayCard.classList.toggle('danger',todayCount>0);
+  var sth=document.getElementById('statTodayHint');if(sth)sth.style.display=todayCount>0?'':'none';
+  var statWeekEl=document.getElementById('statWeekVal');
+  statWeekEl.textContent=weekCount===0?'Sin vencimientos':weekCount+' pendiente'+(weekCount!==1?'s':'');
+  var statWeekCard=document.getElementById('statWeek');
+  statWeekCard.classList.remove('danger','warning');
+  if(weekCount>5)statWeekCard.classList.add('warning');
+  var statNextEl=document.getElementById('statNextVal');
+  var statNextHintEl=document.getElementById('statNextHint');
+  if(nextObl){
+    statNextEl.textContent=nextObl.obl.label+' de '+nextObl.client.nombre+' el '+fmtDate(nextObl.date)+'/'+nextObl.date.getFullYear();
+    lastNextNit=nextObl.client.nit;
+    if(statNextHintEl)statNextHintEl.style.display='';
+  } else {
+    statNextEl.textContent=clients.length?'Todas presentadas ✓':'Sin obligaciones registradas';
+    lastNextNit=null;
+    if(statNextHintEl)statNextHintEl.style.display='none';
+  }
+  var cp=document.getElementById('cntPending');if(cp)cp.textContent=pendingCount;
+  var cw=document.getElementById('cntWeek');if(cw)cw.textContent=weekCount;
+  syncFilterUI();
+}
+/* ═══ CELL TOGGLE ═══ */
+window.toggleCell=function(nit,oblId){
+  var newState=togglePresentada(nit,oblId);
+  if(typeof exoToast==='function'){
+    exoToast(newState?'Marcada como presentada':'Desmarcada','success');
+  }
+  render();
+};
+/* ═══ MODAL DE CONFIRMACIÓN PARA CHIP DEL CALENDARIO ═══
+   Pide verificación antes de marcar/desmarcar (clicks accidentales son comunes en el calendario).
+*/
+var _calConfirm={nit:null,oblId:null};
+window.openCalConfirmModal=function(nit,oblId){
+  var clients=loadClients();
+  var client=null;
+  for(var i=0;i<clients.length;i++){if(clients[i].nit===nit){client=clients[i];break}}
+  if(!client)return;
+  var obls=buildObligations(client);
+  var obl=null;
+  for(var j=0;j<obls.length;j++){if(obls[j].id===oblId){obl=obls[j];break}}
+  if(!obl)return;
+  _calConfirm={nit:nit,oblId:oblId};
+  var COLORS_LOCAL={exogena:'#6366F1',renta:'#3B82F6',iva:'#8B5CF6',ret:'#F59E0B',f2516:'#06B6D4',rst:'#A78BFA',patrimonio:'#F43F5E',activos:'#0EA5E9',ica:'#EC4899',inc:'#F97316'};
+  var LABELS_LOCAL={exogena:'Exógena',renta:'Renta',iva:'IVA',ret:'Retención',f2516:'F.2516',rst:'Régimen Simple',patrimonio:'Patrimonio',activos:'Activos exterior',ica:'ICA',inc:'Imp. al Consumo'};
+  document.getElementById('calConfirmHeader').style.borderTopColor=COLORS_LOCAL[obl.group]||'#6B7280';
+  document.getElementById('calConfirmTitle').textContent=LABELS_LOCAL[obl.group]||obl.label||'Obligación';
+  document.getElementById('calConfirmEmpresa').textContent=client.nombre||'';
+  document.getElementById('calConfirmNit').textContent=client.nitFormatted||client.nit;
+  // Cuota = parte específica (ej "C1", "B2", "Abr") sin la sigla del tipo
+  var cuotaTxt=obl.label||'';
+  var lbl=(LABELS_LOCAL[obl.group]||'').toLowerCase();
+  if(cuotaTxt.toLowerCase()===lbl) cuotaTxt='—';
+  document.getElementById('calConfirmCuota').textContent=cuotaTxt;
+  document.getElementById('calConfirmFecha').textContent=obl.date?fmtDate(obl.date)+' de '+obl.date.getFullYear():'—';
+  _calConfirmRefresh();
+  document.getElementById('calConfirmModal').classList.add('open');
+};
+function _calConfirmRefresh(){
+  var isPres=isPresentada(_calConfirm.nit,_calConfirm.oblId);
+  var sBox=document.getElementById('calConfirmStatus');
+  var btn=document.getElementById('calConfirmToggleBtn');
+  var mLbl=document.getElementById('calConfirmMarcadoLbl');
+  var mVal=document.getElementById('calConfirmMarcado');
+  if(isPres){
+    sBox.style.background='#ECFDF5';sBox.style.color='#065F46';sBox.style.border='1px solid #A7F3D0';
+    sBox.innerHTML='✓ Marcada como <b>presentada</b>';
+    btn.textContent='↺ Volver a pendiente';
+    btn.className='btn btn-outline';
+    mLbl.style.display='';mVal.style.display='';
+    var ts=null;
+    try{var est=JSON.parse(localStorage.getItem('oficina_estado'))||{};var k=String(_calConfirm.nit).replace(/\D/g,'')+'_'+_calConfirm.oblId;ts=est[k]}catch(e){}
+    mVal.textContent=(ts && ts!==true)?new Date(ts).toLocaleDateString('es-CO'):'—';
+  } else {
+    sBox.style.background='#FFFBEB';sBox.style.color='#92400E';sBox.style.border='1px solid #FDE68A';
+    sBox.innerHTML='○ <b>Pendiente</b> · aún no se ha marcado como presentada';
+    btn.textContent='✓ Marcar como presentada';
+    btn.className='btn btn-primary';
+    mLbl.style.display='none';mVal.style.display='none';
+  }
+}
+window.closeCalConfirmModal=function(){
+  document.getElementById('calConfirmModal').classList.remove('open');
+  _calConfirm={nit:null,oblId:null};
+};
+window.calConfirmToggle=function(){
+  if(!_calConfirm.nit||!_calConfirm.oblId)return;
+  togglePresentada(_calConfirm.nit,_calConfirm.oblId);
+  _calConfirmRefresh();
+  render();
+};
+/* ═══ CLIENT MODAL ═══ */
+window.openModal=function(idx){
+  var clients=loadClients();
+  if(typeof idx==='undefined'){
+    // Check free limit
+    if(!isPro&&clients.length>=FREE_LIMIT){
+      if(typeof exoToast==='function')exoToast('Limite de '+FREE_LIMIT+' clientes alcanzado. Actualiza a PRO.','warning');
+      return;
+    }
+    document.getElementById('modalTitle').textContent='Agregar cliente';
+    document.getElementById('editIndex').value='-1';
+    document.getElementById('cNombre').value='';
+    document.getElementById('cNIT').value='';
+    document.getElementById('cTipo').value='PJ';
+    document.getElementById('cRegimen').value='bimestral';
+    document.getElementById('cGC').checked=false;
+    document.getElementById('oblExogena').checked=true;
+    document.getElementById('oblRenta').checked=true;
+    document.getElementById('oblIva').checked=true;
+    document.getElementById('oblRetefte').checked=true;
+    document.getElementById('oblF2516').checked=false;
+    document.getElementById('oblRst').checked=false;
+    document.getElementById('oblPatrimonio').checked=false;
+    document.getElementById('oblActivosExt').checked=false;
+    document.getElementById('oblIca').checked=false;
+    document.getElementById('cIcaMunicipio').value='none';
+    document.getElementById('oblInc').checked=false;
+  } else {
+    document.getElementById('modalTitle').textContent='Editar cliente';
+    document.getElementById('editIndex').value=idx;
+    var c=clients[idx];
+    document.getElementById('cNombre').value=c.nombre;
+    document.getElementById('cNIT').value=c.nitFormatted||c.nit;
+    document.getElementById('cTipo').value=c.tipo;
+    document.getElementById('cRegimen').value=c.regimen;
+    document.getElementById('cGC').checked=!!c.granContribuyente;
+    document.getElementById('oblExogena').checked=!!c.obligaciones.exogena;
+    document.getElementById('oblRenta').checked=!!c.obligaciones.renta;
+    document.getElementById('oblIva').checked=!!c.obligaciones.iva;
+    document.getElementById('oblRetefte').checked=!!c.obligaciones.retefte;
+    document.getElementById('oblF2516').checked=!!c.obligaciones.f2516;
+    document.getElementById('oblRst').checked=!!c.obligaciones.rst;
+    document.getElementById('oblPatrimonio').checked=!!c.obligaciones.patrimonio;
+    document.getElementById('oblActivosExt').checked=!!c.obligaciones.activosExt;
+    document.getElementById('oblIca').checked=!!c.obligaciones.ica;
+    document.getElementById('cIcaMunicipio').value=c.icaMunicipio||'none';
+    document.getElementById('oblInc').checked=!!c.obligaciones.inc;
+  }
+  document.getElementById('nitError').style.display='none';
+  document.getElementById('clientModal').classList.add('open');
+  document.getElementById('cNombre').focus();
+};
+window.closeModal=function(){
+  document.getElementById('clientModal').classList.remove('open');
+};
+window.editClient=function(idx){
+  openModal(idx);
+};
+/* ═══ DELETE ═══ */
+var deleteIdx=-1;
+window.deleteClient=function(idx){
+  deleteIdx=idx;
+  document.getElementById('deleteModal').classList.add('open');
+};
+window.closeDeleteModal=function(){
+  document.getElementById('deleteModal').classList.remove('open');
+  deleteIdx=-1;
+};
+window.confirmDelete=function(){
+  if(deleteIdx<0)return;
+  var clients=loadClients();
+  var removed=clients.splice(deleteIdx,1)[0];
+  saveClients(clients);
+  // Clean estado entries for this client
+  if(removed){
+    var estado=loadEstado();
+    var prefix=removed.nit.replace(/\D/g,'')+'_';
+    Object.keys(estado).forEach(function(k){
+      if(k.indexOf(prefix)===0)delete estado[k];
+    });
+    saveEstado(estado);
+  }
+  closeDeleteModal();
+  if(typeof exoToast==='function')exoToast('Cliente eliminado','info');
+  render();
+};
+/* ═══ NIT AUTO-FORMAT ═══ */
+document.getElementById('cNIT').addEventListener('input',function(e){
+  var raw=e.target.value;
+  var clean=raw.replace(/[^0-9\-]/g,'');
+  // Don't auto-format while typing, just clean
+  if(clean!==raw)e.target.value=clean;
+  document.getElementById('nitError').style.display='none';
+});
+/* ═══ SAVE CLIENT ═══ */
+window.saveClient=function(){
+  var nombre=document.getElementById('cNombre').value.trim();
+  var nitRaw=document.getElementById('cNIT').value.trim();
+  var tipo=document.getElementById('cTipo').value;
+  var regimen=document.getElementById('cRegimen').value;
+  var gc=document.getElementById('cGC').checked;
+  var idx=parseInt(document.getElementById('editIndex').value,10);
+  if(!nombre){
+    if(typeof exoToast==='function')exoToast('Ingresa el nombre del cliente','error');
+    return;
+  }
+  if(!nitRaw){
+    if(typeof exoToast==='function')exoToast('Ingresa el NIT','error');
+    return;
+  }
+  // Parse NIT
+  var parts=nitRaw.split('-');
+  var base,dvProvided;
+  if(parts.length>=2){
+    base=parts[0].replace(/\D/g,'');
+    dvProvided=parts[1].trim();
+  } else {
+    base=nitRaw.replace(/\D/g,'');
+    dvProvided=null;
+    // Sin guión: si el último dígito coincide con el DV calculado de los primeros n-1,
+    // asumir que el usuario pegó el DV al final y separarlo. Evita usar el DV como
+    // último dígito del NIT en el cálculo de fechas.
+    if(base.length>=10){
+      var maybeBase=base.slice(0,-1);
+      var maybeDV=base.slice(-1);
+      if(parseInt(maybeDV,10)===calcDV(maybeBase)){
+        base=maybeBase;
+        dvProvided=maybeDV;
+      }
+    }
+  }
+  if(!base||base.length<5){
+    if(typeof exoToast==='function')exoToast('NIT debe tener al menos 5 digitos','error');
+    return;
+  }
+  var dvCalc=calcDV(base);
+  if(dvProvided!==null&&dvProvided!==''){
+    if(parseInt(dvProvided,10)!==dvCalc){
+      document.getElementById('nitError').style.display='block';
+      document.getElementById('nitError').textContent='DV incorrecto. El DV correcto es: '+dvCalc;
+      return;
+    }
+  }
+  var nitFormatted=formatNIT(base,dvCalc);
+  var nitClean=base;
+  var obligaciones={
+    exogena:document.getElementById('oblExogena').checked,
+    renta:document.getElementById('oblRenta').checked,
+    iva:document.getElementById('oblIva').checked,
+    retefte:document.getElementById('oblRetefte').checked,
+    f2516:document.getElementById('oblF2516').checked,
+    rst:document.getElementById('oblRst').checked,
+    patrimonio:document.getElementById('oblPatrimonio').checked,
+    activosExt:document.getElementById('oblActivosExt').checked,
+    ica:document.getElementById('oblIca').checked,
+    inc:document.getElementById('oblInc').checked
+  };
+  var clients=loadClients();
+  // Check duplicate NIT (except when editing same)
+  for(var i=0;i<clients.length;i++){
+    if(i===idx)continue;
+    if(clients[i].nit===nitClean){
+      if(typeof exoToast==='function')exoToast('Ya existe un cliente con ese NIT','error');
+      return;
+    }
+  }
+  var clientObj={
+    nombre:nombre,
+    nit:nitClean,
+    nitFormatted:nitFormatted,
+    tipo:tipo,
+    regimen:regimen,
+    granContribuyente:gc,
+    obligaciones:obligaciones,
+    icaMunicipio:document.getElementById('cIcaMunicipio').value
+  };
+  if(idx>=0&&idx<clients.length){
+    // Edit - preserve old NIT in estado if changed
+    var oldNit=clients[idx].nit;
+    clients[idx]=clientObj;
+    if(oldNit!==nitClean){
+      // Migrate estado keys
+      var estado=loadEstado();
+      var oldPrefix=oldNit.replace(/\D/g,'')+'_';
+      var newPrefix=nitClean.replace(/\D/g,'')+'_';
+      Object.keys(estado).forEach(function(k){
+        if(k.indexOf(oldPrefix)===0){
+          var newKey=newPrefix+k.substring(oldPrefix.length);
+          estado[newKey]=estado[k];
+          delete estado[k];
+        }
+      });
+      saveEstado(estado);
+    }
+    if(typeof exoToast==='function')exoToast('Cliente actualizado','success');
+  } else {
+    clients.push(clientObj);
+    if(typeof exoToast==='function')exoToast('Cliente agregado','success');
+    if(typeof gtag==='function')gtag('event','oficina_agregar_cliente',{tipo:tipo,regimen:regimen,gc:gc});
+  }
+  saveClients(clients);
+  closeModal();
+  render();
+};
+/* ═══ EXPORT / IMPORT JSON ═══ */
+window.exportData=function(){
+  var clients=loadClients();
+  if(!clients.length){
+    if(typeof exoToast==='function')exoToast('No hay clientes para respaldar','warning');
+    return;
+  }
+  var data={
+    version:1,
+    app:'dimalcco-oficina',
+    fechaExport:new Date().toISOString(),
+    clientes:clients,
+    estado:loadEstado()
+  };
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var date=new Date().toISOString().slice(0,10);
+  a.href=url;
+  a.download='oficina-respaldo-'+date+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  setLastBackupTs(Date.now());
+  renderBackupBanner();
+  if(typeof exoToast==='function')exoToast('Respaldo descargado ('+clients.length+' clientes)','success');
+  if(typeof gtag==='function')gtag('event','oficina_export',{count:clients.length});
+};
+/* ═══ BACKUP STATUS ═══ */
+function getLastBackupTs(){
+  var raw=localStorage.getItem('oficina_last_backup');
+  var n=raw?parseInt(raw,10):NaN;
+  return isNaN(n)?null:n;
+}
+function setLastBackupTs(ts){
+  localStorage.setItem('oficina_last_backup',String(ts||Date.now()));
+}
+function renderBackupBanner(){
+  var banner=document.getElementById('backupBanner');
+  var msgEl=document.getElementById('backupMsg');
+  var iconEl=document.getElementById('backupIcon');
+  var clients=loadClients();
+  banner.classList.remove('show','warning','danger');
+  if(!clients.length){return}
+  var ts=getLastBackupTs();
+  if(!ts){
+    banner.classList.add('show','danger');
+    iconEl.innerHTML='&#9888;&#65039;';
+    msgEl.innerHTML='<strong>Nunca has descargado un respaldo.</strong> Tus datos est&aacute;n solo en este navegador. Si limpias cach&eacute; o cambias de dispositivo, se pierden.';
+    return;
+  }
+  var days=Math.floor((Date.now()-ts)/(1000*60*60*24));
+  if(days>=30){
+    banner.classList.add('show','danger');
+    iconEl.innerHTML='&#9888;&#65039;';
+    msgEl.innerHTML='Han pasado <strong>'+days+' d&iacute;as</strong> desde tu &uacute;ltimo respaldo. Si limpias cach&eacute;, perder&aacute;s todos tus datos.';
+  } else if(days>=7){
+    banner.classList.add('show','warning');
+    iconEl.innerHTML='&#128190;';
+    msgEl.innerHTML='&Uacute;ltimo respaldo: hace <strong>'+days+' d&iacute;as</strong>. Recuerda mantenerlo al d&iacute;a.';
+  }
+  // <7 días: banner queda oculto
+}
+function downloadBlob(blob,filename){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function csvEscape(s){
+  s=String(s==null?'':s);
+  if(s.indexOf(';')>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0||s.indexOf(',')>=0){
+    return '"'+s.replace(/"/g,'""')+'"';
+  }
+  return s;
+}
+function pad2(n){return n<10?'0'+n:''+n}
+function fmtDateISO(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
+function fmtDateCSV(d){return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear()}
+window.exportCSV=function(){
+  var clients=loadClients();
+  if(!clients.length){
+    if(typeof exoToast==='function')exoToast('No hay clientes para exportar','warning');
+    return;
+  }
+  var rows=[['Cliente','NIT','Tipo','Regimen IVA','GC','Obligacion','Vencimiento','Dias para vencer','Estado']];
+  var now=today().getTime();
+  clients.forEach(function(c){
+    var obls=buildObligations(c);
+    obls.forEach(function(o){
+      if(!o.date)return;
+      var dd=new Date(o.date);dd.setHours(0,0,0,0);
+      var diff=Math.round((dd.getTime()-now)/(1000*60*60*24));
+      var presentada=isPresentada(c.nit,o.id);
+      var estado=presentada?'Presentada':(diff<0?'Vencida':(diff<=5?'Urgente':'Pendiente'));
+      rows.push([
+        c.nombre,
+        c.nitFormatted||c.nit,
+        c.tipo==='PJ'?'Persona Juridica':'Persona Natural',
+        c.regimen==='no'?'No responsable':(c.regimen==='cuatrimestral'?'Cuatrimestral':'Bimestral'),
+        c.granContribuyente?'Si':'No',
+        o.label,
+        fmtDateCSV(dd),
+        diff,
+        estado
+      ]);
+    });
+  });
+  var csv=rows.map(function(r){return r.map(csvEscape).join(';')}).join('\r\n');
+  // BOM para que Excel detecte UTF-8
+  var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  downloadBlob(blob,'oficina-obligaciones-'+fmtDateISO(new Date())+'.csv');
+  if(typeof exoToast==='function')exoToast('CSV descargado ('+(rows.length-1)+' obligaciones)','success');
+  if(typeof gtag==='function')gtag('event','oficina_export_csv',{count:rows.length-1});
+};
+function icsEscape(s){
+  return String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+}
+function fmtICSDate(d){return d.getFullYear()+pad2(d.getMonth()+1)+pad2(d.getDate())}
+function fmtICSStamp(d){
+  return d.getUTCFullYear()+pad2(d.getUTCMonth()+1)+pad2(d.getUTCDate())+'T'+
+         pad2(d.getUTCHours())+pad2(d.getUTCMinutes())+pad2(d.getUTCSeconds())+'Z';
+}
+window.exportICS=function(){
+  var clients=loadClients();
+  if(!clients.length){
+    if(typeof exoToast==='function')exoToast('No hay clientes para exportar','warning');
+    return;
+  }
+  var lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//DIMALCCO SAS//Oficina Contable//ES','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Oficina DIMALCCO SAS','X-WR-TIMEZONE:America/Bogota'];
+  var stamp=fmtICSStamp(new Date());
+  var count=0;
+  clients.forEach(function(c){
+    var obls=buildObligations(c);
+    obls.forEach(function(o){
+      if(!o.date)return;
+      if(isPresentada(c.nit,o.id))return;
+      var dd=new Date(o.date);
+      var dayStart=fmtICSDate(dd);
+      var next=new Date(dd.getTime()+24*60*60*1000);
+      var dayEnd=fmtICSDate(next);
+      var uid=(c.nit.replace(/\D/g,''))+'_'+o.id+'@dimalcco.local';
+      var summary='Vence '+o.label+' - '+c.nombre;
+      var desc='NIT '+(c.nitFormatted||c.nit);
+      if(o.link)desc+='\\nMódulo: '+o.label;
+      lines.push('BEGIN:VEVENT');
+      lines.push('UID:'+uid);
+      lines.push('DTSTAMP:'+stamp);
+      lines.push('DTSTART;VALUE=DATE:'+dayStart);
+      lines.push('DTEND;VALUE=DATE:'+dayEnd);
+      lines.push('SUMMARY:'+icsEscape(summary));
+      lines.push('DESCRIPTION:'+icsEscape(desc));
+      lines.push('CATEGORIES:DIAN,Tributario');
+      lines.push('TRANSP:TRANSPARENT');
+      lines.push('BEGIN:VALARM');
+      lines.push('ACTION:DISPLAY');
+      lines.push('TRIGGER:-P3D');
+      lines.push('DESCRIPTION:'+icsEscape(summary));
+      lines.push('END:VALARM');
+      lines.push('END:VEVENT');
+      count++;
+    });
+  });
+  lines.push('END:VCALENDAR');
+  if(!count){
+    if(typeof exoToast==='function')exoToast('No hay obligaciones pendientes para exportar','warning');
+    return;
+  }
+  var ics=lines.join('\r\n');
+  var blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});
+  downloadBlob(blob,'oficina-calendario-'+fmtDateISO(new Date())+'.ics');
+  if(typeof exoToast==='function')exoToast('Calendario descargado ('+count+' eventos)','success');
+  if(typeof gtag==='function')gtag('event','oficina_export_ics',{count:count});
+};
+var pendingImport=null;
+window.importData=function(e){
+  var file=e.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var data=JSON.parse(ev.target.result);
+      if(!data||!Array.isArray(data.clientes))throw new Error('formato');
+      pendingImport=data;
+      var fechaTxt=data.fechaExport?new Date(data.fechaExport).toLocaleDateString('es-CO'):'fecha desconocida';
+      document.getElementById('importSummary').innerHTML=
+        '<strong>'+data.clientes.length+' cliente'+(data.clientes.length!==1?'s':'')+'</strong> en este respaldo (creado el '+escapeHTML(fechaTxt)+').';
+      document.getElementById('importModal').classList.add('open');
+    }catch(err){
+      if(typeof exoToast==='function')exoToast('Archivo invalido. Sube un JSON exportado desde aqui.','error');
+    }
+    e.target.value='';
+  };
+  reader.onerror=function(){
+    if(typeof exoToast==='function')exoToast('No se pudo leer el archivo','error');
+  };
+  reader.readAsText(file);
+};
+window.closeImportModal=function(){
+  document.getElementById('importModal').classList.remove('open');
+  pendingImport=null;
+};
+window.confirmImport=function(){
+  if(!pendingImport)return;
+  var clientesAImportar=pendingImport.clientes.slice();
+  if(!isPro&&clientesAImportar.length>FREE_LIMIT){
+    if(typeof exoToast==='function')exoToast('Plan gratuito limitado a '+FREE_LIMIT+' clientes. Solo se cargaran los primeros '+FREE_LIMIT+'.','warning');
+    clientesAImportar=clientesAImportar.slice(0,FREE_LIMIT);
+  }
+  saveClients(clientesAImportar);
+  saveEstado(pendingImport.estado||{});
+  // Si el JSON tiene fechaExport, usarla como ultimo respaldo (refleja la antiguedad real de los datos)
+  if(pendingImport.fechaExport){
+    var importedTs=new Date(pendingImport.fechaExport).getTime();
+    if(!isNaN(importedTs))setLastBackupTs(importedTs);
+  }
+  closeImportModal();
+  if(typeof exoToast==='function')exoToast('Respaldo restaurado ('+clientesAImportar.length+' clientes)','success');
+  if(typeof gtag==='function')gtag('event','oficina_import',{count:clientesAImportar.length});
+  render();
+};
+/* ═══ BULK PASTE ═══ */
+window.downloadBulkTemplate=function(){
+  var rows=[
+    ['Nombre','NIT'],
+    ['Distribuciones Acme S.A.S.','900123456'],
+    ['Servicios XYZ S.A.S.','901234567'],
+    ['Mi Empresa LTDA','860001234'],
+    ['Construcciones del Valle SAS','830555111'],
+    ['Inversiones Ejemplo SAS','901999888']
+  ];
+  var csv=rows.map(function(r){
+    return r.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"'}).join(',');
+  }).join('\r\n');
+  var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='plantilla-clientes-oficina.csv';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  if(typeof exoToast==='function')exoToast('Plantilla descargada — ábrela en Excel','success');
+  if(typeof gtag==='function')gtag('event','oficina_plantilla_descargada');
+};
+window.openBulkModal=function(){
+  document.getElementById('bulkText').value='';
+  document.getElementById('bulkPreview').style.display='none';
+  document.getElementById('bulkPreviewBody').innerHTML='';
+  var btn=document.getElementById('btnBulkImport');
+  btn.disabled=true;btn.style.opacity='.5';
+  document.getElementById('bulkModal').classList.add('open');
+  setTimeout(function(){document.getElementById('bulkText').focus()},50);
+};
+window.closeBulkModal=function(){
+  document.getElementById('bulkModal').classList.remove('open');
+};
+function parseBulkLine(line){
+  // Try tab, then ;, then , as separators
+  var parts;
+  if(line.indexOf('\t')>=0)parts=line.split('\t');
+  else if(line.indexOf(';')>=0)parts=line.split(';');
+  else if(line.indexOf(',')>=0)parts=line.split(',');
+  else parts=line.split(/\s{2,}/); // multiple spaces
+  if(parts.length<2)return null;
+  // Detect which is the NIT (the one that's mostly digits)
+  var a=parts[0].trim(),b=parts[parts.length-1].trim();
+  var aDigits=a.replace(/\D/g,'').length;
+  var bDigits=b.replace(/\D/g,'').length;
+  var nombre,nit;
+  if(bDigits>aDigits&&bDigits>=5){nombre=parts.slice(0,-1).join(' ').trim();nit=b}
+  else if(aDigits>=5){nit=a;nombre=parts.slice(1).join(' ').trim()}
+  else return null;
+  return {nombre:nombre,nit:nit};
+}
+function validateBulkRow(row,existingNITs){
+  if(!row.nombre)return{ok:false,err:'Sin nombre'};
+  var p=row.nit.split('-');
+  var base,dvProvided;
+  if(p.length>=2){base=p[0].replace(/\D/g,'');dvProvided=p[1].trim()}
+  else{
+    base=row.nit.replace(/\D/g,'');
+    dvProvided=null;
+    // Sin guión: si el último dígito coincide con el DV calculado, separar.
+    if(base.length>=10){
+      var maybeBase=base.slice(0,-1);
+      var maybeDV=base.slice(-1);
+      if(parseInt(maybeDV,10)===calcDV(maybeBase)){base=maybeBase;dvProvided=maybeDV}
+    }
+  }
+  if(!base||base.length<5)return{ok:false,err:'NIT invalido'};
+  if(existingNITs[base])return{ok:false,err:'Duplicado'};
+  var dvCalc=calcDV(base);
+  if(dvProvided!==null&&dvProvided!==''&&parseInt(dvProvided,10)!==dvCalc){
+    return{ok:false,err:'DV incorrecto (deberia '+dvCalc+')'};
+  }
+  return{ok:true,base:base,dvCalc:dvCalc};
+}
+var bulkValidatedRows=[];
+window.bulkPreview=function(){
+  var text=document.getElementById('bulkText').value;
+  var lines=text.split(/\r?\n/).map(function(l){return l.trim()}).filter(Boolean);
+  if(!lines.length){
+    if(typeof exoToast==='function')exoToast('Pega al menos un cliente','warning');
+    return;
+  }
+  // Skip header if first line has no digits in second column
+  var firstParsed=parseBulkLine(lines[0]);
+  if(firstParsed&&firstParsed.nit.replace(/\D/g,'').length<5){
+    lines.shift();
+  }
+  var existing={};
+  loadClients().forEach(function(c){existing[c.nit]=true});
+  var rows=[];
+  bulkValidatedRows=[];
+  lines.forEach(function(line,i){
+    var parsed=parseBulkLine(line);
+    if(!parsed){
+      rows.push({nombre:line,nit:'',err:'Formato invalido'});
+      return;
+    }
+    var v=validateBulkRow(parsed,existing);
+    if(v.ok){
+      existing[v.base]=true;
+      bulkValidatedRows.push({
+        nombre:parsed.nombre,
+        nit:v.base,
+        nitFormatted:formatNIT(v.base,v.dvCalc),
+        ok:true
+      });
+      rows.push({nombre:parsed.nombre,nit:formatNIT(v.base,v.dvCalc),ok:true});
+    } else {
+      rows.push({nombre:parsed.nombre,nit:parsed.nit,err:v.err});
+    }
+  });
+  // Render preview
+  var html='';
+  rows.forEach(function(r){
+    var color=r.ok?'#065F46':'#991B1B';
+    var bg=r.ok?'#ECFDF5':'#FEF2F2';
+    var status=r.ok?'&#10003; OK':'&#10007; '+r.err;
+    html+='<tr style="background:'+bg+';border-bottom:1px solid var(--f200)">';
+    html+='<td style="padding:6px 8px;color:var(--f700)">'+escapeHTML(r.nombre)+'</td>';
+    html+='<td style="padding:6px 8px;text-align:center;font-family:Courier;color:var(--f600)">'+escapeHTML(r.nit||'-')+'</td>';
+    html+='<td style="padding:6px 8px;text-align:center;color:'+color+';font-weight:700">'+status+'</td>';
+    html+='</tr>';
+  });
+  document.getElementById('bulkPreviewBody').innerHTML=html;
+  document.getElementById('bulkPreview').style.display='block';
+  var btn=document.getElementById('btnBulkImport');
+  if(bulkValidatedRows.length>0){
+    btn.disabled=false;btn.style.opacity='1';
+    btn.textContent='Importar '+bulkValidatedRows.length+' cliente'+(bulkValidatedRows.length!==1?'s':'');
+  } else {
+    btn.disabled=true;btn.style.opacity='.5';
+    btn.textContent='Importar';
+  }
+};
+window.bulkImport=function(){
+  if(!bulkValidatedRows.length)return;
+  var clients=loadClients();
+  var slots=isPro?Infinity:Math.max(0,FREE_LIMIT-clients.length);
+  if(slots===0){
+    if(typeof exoToast==='function')exoToast('Limite de '+FREE_LIMIT+' clientes alcanzado','warning');
+    return;
+  }
+  var toAdd=bulkValidatedRows.slice(0,slots);
+  var truncated=toAdd.length<bulkValidatedRows.length;
+  var tipo=document.getElementById('bulkTipo').value;
+  var regimen=document.getElementById('bulkRegimen').value;
+  var gc=document.getElementById('bulkGC').checked;
+  var obligaciones={
+    exogena:document.getElementById('bulkExogena').checked,
+    renta:document.getElementById('bulkRenta').checked,
+    iva:document.getElementById('bulkIva').checked,
+    retefte:document.getElementById('bulkRetefte').checked,
+    f2516:document.getElementById('bulkF2516').checked,
+    rst:document.getElementById('bulkRst').checked,
+    patrimonio:document.getElementById('bulkPatrimonio').checked,
+    activosExt:document.getElementById('bulkActivosExt').checked,
+    ica:document.getElementById('bulkIca').checked,
+    inc:document.getElementById('bulkInc').checked
+  };
+  toAdd.forEach(function(r){
+    clients.push({
+      nombre:r.nombre,
+      nit:r.nit,
+      nitFormatted:r.nitFormatted,
+      tipo:tipo,
+      regimen:regimen,
+      granContribuyente:gc,
+      obligaciones:obligaciones,
+      icaMunicipio:'none'
+    });
+  });
+  saveClients(clients);
+  closeBulkModal();
+  var msg=toAdd.length+' cliente'+(toAdd.length!==1?'s':'')+' agregado'+(toAdd.length!==1?'s':'');
+  if(truncated)msg+=' (cortado al limite gratuito)';
+  if(typeof exoToast==='function')exoToast(msg,'success');
+  if(typeof gtag==='function')gtag('event','oficina_bulk_import',{count:toAdd.length});
+  bulkValidatedRows=[];
+  render();
+};
+/* ═══ CLOSE MODALS ON OVERLAY CLICK ═══ */
+document.getElementById('clientModal').addEventListener('click',function(e){
+  if(e.target===this)closeModal();
+});
+document.getElementById('deleteModal').addEventListener('click',function(e){
+  if(e.target===this)closeDeleteModal();
+});
+document.getElementById('importModal').addEventListener('click',function(e){
+  if(e.target===this)closeImportModal();
+});
+document.getElementById('bulkModal').addEventListener('click',function(e){
+  if(e.target===this)closeBulkModal();
+});
+/* ═══ KEYBOARD ═══ */
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    closeModal();
+    closeDeleteModal();
+    closeImportModal();
+    closeBulkModal();
+  }
+});
+/* ═══ SEARCH INPUT ═══ */
+var searchTimer=null;
+document.getElementById('filterSearch').addEventListener('input',function(e){
+  searchQuery=e.target.value.trim();
+  clearTimeout(searchTimer);
+  searchTimer=setTimeout(function(){
+    saveFilters();
+    render();
+  },150);
+});
+/* ═══ RESTORE FILTERS ═══ */
+(function restoreFilters(){
+  var saved=loadFilters();
+  if(saved.currentFilter&&['all','pending','week','overdue','today','done'].indexOf(saved.currentFilter)>=0){
+    currentFilter=saved.currentFilter;
+  }
+  if(saved.filterClient)filterClient=saved.filterClient;
+  if(saved.filterObl){
+    filterObl=saved.filterObl;
+    document.getElementById('filterObl').value=filterObl;
+  }
+  if(saved.searchQuery){
+    searchQuery=saved.searchQuery;
+    document.getElementById('filterSearch').value=searchQuery;
+  }
+  if(saved.sortKey){
+    sortKey=saved.sortKey;
+    sortDir=saved.sortDir==='desc'?'desc':'asc';
+  }
+  // Exponer funciones necesarias para el componente calendar-view (script externo)
+  window.buildObligations=buildObligations;
+  window.loadClients=loadClients;
+  window.loadEstado=loadEstado;
+  // Emitir evento al re-renderizar para que el calendario se actualice
+  var origRenderInner=render;
+  render=function(){
+    var r=origRenderInner.apply(this,arguments);
+    document.dispatchEvent(new CustomEvent('oficinaClientesUpdated'));
+    return r;
+  };
+})();
+/* ═══ PRINT HEADER ═══ */
+window.addEventListener('beforeprint',function(){
+  var d=new Date();
+  var clients=loadClients();
+  var fecha=pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear();
+  var hora=pad2(d.getHours())+':'+pad2(d.getMinutes());
+  var html='<strong>DIMALCCO SAS - Mi Oficina Contable</strong> &middot; Impreso '+fecha+' '+hora+
+    ' &middot; '+clients.length+' cliente'+(clients.length!==1?'s':'')+
+    ' &middot; <span style="color:#10B981">&#9679;</span> Presentada &nbsp;'+
+    '<span style="color:#F59E0B">&#9679;</span> Pendiente &nbsp;'+
+    '<span style="color:#F97316">&#9679;</span> Urgente (&le;5 d&iacute;as) &nbsp;'+
+    '<span style="color:#EF4444">&#9679;</span> Vencida';
+  document.getElementById('printHeader').innerHTML=html;
+});
+/* ═══ IMPORTAR EMPRESAS DEL CALENDARIO DE VENCIMIENTOS ═══ */
+var VENC_LS_KEY='vencimientos_empresas_v1';
+function loadVencEmpresas(){
+  try{var a=JSON.parse(localStorage.getItem(VENC_LS_KEY));return Array.isArray(a)?a:[]}catch(e){return[]}
+}
+// vencimientos.html guarda nit como dígitos (a veces con el DV pegado al final).
+// Normaliza a la base sin DV, igual que saveClient().
+function vencNitBase(raw){
+  var d=String(raw||'').replace(/\D/g,'');
+  if(d.length>=10){
+    var b=d.slice(0,-1);
+    if(parseInt(d.slice(-1),10)===calcDV(b))return b;
+  }
+  return d;
+}
+// Mapea una empresa del Calendario al esquema de cliente de Mi Oficina.
+function vencEmpresaToCliente(emp){
+  var obs=Array.isArray(emp.obligaciones)?emp.obligaciones:[];
+  var has=function(k){return obs.indexOf(k)!==-1};
+  var regimen='no';
+  if(has('iva_bim'))regimen='bimestral';
+  else if(has('iva_cuatri'))regimen='cuatrimestral';
+  var base=vencNitBase(emp.nit);
+  var dv=calcDV(base);
+  return {
+    nombre:(emp.name||'').trim()||('Empresa '+base),
+    nit:base,
+    nitFormatted:formatNIT(base,dv),
+    tipo:emp.tipo==='pn'?'PN':'PJ',
+    regimen:regimen,
+    granContribuyente:emp.tipo==='gc',
+    obligaciones:{
+      exogena:has('exogena'),
+      renta:has('renta'),
+      iva:has('iva_bim')||has('iva_cuatri'),
+      retefte:has('retencion'),
+      f2516:false,
+      rst:has('rst_anual')||has('rst_bim'),
+      patrimonio:has('patrimonio'),
+      activosExt:has('activos'),
+      ica:has('ica_bog')||has('ica_cali')||has('ica_ctg'),
+      inc:has('inc')
+    },
+    icaMunicipio:has('ica_bog')?'bog':has('ica_cali')?'cali':has('ica_ctg')?'ctg':'none'
+  };
+}
+function vencImportables(){
+  var emp=loadVencEmpresas();
+  if(!emp.length)return [];
+  var existing={};
+  loadClients().forEach(function(c){existing[String(c.nit).replace(/\D/g,'')]=1});
+  return emp.filter(function(e){
+    var b=vencNitBase(e.nit);
+    return b.length>=5 && !existing[b];
+  });
+}
+function renderVencImportBanner(){
+  var banner=document.getElementById('vencImportBanner');
+  if(!banner)return;
+  if(localStorage.getItem('oficina_venc_import_dismissed')==='1'){banner.style.display='none';return}
+  var imp=vencImportables();
+  if(!imp.length){banner.style.display='none';return}
+  var n=imp.length, s=n!==1?'s':'';
+  document.getElementById('vencImportMsg').innerHTML=
+    'Tienes <strong>'+n+'</strong> empresa'+s+' guardada'+s+
+    ' en el <strong>Calendario de Vencimientos</strong> que a&uacute;n no est'+(n!==1?'&aacute;n':'&aacute;')+
+    ' en Mi Oficina. Tr&aacute;ela'+s+' para hacerles seguimiento (sem&aacute;foro, respaldo, CSV/.ics). No se borra nada del Calendario.';
+  banner.style.display='flex';
+}
+window.importVencEmpresas=function(){
+  var imp=vencImportables();
+  if(!imp.length){renderVencImportBanner();return}
+  var clients=loadClients();
+  var seen={};
+  clients.forEach(function(c){seen[String(c.nit).replace(/\D/g,'')]=1});
+  var added=0;
+  imp.forEach(function(e){
+    var cl=vencEmpresaToCliente(e);
+    if(!cl.nit||cl.nit.length<5||seen[cl.nit])return;
+    seen[cl.nit]=1;
+    clients.push(cl);
+    added++;
+  });
+  if(added){
+    saveClients(clients);
+    if(typeof gtag==='function')gtag('event','oficina_import_venc',{cantidad:added});
+  }
+  renderVencImportBanner();
+  render();
+  if(typeof exoToast==='function')exoToast(added+' empresa'+(added!==1?'s':'')+' importada'+(added!==1?'s':'')+' del Calendario','success');
+};
+window.dismissVencImport=function(){
+  localStorage.setItem('oficina_venc_import_dismissed','1');
+  var b=document.getElementById('vencImportBanner');if(b)b.style.display='none';
+};
+/* ═══ INIT ═══ */
+checkPro(function(){
+  // filterClient restoration must happen after render builds the dropdown
+  render();
+  renderVencImportBanner();
+  if(filterClient){
+    var sel=document.getElementById('filterClient');
+    var opt=Array.prototype.find.call(sel.options,function(o){return o.value===filterClient});
+    if(opt){sel.value=filterClient;render()}else{filterClient='';saveFilters()}
+  }
+});
+/* ═══ GOOGLE DRIVE SYNC ═══
+   Cada tool guarda su propio archivo en My Drive/DIMALCCO SAS/. Aquí: oficina-clientes.json
+*/
+var DRIVE_CLIENT_ID='754393637219-893sfmtucgq6iorukkop2lp40oher0gi.apps.googleusercontent.com';
+if(typeof ExoDriveUI!=='undefined'){
+  ExoDriveUI.attach({
+    clientId: DRIVE_CLIENT_ID,
+    fileName: 'oficina-clientes.json',
+    buttonContainer: '#headerActions',
+    bannerContainer: '#headerActions',
+    toolName: 'Mi Oficina Contable',
+    getData: function(){
+      return {
+        clientes: loadClients(),
+        estado: loadEstado(),
+        ts: parseInt(localStorage.getItem('oficina_last_save')||String(Date.now()),10)
+      };
+    },
+    setData: function(obj){
+      if(obj.clientes)localStorage.setItem('oficina_clientes',JSON.stringify(obj.clientes));
+      if(obj.estado)localStorage.setItem('oficina_estado',JSON.stringify(obj.estado));
+      localStorage.setItem('oficina_last_save',String(obj.ts||Date.now()));
+      render();
+    },
+    getLocalTs: function(){return parseInt(localStorage.getItem('oficina_last_save')||'0',10);},
+    snapshotXlsx: async function(){
+      if(typeof ExcelJS==='undefined')return null;
+      var clientes=loadClients();
+      if(!clientes.length)return null;
+      var estado=loadEstado();
+      var wb=new ExcelJS.Workbook();wb.creator='DIMALCCO SAS — Oficina';wb.created=new Date();
+      var ws=wb.addWorksheet('Clientes',{views:[{state:'frozen',ySplit:2}]});
+      ws.columns=[{width:14},{width:38},{width:14},{width:18},{width:18},{width:30}];
+      ws.mergeCells('A1:F1');
+      ws.getCell('A1').value='Mi Oficina Contable — snapshot al '+new Date().toLocaleDateString('es-CO');
+      ws.getCell('A1').font={bold:true,size:13,color:{argb:'FFFFFFFF'}};
+      ws.getCell('A1').fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF1B3A5C'}};
+      ws.getCell('A1').alignment={horizontal:'center'};
+      var hr=ws.getRow(2);
+      ['NIT','Razón social','Régimen','Teléfono','Email','Notas'].forEach(function(h,i){
+        var c=hr.getCell(i+1);c.value=h;c.font={bold:true,color:{argb:'FF1B3A5C'}};
+        c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFD6E4F0'}};
+      });
+      clientes.forEach(function(c){
+        ws.addRow([c.nit||'',c.nombre||c.razonSocial||'',c.regimen||'',c.telefono||'',c.email||'',c.notas||'']);
+      });
+      ws.autoFilter={from:{row:2,column:1},to:{row:2,column:6}};
+      var buf=await wb.xlsx.writeBuffer();
+      return new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    }
+  });
+}
+})();
+</script>
+</body>
+</html>

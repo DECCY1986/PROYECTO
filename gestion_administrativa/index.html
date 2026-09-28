@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión Administrativa | DIMALCCO SAS</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --panel: #ffffff;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --line: #e2e8f0;
+            --primary: #4338ca;
+            --primary-light: #eeeffe;
+            --accent: #6366f1;
+            --ok: #10b981;
+            --ok-light: #ecfdf5;
+            --warning: #f59e0b;
+            --warning-light: #fffbeb;
+            --danger: #ef4444;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Sora', sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .page-title h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-title p {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--line);
+            background: #fff;
+            color: var(--ink);
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        .btn:hover { background: #f1f5f9; }
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+        .btn-primary:hover { background: #3730a3; }
+
+        /* KPI Cards */
+        .kpis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .kpi-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 18px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s ease;
+        }
+        .kpi-card:hover { transform: translateY(-2px); }
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            background: var(--primary-light);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .kpi-data span {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--muted);
+            letter-spacing: 0.05em;
+        }
+        .kpi-data strong {
+            display: block;
+            font-family: 'DM Mono', monospace;
+            font-size: 24px;
+            color: var(--ink);
+            margin-top: 2px;
+        }
+
+        /* Flow Section */
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .section-title span { display: flex; align-items: center; gap: 8px; }
+
+        .flow-container {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 28px;
+        }
+        
+        .flow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 14px;
+        }
+        
+        .flow-step-card {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 14px 16px;
+            background: #fff;
+            position: relative;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .flow-step-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.12);
+        }
+        .flow-step-card.active {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .step-num {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .flow-step-card h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+        .flow-step-card p {
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .flow-resp {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .badge-resp {
+            background: #f1f5f9;
+            color: var(--muted);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        /* OP List Table Section */
+        .table-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        .table-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .table-header h2 { font-size: 15px; font-weight: 700; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--line);
+        }
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: middle;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafafa; }
+
+        .op-code {
+            font-family: 'DM Mono', monospace;
+            font-weight: 700;
+            color: var(--primary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: var(--primary-light);
+            transition: all 0.2s ease;
+        }
+        .op-code:hover {
+            background: var(--primary);
+            color: #fff;
+            transform: scale(1.02);
+        }
+
+        .badge-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .status-pendiente { background: #fef3c7; color: #b45309; }
+        .status-proceso { background: #e0e7ff; color: #4338ca; }
+        .status-completado { background: #d1fae5; color: #047857; }
+        .status-facturado { background: #fae8ff; color: #86198f; }
+
+        /* Modal detail */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal.open { display: flex; }
+        .modal-content {
+            background: #fff;
+            border-radius: var(--radius);
+            max-width: 650px;
+            width: 100%;
+            padding: 28px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 12px;
+        }
+        .modal-header h2 { font-size: 18px; font-weight: 700; }
+        .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted); }
+
+        /* Activity Step Item in Modal */
+        .activity-step-item {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 12px 14px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .activity-step-item.completed {
+            border-color: var(--ok);
+            background: #f0fdf4;
+        }
+        .activity-step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .activity-step-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-status-toggle {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid var(--line);
+            background: #fff;
+            transition: all 0.2s ease;
+        }
+        .btn-status-toggle.done {
+            background: var(--ok);
+            color: #fff;
+            border-color: var(--ok);
+        }
+        .btn-status-toggle.pending {
+            background: #f1f5f9;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE HEADER -->
+    <header class="page-header">
+        <div class="page-title">
+            <h1><i class="ph ph-briefcase" style="color:var(--primary)"></i> Gestión Administrativa</h1>
+            <p>Proceso Administrativo Integrado y Control de Órdenes de Producción - DIMALCCO SAS</p>
+        </div>
+        <div class="action-btns">
+            <a href="ordenes_produccion/index.html" class="btn btn-primary">
+                <i class="ph ph-factory"></i> Ir a Órdenes de Producción
+            </a>
+        </div>
+    </header>
+
+    <!-- KPIS SUMMARY -->
+    <section class="kpis-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon"><i class="ph ph-factory"></i></div>
+            <div class="kpi-data">
+                <span>Total Órdenes OP</span>
+                <strong id="kpiTotal">0</strong>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#e0e7ff; color:#4338ca;"><i class="ph ph-gear-spin"></i></div>
+            <div class="kpi-data">
+                <span>OP en Producción</span>
+                <strong id="kpiProceso">0</strong>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#ecfdf5; color:#059669;"><i class="ph ph-buildings"></i></div>
+            <div class="kpi-data">
+                <span>Constructoras</span>
+                <strong id="kpiBuilders">0</strong>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:#fffbeb; color:#d97706;"><i class="ph ph-folder"></i></div>
+            <div class="kpi-data">
+                <span>Proyectos Activos</span>
+                <strong id="kpiProjects">0</strong>
+            </div>
+        </div>
+    </section>
+
+    <!-- FLUJOGRAMA DE PROCESO DE 12 PASOS -->
+    <section>
+        <div class="section-title">
+            <span><i class="ph ph-flow-arrow" style="color:var(--primary)"></i> Flujograma del Proceso Administrativo (12 Actividades)</span>
+            <span style="font-size:12px; font-weight:400; color:var(--muted)">Haga clic en una etapa para ver su descripción detallada</span>
+        </div>
+
+        <div class="flow-container">
+            <div class="flow-grid" id="flowGrid">
+                <!-- Se genera dinámicamente con JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- TABLA DE ORDENES RECIENTES -->
+    <section class="table-card">
+        <div class="table-header">
+            <h2><i class="ph ph-list-checks"></i> Órdenes de Producción Registradas</h2>
+            <a href="ordenes_produccion/index.html" class="btn btn-sm">
+                <i class="ph ph-plus-circle"></i> Gestionar OP
+            </a>
+        </div>
+        <div id="tableContainer">
+            <table id="opTable">
+                <thead>
+                    <tr>
+                        <th>Número OP (Haga Clic)</th>
+                        <th>Proyecto</th>
+                        <th>Constructora</th>
+                        <th>Etapa del Flujo</th>
+                        <th>Estado</th>
+                        <th>Fecha Registro</th>
+                    </tr>
+                </thead>
+                <tbody id="opTableBody">
+                    <!-- Se carga dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- MODAL DETALLE DE ETAPA -->
+    <div class="modal" id="stepModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalStepTitle">Detalle de Etapa</h2>
+                <button class="close-btn" onclick="closeStepModal()"><i class="ph ph-x"></i></button>
+            </div>
+            <div id="modalStepBody" style="font-size:14px; line-height:1.6; color:var(--ink)">
+                <!-- Contenido dinámico -->
+            </div>
+            <div style="margin-top:20px; display:flex; justify-content:flex-end">
+                <button class="btn btn-primary" onclick="closeStepModal()">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ACTIVIDADES ADELANTADAS DE LA ORDEN -->
+    <div class="modal" id="activitiesModal">
+        <div class="modal-content" style="max-width: 720px;">
+            <div class="modal-header">
+                <div>
+                    <h2 id="actModalTitle" style="display:flex; align-items:center; gap:8px;">
+                        <i class="ph ph-list-checks" style="color:var(--primary)"></i> Actividades de la OP
+                    </h2>
+                    <p id="actModalSubtitle" style="font-size:12px; color:var(--muted); margin-top:2px;"></p>
+                </div>
+                <button class="close-btn" onclick="closeActivitiesModal()"><i class="ph ph-x"></i></button>
+            </div>
+
+            <div style="background:#f1f5f9; padding:12px 16px; border-radius:8px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div>
+                    <span style="font-size:11px; font-weight:700; text-transform:uppercase; color:var(--muted);">Progreso de Actividades:</span>
+                    <strong id="actProgressText" style="display:block; font-size:14px; color:var(--primary);">0 de 12 Actividades (0%)</strong>
+                </div>
+                <div style="width:180px;">
+                    <div style="height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden;">
+                        <div id="actProgressBar" style="height:100%; width:0%; background:var(--primary); transition:width 0.3s ease;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="activitiesList" style="display:flex; flex-direction:column; gap:10px; max-height:420px; overflow-y:auto; padding-right:6px;">
+                <!-- Lista dinámicamente generada -->
+            </div>
+
+            <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line); padding-top:16px; flex-wrap:wrap; gap:10px;">
+                <span style="font-size:11px; color:var(--muted);"><i class="ph ph-info"></i> Haz clic en los botones para actualizar las actividades completadas.</span>
+                <button class="btn btn-primary" onclick="saveActivitiesChanges()"><i class="ph ph-floppy-disk"></i> Guardar Avances</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const FLOW_STEPS = [
+            {
+                id: 1,
+                title: "1. Aprobación de oferta realizada por proceso comercial",
+                desc: "El área de gestión de proyectos envía oferta para revisión y aprobación para ser enviada y si se requiere se solicita un ajuste.",
+                resp: "Gestión Administrativa"
+            },
+            {
+                id: 2,
+                title: "2. Verificación de contrato u orden de compra",
+                desc: "Cuando se recibe el contrato u orden de compra por parte del cliente, el proceso administrativo se encarga de verificar las condiciones del contrato y que este cumpla con lo estipulado en la oferta y revisa demás cláusulas para garantizar que no afecte los intereses de la empresa.",
+                resp: "Gestión Administrativa"
+            },
+            {
+                id: 3,
+                title: "3. Legalizar contrato y expedición de pólizas",
+                desc: "Cuando el contrato u orden de compra se ha revisado y cumple con lo establecido se procede con las firmas y la expedición de pólizas si las solicitan, cuando estas ya son expedidas son enviadas al cliente para revisión y aprobación junto con el contrato.",
+                resp: "Gestión Administrativa / Cliente"
+            },
+            {
+                id: 4,
+                title: "4. Realizar solicitud de anticipo",
+                desc: "Se realiza la cuenta de cobro de anticipo si así es establecido en el contrato para dar el aval de ingreso a producción.",
+                resp: "Gestión Administrativa"
+            },
+            {
+                id: 5,
+                title: "5. Revisión y registro de orden de pedido / OP",
+                desc: "Cuando el área comercial realiza la orden de pedido esta es enviada al área administrativa para avalarla, registrarla en el programa administrativo y realizarle seguimiento durante la ejecución del proyecto.",
+                resp: "Gestión Administrativa"
+            },
+            {
+                id: 6,
+                title: "6. Realizar compras de materiales",
+                desc: "El proceso de producción solicita al área administrativa requisición de materiales reales faltantes, previa revisión del inventario en almacén, y se procede a realizar las compras necesarias para la producción.",
+                resp: "Gestión Administrativa"
+            },
+            {
+                id: 7,
+                title: "7. Realizar seguimiento a la ejecución del proyecto",
+                desc: "Una vez iniciado el proyecto se lleva un control y seguimiento a la ejecución del contrato, registrando avance de producción, instalación y cumplimiento del cronograma establecido en el programa administrativo, información enviada por producción, logística e instalación.",
+                resp: "Gestión Administrativa / Gerente General"
+            },
+            {
+                id: 8,
+                title: "8. Realizar cortes de obra sobre producción",
+                desc: "Cuando ya se desarrolle parte de la producción se realizará corte de obra para realizar la facturación correspondiente.",
+                resp: "Gestión Administrativa"
+            },
+            {
+                id: 9,
+                title: "9. Legalización de Otro Sí (si aplica)",
+                desc: "El Gerente General avala los Otro Sí cuando las condiciones del proyecto lo requieren.",
+                resp: "Gestión Administrativa / Gerente General"
+            },
+            {
+                id: 10,
+                title: "10. Realizar Facturación Electrónica",
+                desc: "El proceso administrativo se encarga de elaborar la factura electrónica con el valor aprobado en el corte de obra enviado firmado por el cliente y el Gerente General de DIMALCCO SAS.",
+                resp: "Gestión Administrativa / Gerente General"
+            },
+            {
+                id: 11,
+                title: "11. Recaudo de cartera",
+                desc: "El proceso administrativo se encarga de realizar seguimiento a recaudo de cartera, consultando e identificando los pagos realizados durante la ejecución del proyecto.",
+                resp: "Gestión Administrativa / Gerente General"
+            },
+            {
+                id: 12,
+                title: "12. Liquidación de contratos y retegarantía",
+                desc: "Cuando se cumple con el objeto del contrato u orden de servicio, se solicitan las actas de liquidación y demás documentos para liquidar el contrato y proceder a realizar la cuenta de cobro de la retegarantía.",
+                resp: "Gestión Administrativa / Gerente General"
+            }
+        ];
+
+        const STORAGE_KEY = 'dim_ordenes_produccion';
+        let currentOrderForActivities = null;
+
+        function loadData() {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            return JSON.parse(raw || '[]');
+        }
+
+        function saveData(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            try {
+                if (window.parent && typeof window.parent.pushToCloud === 'function') {
+                    window.parent.pushToCloud();
+                }
+            } catch (err) {}
+        }
+
+        function renderFlowGrid() {
+            const grid = document.getElementById('flowGrid');
+            grid.innerHTML = FLOW_STEPS.map(step => `
+                <div class="flow-step-card" onclick="openStepModal(${step.id})">
+                    <div class="step-num">${step.id}</div>
+                    <h3>${step.title}</h3>
+                    <p>${step.desc}</p>
+                    <div class="flow-resp">
+                        <span style="color:var(--muted)">Responsable:</span>
+                        <span class="badge-resp">${step.resp}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderStatsAndTable() {
+            const orders = loadData();
+            
+            document.getElementById('kpiTotal').textContent = orders.length;
+            document.getElementById('kpiProceso').textContent = orders.filter(o => o.status === 'En Proceso' || !o.status).length;
+            
+            const builders = new Set(orders.map(o => o.builderName?.toLowerCase()).filter(Boolean));
+            document.getElementById('kpiBuilders').textContent = builders.size;
+
+            const projects = new Set(orders.map(o => o.projectName?.toLowerCase()).filter(Boolean));
+            document.getElementById('kpiProjects').textContent = projects.size;
+
+            const tbody = document.getElementById('opTableBody');
+            if (orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:24px;">No hay Órdenes de Producción registradas aún. <a href="ordenes_produccion/index.html" style="color:var(--primary); font-weight:600;">Registrar primera OP</a></td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = orders.slice(0, 10).map(order => {
+                const stepNum = order.stepId || 5;
+                const stepObj = FLOW_STEPS.find(s => s.id == stepNum) || FLOW_STEPS[4];
+                const status = order.status || 'En Proceso';
+                const statusClass = status === 'Pendiente' ? 'status-pendiente' : (status === 'Completado' || status === 'Entregado' ? 'status-completado' : (status === 'Facturado' ? 'status-facturado' : 'status-proceso'));
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="op-code" onclick="openOrderActivities('${String(order.id)}')" title="Ver actividades adelantadas">
+                                <i class="ph ph-list-checks"></i> ${order.opNumber || 'S/N'}
+                            </div>
+                        </td>
+                        <td><strong>${order.projectName || '-'}</strong></td>
+                        <td>${order.builderName || '-'}</td>
+                        <td><span style="font-size:12px; font-weight:600; color:var(--primary);">${stepObj.id}. ${stepObj.title.split('.')[1] || stepObj.title}</span></td>
+                        <td><span class="badge-status ${statusClass}">${status}</span></td>
+                        <td>${order.createdAt ? new Date(order.createdAt).toLocaleDateString('es-CO') : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openStepModal(id) {
+            const step = FLOW_STEPS.find(s => s.id === id);
+            if (!step) return;
+
+            document.getElementById('modalStepTitle').textContent = step.title;
+            document.getElementById('modalStepBody').innerHTML = `
+                <div style="background:var(--primary-light); padding:16px; border-radius:8px; margin-bottom:16px;">
+                    <strong style="color:var(--primary); font-size:12px; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:4px;">Responsables del Proceso</strong>
+                    <div style="font-size:15px; font-weight:700; color:var(--ink);">${step.resp}</div>
+                </div>
+                <p style="margin-bottom:16px;">${step.desc}</p>
+                <div style="border-top:1px solid var(--line); padding-top:14px; font-size:12px; color:var(--muted);">
+                    <i class="ph ph-info"></i> Esta actividad forma parte del procedimiento estándar de gestión administrativa de DIMALCCO SAS.
+                </div>
+            `;
+            document.getElementById('stepModal').classList.add('open');
+        }
+
+        function closeStepModal() {
+            document.getElementById('stepModal').classList.remove('open');
+        }
+
+        /* ACTIVIDADES ADELANTADAS POR OP */
+        function openOrderActivities(orderId) {
+            const orders = loadData();
+            const order = orders.find(o => String(o.id) === String(orderId));
+            if (!order) return;
+
+            currentOrderForActivities = JSON.parse(JSON.stringify(order));
+
+            if (!currentOrderForActivities.completedSteps || !Array.isArray(currentOrderForActivities.completedSteps)) {
+                const defaultCompleted = [];
+                const maxStep = currentOrderForActivities.stepId || 5;
+                for (let i = 1; i <= maxStep; i++) defaultCompleted.push(i);
+                currentOrderForActivities.completedSteps = defaultCompleted;
+            }
+            if (!currentOrderForActivities.stepNotes) currentOrderForActivities.stepNotes = {};
+
+            document.getElementById('actModalTitle').innerHTML = `<i class="ph ph-list-checks" style="color:var(--primary)"></i> Actividades: ${currentOrderForActivities.opNumber}`;
+            document.getElementById('actModalSubtitle').textContent = `Proyecto: ${currentOrderForActivities.projectName} | Constructora: ${currentOrderForActivities.builderName}`;
+
+            renderActivitiesModalList();
+            document.getElementById('activitiesModal').classList.add('open');
+        }
+
+        function renderActivitiesModalList() {
+            if (!currentOrderForActivities) return;
+            const completedSet = new Set(currentOrderForActivities.completedSteps || []);
+            const notesMap = currentOrderForActivities.stepNotes || {};
+
+            const count = completedSet.size;
+            const percent = Math.round((count / 12) * 100);
+
+            document.getElementById('actProgressText').textContent = `${count} de 12 Actividades Adelantadas (${percent}%)`;
+            document.getElementById('actProgressBar').style.width = `${percent}%`;
+
+            const container = document.getElementById('activitiesList');
+            container.innerHTML = FLOW_STEPS.map(step => {
+                const isDone = completedSet.has(step.id);
+                const note = notesMap[step.id] || '';
+
+                return `
+                    <div class="activity-step-item ${isDone ? 'completed' : ''}">
+                        <div class="activity-step-header">
+                            <div class="activity-step-title">
+                                <i class="ph ${isDone ? 'ph-check-circle' : 'ph-circle'}" style="font-size:18px; color:${isDone ? 'var(--ok)' : 'var(--muted)'};"></i>
+                                <span>${step.title}</span>
+                            </div>
+                            <button type="button" class="btn-status-toggle ${isDone ? 'done' : 'pending'}" onclick="toggleStepInModal(${step.id})">
+                                ${isDone ? '<i class="ph ph-check"></i> Completada' : 'Pendiente'}
+                            </button>
+                        </div>
+                        <p style="font-size:11px; color:var(--muted); margin-left:26px;">${step.desc}</p>
+                        <div style="display:flex; align-items:center; gap:8px; margin-left:26px; margin-top:2px;">
+                            <span style="font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase;">Responsable:</span>
+                            <span style="background:#f1f5f9; color:var(--muted); font-size:10px; padding:2px 6px; border-radius:4px;">${step.resp}</span>
+                        </div>
+                        <div style="margin-left:26px; margin-top:4px;">
+                            <input type="text" placeholder="Agregar observaciones para esta etapa..." value="${note.replaceAll('"', '&quot;')}" oninput="updateNoteInModal(${step.id}, this.value)" style="width:100%; font-size:11px; padding:6px 10px; border-radius:6px; border:1px solid var(--line);">
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleStepInModal(stepId) {
+            if (!currentOrderForActivities) return;
+            let set = new Set(currentOrderForActivities.completedSteps || []);
+            if (set.has(stepId)) {
+                set.delete(stepId);
+            } else {
+                set.add(stepId);
+            }
+            currentOrderForActivities.completedSteps = Array.from(set).sort((a,b) => a - b);
+            if (currentOrderForActivities.completedSteps.length > 0) {
+                currentOrderForActivities.stepId = Math.max(...currentOrderForActivities.completedSteps);
+            }
+            renderActivitiesModalList();
+        }
+
+        function updateNoteInModal(stepId, val) {
+            if (!currentOrderForActivities) return;
+            if (!currentOrderForActivities.stepNotes) currentOrderForActivities.stepNotes = {};
+            currentOrderForActivities.stepNotes[stepId] = val;
+        }
+
+        function saveActivitiesChanges() {
+            if (!currentOrderForActivities) return;
+            const orders = loadData();
+            const targetId = String(currentOrderForActivities.id);
+            const index = orders.findIndex(o => String(o.id) === targetId);
+
+            if (index >= 0) {
+                const completedCount = (currentOrderForActivities.completedSteps || []).length;
+                currentOrderForActivities.progress = Math.round((completedCount / 12) * 100);
+                currentOrderForActivities.updatedAt = new Date().toISOString();
+
+                if (completedCount === 12) {
+                    currentOrderForActivities.status = 'Entregado';
+                }
+
+                orders[index] = currentOrderForActivities;
+                saveData(orders);
+                closeActivitiesModal();
+                renderStatsAndTable();
+                alert(`¡Avances guardados con éxito para la OP ${currentOrderForActivities.opNumber}! (${completedCount} de 12 actividades completadas)`);
+            } else {
+                alert('No se pudo encontrar la orden para guardar los avances.');
+            }
+        }
+
+        function closeActivitiesModal() {
+            document.getElementById('activitiesModal').classList.remove('open');
+            currentOrderForActivities = null;
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFlowGrid();
+            renderStatsAndTable();
+        });
+    </script>
+</body>
+</html>

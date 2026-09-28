@@ -1,0 +1,389 @@
+/* Specific styles for Liquidador de Retenciones */
+
+.main-content {
+    max-width: 1250px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.calculator-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+    margin-top: 24px;
+}
+
+@media (max-width: 1024px) {
+    .calculator-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.input-card {
+    padding: 24px;
+}
+
+.section-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-secondary, #64748b);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 20px 0 15px 0;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid var(--border-color, #e2e8f0);
+    margin: 24px 0;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-secondary, #64748b);
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-symbol, .unit {
+    position: absolute;
+    color: var(--color-text-secondary, #64748b);
+    font-weight: 500;
+}
+
+.currency-symbol { left: 12px; }
+.unit { right: 12px; }
+
+.input-wrapper input {
+    padding-left: 28px !important;
+}
+
+#reteicaRate + .unit {
+    right: 40px;
+}
+
+/* Item row input styling */
+.item-row input, .item-row select {
+    background-color: #f8fafc;
+    border: 1px solid var(--border-color, #e2e8f0);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.875rem;
+    height: 38px;
+    color: var(--color-text-primary, #1e293b);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.item-row input:focus, .item-row select:focus {
+    border-color: var(--color-accent-primary, #3b82f6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.btn-remove-item {
+    background: transparent;
+    color: #f87171;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    height: 38px;
+    width: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.checkbox-group {
+    margin: 10px 0;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    user-select: none;
+    gap: 10px;
+}
+
+.checkbox-container input {
+    display: none;
+}
+
+.checkmark {
+    height: 20px;
+    width: 20px;
+    background-color: rgba(0, 0, 0, 0.03);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 4px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.checkbox-container:hover .checkmark {
+    border-color: var(--accent-primary, #3b82f6);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+    background-color: var(--accent-primary, #3b82f6);
+    border-color: var(--accent-primary, #3b82f6);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+/* Results Summary */
+.results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.summary-card {
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid var(--border-color, #e2e8f0);
+    box-shadow: var(--shadow-sm);
+}
+
+.summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary, #64748b);
+}
+
+.summary-item .amount {
+    font-family: 'Inter', monospace;
+    font-weight: 600;
+    color: var(--color-text-primary, #1e293b);
+}
+
+.summary-item.deduction {
+    color: #ef4444; /* red-500 for better light-theme contrast */
+}
+
+.summary-item .amount.negative {
+    color: #ef4444;
+}
+
+.total-gross {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--color-text-primary, #1e293b);
+}
+
+.final-total {
+    margin-top: 8px;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--color-accent-primary, #3b82f6);
+}
+
+.highlight {
+    color: var(--color-accent-primary, #3b82f6);
+    text-shadow: none;
+}
+
+.info-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: rgba(59, 130, 246, 0.1);
+    border-left: 4px solid #3b82f6;
+}
+
+.info-icon {
+    font-size: 1.5rem;
+    color: #3b82f6;
+}
+
+.info-card p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary, #64748b);
+}
+
+.hidden-input {
+    display: none;
+    margin-top: 8px;
+}
+
+.hidden-input.show {
+    display: block;
+}
+
+/* Print Styles */
+@media print {
+    .sidebar, .header-actions, .info-card {
+        display: none !important;
+    }
+    .main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .calculator-grid {
+        display: block;
+    }
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        margin-bottom: 20px;
+    }
+    
+    /* Ocultar botones de interacción en el PDF e impresión */
+    #btnAddItem, .btn-remove-item {
+        display: none !important;
+    }
+    
+    .item-row input, .item-row select {
+        border: none !important;
+        border-bottom: 1px dashed #ccc !important;
+        background: transparent !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+}
+
+/* Estilos de la lista de ítems dinámicos (pantalla) */
+.item-row {
+    animation: slideIn 0.2s ease-out;
+}
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.btn-remove-item:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444 !important;
+}
+
+/* Matriz Table Styles */
+.matriz-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 15px;
+}
+.matriz-table th {
+    background: rgba(0, 0, 0, 0.02);
+    color: var(--color-text-secondary, #64748b);
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+.matriz-table th.num, .matriz-table td.num {
+    text-align: right;
+}
+
+.matriz-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    color: var(--color-text-primary, #1e293b);
+}
+.matriz-table td.num {
+    font-family: 'Inter', monospace;
+    font-weight: 600;
+}
+.matriz-table tr.aplica {
+    background: rgba(16, 185, 129, 0.04);
+}
+.matriz-table tr.no-aplica {
+    opacity: 0.5;
+}
+.matriz-table tr.total-row {
+    font-weight: 700;
+    font-size: 0.9rem;
+    border-top: 1.5px solid var(--border-color, #e2e8f0);
+    border-bottom: 1.5px solid var(--border-color, #e2e8f0);
+    background: var(--color-bg-main, #f3f6f9);
+}
+.badge-aplica {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.badge-no {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--color-text-tertiary, #94a3b8);
+    padding: 2px 6px;
+    border-radius: 99px;
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+.notas-disclaimer {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(245, 158, 11, 0.08);
+    border-left: 3px solid #fbbf24;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    line-height: 1.5;
+    color: #fbbf24;
+}
+
+.normativa-list {
+    margin-top: 10px;
+    line-height: 1.6;
+}
+
+

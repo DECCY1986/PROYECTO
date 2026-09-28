@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquidación de Nómina Simplificada - Dimalcco Publicidad</title>
+    <link rel="stylesheet" href="grid-styles.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-box">P</div>
+                    <span>DIMALCCO Publicidad</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="../control_horarios/index.html" class="nav-link" target="_top">
+                    <i class="ph ph-calendar-check"></i> Control Horarios
+                </a>
+                <a href="#" class="nav-link active">
+                    <i class="ph ph-money"></i> Liquidación Nómina
+                </a>
+                <a href="../personal/index.html" class="nav-link" target="_top">
+                    <i class="ph ph-users"></i> Personal
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="content-header">
+                <div class="header-titles">
+                    <h1>Liquidación de Nómina <small>Quincenal</small></h1>
+                    <p>Carga automática de base de datos y cálculo simplificado.</p>
+                </div>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" id="workerSearch" placeholder="Buscar trabajador...">
+                    </div>
+                    <div class="period-selector">
+                        <select id="filterMonth">
+                            <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+                            <option value="04">Abril</option><option value="05" selected>Mayo</option><option value="06">Junio</option>
+                            <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+                            <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                        </select>
+                        <select id="filterFortnight">
+                            <option value="1">1ra Quincena</option>
+                            <option value="2">2da Quincena</option>
+                        </select>
+                    </div>
+                    <button id="btn-add-worker" class="btn btn-secondary">
+                        <i class="ph ph-user-plus"></i> Nuevo Trabajador
+                    </button>
+                    <button id="btn-export-excel" class="btn btn-secondary">
+                        <i class="ph ph-file-xls"></i> Exportar Excel
+                    </button>
+                    <button id="btn-export-all-pdf" class="btn btn-secondary" style="background-color: #f59e0b; border-color: #f59e0b; color: white;">
+                        <i class="ph ph-file-pdf"></i> Todos los Recibos
+                    </button>
+                    <button id="btn-save-all" class="btn btn-primary">
+                        <i class="ph ph-floppy-disk"></i> Guardar
+                    </button>
+                </div>
+            </header>
+
+            <!-- Modal Nuevo Trabajador -->
+            <div id="modalNewWorker" class="modal-overlay" style="display: none;">
+                <div class="modal-card animate-fade">
+                    <div class="modal-header">
+                        <h3>Agregar Nuevo Trabajador</h3>
+                        <button id="btnCloseNewWorker" class="btn-clear"><i class="ph ph-x"></i></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nombre Completo</label>
+                            <input type="text" id="newWorkerName" class="dist-input" style="width: 100%;" placeholder="Ej: JUAN PEREZ">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Salario Quincenal</label>
+                            <input type="text" id="newWorkerSalary" class="dist-input" style="width: 100%;" placeholder="Ej: 1.300.000">
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <button id="btnSaveNewWorker" class="btn btn-primary" style="flex: 1;">Crear Trabajador</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="individualView" class="grid-card animate-fade" style="display: none; margin-bottom: 2rem; border-left: 5px solid var(--primary);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                    <div>
+                        <h2 id="selectedWorkerName" style="font-size: 1.5rem; color: var(--primary);">Nombre</h2>
+                        <p id="selectedWorkerBase" style="color: var(--text-muted);">Salario Quincenal: $0</p>
+                    </div>
+                    <button id="btnCloseDetail" class="btn btn-secondary" style="padding: 0.5rem;"><i class="ph ph-x"></i></button>
+                </div>
+                
+                <div class="calculator-grid">
+                    <div class="calc-row header">
+                        <span>Tipo de Hora</span>
+                        <span class="text-right">Cantidad</span>
+                        <span class="text-right">Valor Unit.</span>
+                        <span class="text-right">Subtotal</span>
+                    </div>
+                    <div class="calc-row" data-type="extDia">
+                        <span>Extra Diurna (15%)</span>
+                        <input type="number" class="qty-input" value="0" step="0.5">
+                        <span class="unit-val">$0</span>
+                        <span class="subtotal-val">$0</span>
+                    </div>
+                    <div class="calc-row" data-type="rNoct">
+                        <span>Recargo Nocturno (30%)</span>
+                        <input type="number" class="qty-input" value="0" step="0.5">
+                        <span class="unit-val">$0</span>
+                        <span class="subtotal-val">$0</span>
+                    </div>
+                    <div class="calc-row" data-type="extNoct">
+                        <span>Extra Nocturna (50%)</span>
+                        <input type="number" class="qty-input" value="0" step="0.5">
+                        <span class="unit-val">$0</span>
+                        <span class="subtotal-val">$0</span>
+                    </div>
+                    <div class="calc-row" data-type="rDom">
+                        <span>Recargo Dominical (50%)</span>
+                        <input type="number" class="qty-input" value="0" step="0.5">
+                        <span class="unit-val">$0</span>
+                        <span class="subtotal-val">$0</span>
+                    </div>
+                    <div class="calc-row" data-type="extDom">
+                        <span>Extra Dominical (50%)</span>
+                        <input type="number" class="qty-input" value="0" step="0.5">
+                        <span class="unit-val">$0</span>
+                        <span class="subtotal-val">$0</span>
+                    </div>
+                    <div class="calc-row" data-type="travel">
+                        <span>Horas Viaje (50%)</span>
+                        <input type="number" class="qty-input" value="0" step="0.5">
+                        <span class="unit-val">$0</span>
+                        <span class="subtotal-val">$0</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 2rem; align-items: center; background: #f8fafc; padding: 1rem; border-radius: 8px;">
+                    <div class="text-right">
+                        <small style="display:block; color: var(--text-muted);">Total Extras</small>
+                        <span id="detailTotalExtras" class="font-bold" style="font-size: 1.2rem; color: var(--secondary);">$0</span>
+                    </div>
+                    <div class="text-right">
+                        <small style="display:block; color: var(--text-muted);">Neto Quincena</small>
+                        <span id="detailTotalNeto" class="font-bold" style="font-size: 1.5rem; color: var(--primary);">$0</span>
+                    </div>
+                    <button id="btnApplyDetail" class="btn btn-primary">Actualizar en Tabla</button>
+                </div>
+            </div>
+
+            <div class="grid-card">
+                <div class="table-responsive">
+                    <table id="nominaGrid">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Trabajador</th>
+                                <th class="text-right">Salario Quincenal</th>
+                                <th class="text-right">Horas Extras</th>
+                                <th class="text-right">Bonificaciones</th>
+                                <th class="text-right">Descuentos</th>
+                                <th class="text-right">Total Quincenal</th>
+                                <th style="width: 120px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gridBody">
+                            <!-- JS populated -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" class="text-right font-bold">TOTALES</td>
+                                <td id="totalSalarios" class="text-right font-bold">$0</td>
+                                <td id="totalExtras" class="text-right font-bold">$0</td>
+                                <td id="totalBonos" class="text-right font-bold" style="color: var(--secondary);">$0</td>
+                                <td id="totalDescuentos" class="text-right font-bold" style="color: #ef4444;">$0</td>
+                                <td id="totalGral" class="text-right font-bold total-highlight">$0</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="info-footer">
+                <p><i class="ph ph-info"></i> Los cambios se guardan localmente para el periodo seleccionado. El total quincenal se calcula automáticamente al editar los valores.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Distribución por OP -->
+    <div id="modalDistribution" class="modal-overlay" style="display: none;">
+        <div class="modal-card animate-fade">
+            <div class="modal-header">
+                <h3>Distribución por OP <br><small id="distWorkerName"></small></h3>
+                <button id="btnCloseDist" class="btn-clear"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div style="background: #f1f5f9; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; justify-content: space-between;">
+                    <span>Total a Distribuir:</span>
+                    <strong id="distTotalToSplit">$0</strong>
+                </div>
+                
+                <div id="distRowsContainer">
+                    <!-- Dynamic Rows -->
+                </div>
+                
+                <button id="btnAddDistRow" class="btn btn-secondary" style="width: 100%; margin-top: 1rem;">
+                    <i class="ph ph-plus-circle"></i> Agregar OP
+                </button>
+
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <small style="color: var(--text-muted);">Suma Distribuida:</small>
+                        <div id="distCurrentSum" class="font-bold">$0</div>
+                    </div>
+                    <div>
+                        <small style="color: var(--text-muted);">Diferencia:</small>
+                        <div id="distDiff" class="font-bold" style="color: var(--secondary);">$0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button id="btnSaveDist" class="btn btn-primary" style="flex: 1;">Guardar Distribución</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="grid-script.js"></script>
+</body>
+</html>

@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SST | DIMALCCO Publicidad</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --primary: #14b8a6;
+      --primary-soft: #f0fdfa;
+      --accent: #2dd4bf;
+      --bg: #f8fafc;
+      --sidebar: #ffffff;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --border: #f1f5f9;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08);
+      --radius: 12px;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'DM Sans',sans-serif; }
+    body { background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+
+    /* SIDEBAR */
+    .sidebar { width: 280px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 50; }
+    .logo { padding: 2rem; display: flex; align-items: center; gap: 0.75rem; }
+    .logo-icon { width: 40px; height: 40px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 4px 12px rgba(20,184,166,0.3); }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.25rem; color: var(--text); letter-spacing: -0.5px; }
+    .logo-sub { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: -2px; }
+
+    .nav { flex: 1; padding: 0.5rem 1rem; overflow-y: auto; }
+    .nav-label { font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; padding: 1.5rem 1rem 0.5rem; }
+    .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1rem; border-radius: var(--radius); cursor: pointer; color: var(--text-muted); font-weight: 500; transition: all 0.2s; margin-bottom: 0.25rem; text-decoration: none; font-size: 0.85rem; }
+    .nav-item:hover { background: var(--primary-soft); color: var(--primary); }
+    .nav-item.active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+    .nav-item i { font-size: 1.25rem; flex-shrink: 0; }
+
+    .sidebar-footer { padding: 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-dim); }
+
+    /* MAIN */
+    .main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
+    .topbar { padding: 1.5rem 2.5rem; border-bottom: 1px solid var(--border); background: #fff; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 40; }
+    .topbar-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.5rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.9rem; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: #0d9488; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(20,184,166,0.2); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-ghost { background: transparent; color: var(--text-muted); }
+    .btn-ghost:hover { background: var(--border); color: var(--text); }
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+
+    .content { padding: 2.5rem; max-width: 1400px; margin: 0 auto; width: 100%; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* DASHBOARD & GRIDS */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+    .stat-card { background: var(--card); padding: 1.5rem; border-radius: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+    .stat-card::before { content: ''; position: absolute; top:0; left:0; width: 4px; height: 100%; background: var(--primary); }
+    .stat-card.danger::before { background: var(--danger); }
+    .stat-card.warning::before { background: var(--warning); }
+    .stat-label { font-size: 0.8rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; margin: 0.5rem 0; }
+    .stat-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+    .section-card { background: var(--card); border-radius: 20px; box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 2rem; overflow: hidden; }
+    .card-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .card-body { padding: 1.5rem; }
+
+    /* TABLES */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 1rem; font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; border-bottom: 2px solid var(--border); }
+    td { padding: 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: #fafafa; }
+
+    .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .badge-teal { background: #ccfbf1; color: #0f766e; }
+    .badge-red { background: #fee2e2; color: #b91c1c; }
+    .badge-amber { background: #fef3c7; color: #b45309; }
+    .badge-blue { background: #e0f2fe; color: #075985; }
+
+    .emp-row { display: flex; align-items: center; gap: 0.75rem; }
+    .avatar { width: 36px; height: 36px; border-radius: 10px; background: var(--primary-soft); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; }
+    .emp-name { font-weight: 600; color: var(--text); }
+    .emp-info { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* PLAN DE TRABAJO PROGRESS */
+    .progress-container { display: flex; align-items: center; gap: 1rem; width: 100%; max-width: 200px; }
+    .progress-bar { flex: 1; height: 8px; background: #f1f5f9; border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--primary); border-radius: 10px; }
+    .progress-text { font-size: 0.75rem; font-weight: 700; min-width: 35px; }
+
+    input.prog-input { width: 60px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem; outline: none; text-align: center; }
+
+    /* MODALS */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 2rem; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--card); width: 100%; max-width: 600px; border-radius: 24px; box-shadow: var(--shadow-lg); border: 1px solid var(--border); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; animation: zoomIn 0.3s ease; }
+    @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-body { padding: 2rem; overflow-y: auto; }
+    .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border); background: #fafafa; display: flex; justify-content: flex-end; gap: 1rem; }
+
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-control { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; outline: none; transition: all 0.2s; }
+    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+
+    .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-dim); }
+    .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
+
+    /* CHART-LIKE PROGRESS BARS */
+    .risk-bar { height: 8px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin-top: 0.5rem; }
+    .risk-fill { height: 100%; border-radius: 10px; transition: width 0.5s ease; }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon"><i class="ph-bold ph-heart-beat"></i></div>
+      <div>
+        <div class="logo-text">SST DIMALCCO Publicidad</div>
+        <div class="logo-sub">Gestión 2026</div>
+      </div>
+    </div>
+    
+    <nav class="nav">
+      <div class="nav-item active" onclick="switchView('dashboard', this)"><i class="ph-bold ph-chart-line-up"></i> Dashboard</div>
+
+      <div class="nav-label">PLANEAR</div>
+      <div class="nav-item" onclick="switchView('estandares', this)"><i class="ph-bold ph-clipboard-text"></i> Evaluación Inicial</div>
+      <div class="nav-item" onclick="switchView('responsabilidades', this)"><i class="ph-bold ph-briefcase"></i> Responsabilidades SG-SST</div>
+      <div class="nav-item" onclick="switchView('plan', this)"><i class="ph-bold ph-list-checks"></i> Planes de Trabajo</div>
+      <div class="nav-item" onclick="switchView('afiliacion', this)"><i class="ph-bold ph-file-text"></i> Afiliación S.G.R.L.</div>
+      <div class="nav-item" onclick="switchView('copasst', this)"><i class="ph-bold ph-users-three"></i> Copasst, CCL y Comités</div>
+      <div class="nav-item" onclick="switchView('capacitacion', this)"><i class="ph-bold ph-chalkboard-teacher"></i> Plan de Capacitación</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-coins"></i> Presupuesto</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-calendar"></i> Planeación Estratégica</div>
+      <div class="nav-item" onclick="switchView('legal', this)"><i class="ph-bold ph-scales"></i> Matriz Legal</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-arrows-merge"></i> Gestión del Cambio</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-archive"></i> Conservación Documental</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-hard-hat"></i> Gestión de Contratistas</div>
+
+      <div class="nav-label">HACER</div>
+      <div class="nav-item" onclick="switchView('salud', this)"><i class="ph-bold ph-stethoscope"></i> Condiciones de Salud</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-user-list"></i> Profesiograma</div>
+      <div class="nav-item" onclick="switchView('ausentismo', this)"><i class="ph-bold ph-heartbeat"></i> Casos Médicos</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-magnifying-glass"></i> Investigación Accidentes</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-chart-line"></i> Caracterización 70 Var.</div>
+      <div class="nav-item" onclick="switchView('riesgos', this)"><i class="ph-bold ph-shield-warning"></i> Matriz IPERC</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-check-square"></i> Inspecciones Seguridad</div>
+      <div class="nav-item" onclick="switchView('epp', this)"><i class="ph-bold ph-mask"></i> Elementos de Protección</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-fire-extinguisher"></i> Extintores y Brigadistas</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-eye"></i> Análisis Vulnerabilidad</div>
+
+      <div class="nav-label">VERIFICAR</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-chart-bar"></i> Indicadores (EPR)</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-pencil-simple"></i> Auditorías</div>
+
+      <div class="nav-label">ACTUAR</div>
+      <div class="nav-item" onclick="switchView('uc', this)"><i class="ph-bold ph-prescription"></i> Acciones Correctivas/Mejora</div>
+
+      <div class="nav-label">Hub</div>
+      <a href="../../index.html" target="_top" class="nav-item"><i class="ph-bold ph-house"></i> Volver al Hub</a>
+    </nav>
+    
+    <div class="sidebar-footer">
+      DIMALCCO Publicidad &bull; v2.6<br>Occupational Health
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="view-title">Dashboard Operativo</div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" id="btn-template" style="display:none" onclick="descargarPlantillaPlan()"><i class="ph-bold ph-file-xls"></i> Plantilla</button>
+        <button class="btn btn-ghost" id="btn-import" style="display:none" onclick="triggerImportPlan()"><i class="ph-bold ph-upload-simple"></i> Importar</button>
+        <button class="btn btn-ghost" onclick="exportSST()"><i class="ph-bold ph-download-simple"></i> Informe</button>
+        <button class="btn btn-success" onclick="saveSST()"><i class="ph-bold ph-floppy-disk"></i> Guardar</button>
+        <button class="btn btn-primary" id="btn-action" style="display:none" onclick="openNewModal()"><i class="ph-bold ph-plus"></i> Añadir</button>
+      </div>
+    </div>
+
+    <!-- Hidden File Input for Import -->
+    <input type="file" id="import-plan-file" style="display:none" accept=".xlsx, .xls" onchange="procPlanFile(event)">
+
+    <!-- VIEW: DASHBOARD -->
+    <div class="content" id="view-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Ausentismo Mensual</div>
+          <div class="stat-value" id="stat-dias">0</div>
+          <div class="stat-sub">Días totales este mes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avance Plan Trabajo</div>
+          <div class="stat-value" id="stat-plan-prog">0%</div>
+          <div class="stat-sub">Cumplimiento de actividades</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="stat-label">Accidentes (AT)</div>
+          <div class="stat-value" id="stat-at">0</div>
+          <div class="stat-sub">Reportados este año</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">Exámenes Vencidos</div>
+          <div class="stat-value" id="stat-exam-venc">0</div>
+          <div class="stat-sub">Requieren renovación pronto</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div class="section-card">
+          <div class="card-header"><div class="card-title"><i class="ph-bold ph-gauge"></i> Distribución de Riesgo</div></div>
+          <div class="card-body">
+            <div style="margin-bottom:1.5rem">
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.5rem"><span>Enfermedad General (EPS)</span><b id="val-gen">0</b></div>
+              <div class="risk-bar"><div class="risk-fill" id="bar-gen" style="width:0%; background:var(--primary)"></div></div>
+            </div>
+            <div style="margin-bottom:1.5rem">
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:0.5rem"><span>Incapacidad ARL (AT)</span><b id="val-at" style="color:var(--danger)">0</b></div>
+              <div class="risk-bar"><div class="risk-fill" id="bar-at" style="width:0%; background:var(--danger)"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="card-header"><div class="card-title"><i class="ph-bold ph-warning-circle"></i> Alertas de Seguridad</div></div>
+          <div class="card-body" id="dashboard-alerts">
+            <div class="empty-state" style="padding:1rem">Sin alertas críticas.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: AUSENTISMO -->
+    <div class="content" id="view-ausentismo" style="display:none">
+      <div class="section-card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Tipo</th><th>Subtipo</th><th>F. Inicio</th><th>Días</th><th>Estado</th></tr></thead>
+            <tbody id="table-aus"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: PLAN DE TRABAJO -->
+    <div class="content" id="view-plan" style="display:none">
+      <div class="section-card">
+        <div class="card-header">
+            <div class="card-title"><i class="ph ph-calendar-check"></i> Plan de Trabajo SST 2026</div>
+            <div style="display:flex; gap:0.5rem">
+               <button class="btn btn-ghost btn-sm" onclick="clearPlan()" style="color:var(--danger)"><i class="ph ph-trash"></i> Borrar Todo</button>
+               <button class="btn btn-primary btn-sm" onclick="openModalPlan()"><i class="ph ph-plus"></i> Actividad</button>
+            </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Código</th><th>Actividad / Meta</th><th>Responsable</th><th>Mes</th><th>Avance (%)</th><th>Evidencia</th><th>Estado</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-plan"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: RIESGOS -->
+    <div class="content" id="view-riesgos" style="display:none">
+      <div class="section-card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Área / Proceso</th><th>Peligro / Fuente</th><th>Consecuencia</th><th>Nivel</th><th>Controles</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-riesgos"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: EPP -->
+    <div class="content" id="view-epp" style="display:none">
+      <div class="section-card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Empleado</th><th>Elemento</th><th>F. Entrega</th><th>F. Reposición</th><th>Estado</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-epp"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: CONDICIONES DE SALUD -->
+    <div class="content" id="view-salud" style="display:none">
+      <div class="section-card">
+        <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-heartbeat"></i> Condiciones de Salud en el Trabajo</div>
+            <button class="btn btn-primary btn-sm" onclick="openModalSalud()"><i class="ph-bold ph-plus"></i> Añadir Registro / Soporte</button>
+        </div>
+        <div class="table-wrap">
+          <table style="min-width: 1000px;">
+            <thead><tr><th>Código</th><th>Requisito Normativo</th><th>Responsable</th><th>Soporte / Evidencia</th><th>Observaciones</th><th>Auditoría</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-salud"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: ESTANDARES -->
+    <div class="content" id="view-estandares" style="display:none">
+      <div class="section-card">
+        <div class="card-header" style="justify-content:space-between">
+          <div class="card-title"><i class="ph-bold ph-clipboard-text"></i> Evaluación Inicial SG-SST (Estándares)</div>
+          <div style="font-size: 1.25rem; font-weight:700">Puntaje: <span id="est-score" style="color:var(--primary)">0</span> / 100</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:50%">Ítem del Estándar</th>
+                <th>Valor</th>
+                <th>Calificación</th>
+                <th>Justifica</th>
+              </tr>
+            </thead>
+            <tbody id="table-estandares"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: COPASST -->
+    <div class="content" id="view-copasst" style="display:none">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        
+        <!-- COPASST -->
+        <div class="section-card">
+          <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-users-three"></i> COPASST / Vigía</div>
+            <button class="btn btn-sm btn-ghost" onclick="addComite('COPASST')"><i class="ph-bold ph-plus"></i> Añadir</button>
+          </div>
+          <div class="card-body" id="list-copasst">
+            <div class="empty-state">No hay miembros registrados.</div>
+          </div>
+        </div>
+
+        <!-- COMITÉ DE CONVIVENCIA LABORAL (CCL) -->
+        <div class="section-card">
+          <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-handshake"></i> Comité de Convivencia</div>
+            <button class="btn btn-sm btn-ghost" onclick="addComite('CCL')"><i class="ph-bold ph-plus"></i> Añadir</button>
+          </div>
+          <div class="card-body" id="list-ccl">
+            <div class="empty-state">No hay miembros registrados.</div>
+          </div>
+        </div>
+
+        <!-- BRIGADA DE EMERGENCIAS -->
+        <div class="section-card">
+          <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-first-aid-kit"></i> Brigada Emergencias</div>
+            <button class="btn btn-sm btn-ghost" onclick="addComite('BRIGADA')"><i class="ph-bold ph-plus"></i> Añadir</button>
+          </div>
+          <div class="card-body" id="list-brigada">
+            <div class="empty-state">No hay miembros registrados.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card" style="margin-top:2rem;">
+         <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-folder-open"></i> Registro de Reuniones y Actas (Comités)</div>
+            <button class="btn btn-primary btn-sm" onclick="openModalActa()"><i class="ph-bold ph-plus"></i> Nueva Acta / Reunión</button>
+         </div>
+         <div class="table-wrap">
+            <table>
+               <thead><tr><th>Comité</th><th>Tipo de Actividad</th><th>Fecha</th><th>Tema Tratado</th><th>Ubicación Acta / Evidencia</th><th>Auditoría</th><th style="width:50px"></th></tr></thead>
+               <tbody id="table-actas"></tbody>
+            </table>
+         </div>
+      </div>
+    </div>
+
+    <!-- VIEW: CAPACITACIÓN -->
+    <div class="content" id="view-capacitacion" style="display:none">
+      <div class="section-card">
+        <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-chalkboard-teacher"></i> Plan de Capacitación SST</div>
+            <button class="btn btn-primary btn-sm" onclick="openModalCap()"><i class="ph-bold ph-plus"></i> Nueva Capacitación</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tema / Actividad</th><th>Modalidad</th><th>Responsable/Entidad</th><th>Fecha Prevista</th><th>Asistentes (Meta)</th><th>Estado</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-capacitacion"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: RESPONSABILIDADES SG-SST -->
+    <div class="content" id="view-responsabilidades" style="display:none">
+      <div class="section-card">
+        <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-briefcase"></i> Responsabilidades y Asignación SG-SST</div>
+            <button class="btn btn-primary btn-sm" onclick="openModalResp()"><i class="ph-bold ph-plus"></i> Añadir Registro / Acta</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Requisito Normativo</th><th>Responsable Asignado</th><th>Fecha de Acta / Asignación</th><th>Detalles / Valor</th><th>Estado</th><th>Ubicación Soporte / Acta</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-responsabilidades"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: AFILIACIÓN SG Y PAGOS -->
+    <div class="content" id="view-afiliacion" style="display:none">
+      <div class="section-card">
+        <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-file-text"></i> Afiliación S.G.R.L. y Pagos de Seguridad Social</div>
+            <button class="btn btn-primary btn-sm" onclick="openModalAfiliacion()"><i class="ph-bold ph-plus"></i> Registrar Pago</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Período Cobrado</th><th>Nº Planilla / Referencia</th><th>ARL</th><th>Valor Pagado</th><th>Fecha de Pago</th><th>Documento / Soporte</th><th>Auditoría</th><th style="width:50px"></th></tr></thead>
+            <tbody id="table-afiliacion"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: MATRIZ LEGAL -->
+    <div class="content" id="view-legal" style="display:none">
+      <div class="section-card">
+        <div class="card-header">
+            <div class="card-title"><i class="ph-bold ph-scales"></i> Matriz de Requisitos Legales</div>
+            <div style="display:flex; gap:0.5rem">
+                <input type="file" id="file-legal" style="display:none" accept=".xlsx, .xls" onchange="importarMatrizLegal(event)">
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('file-legal').click()"><i class="ph-bold ph-file-xls"></i> Importar Excel</button>
+                <button class="btn btn-primary btn-sm" onclick="openModalLegal()"><i class="ph-bold ph-plus"></i> Añadir Norma</button>
+            </div>
+        </div>
+        <div class="table-wrap" style="width: 100%; max-width: 100%; overflow-x: auto; display: block;">
+          <table style="min-width: 1800px; width: 100%;">
+            <thead style="font-size: 0.8rem; background: #f1f3f5; border-bottom: 2px solid #e9ecef;">
+                <tr>
+                    <th style="width:50px; text-align:center;">N°</th>
+                    <th style="width:120px;">Tipo de Norma</th>
+                    <th style="width:100px;">Número</th>
+                    <th style="width:100px;">Año de Pub.</th>
+                    <th style="width:150px;">Expedida Por</th>
+                    <th style="width:300px;">Descripción</th>
+                    <th style="width:150px;">Aplicabilidad (Art / Título)</th>
+                    <th style="width:120px;">Tipo Aplicabilidad</th>
+                    <th style="width:250px;">Método Cumplimiento</th>
+                    <th style="width:150px;">Responsable</th>
+                    <th style="width:150px;">Área Aplicación</th>
+                    <th style="width:120px; text-align:center;">Auditoría</th>
+                    <th style="width:80px">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="table-legal"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW: UNDER CONSTRUCTION -->
+    <div class="content" id="view-uc" style="display:none">
+      <div class="empty-state">
+        <i class="ph-bold ph-cone" style="color:var(--warning)"></i>
+        <h2>Módulo en Construcción</h2>
+        <p>Esta sección forma parte de la estructura PDCA y estará disponible en una próxima actualización.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: NUEVA ACTIVIDAD PLAN -->
+  <div class="modal-overlay" id="modal-plan">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="card-title" id="m-plan-title">Nueva Actividad - Plan SST</div>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">Código</label><input type="text" class="form-control" id="p-cod"></div>
+        <div class="form-group"><label class="form-label">Actividad / Meta</label><input type="text" class="form-control" id="p-act"></div>
+        <div class="form-group"><label class="form-label">Responsable</label><input type="text" class="form-control" id="p-resp"></div>
+        <div class="form-group"><label class="form-label">Mes</label><input type="text" class="form-control" id="p-mes" placeholder="Ej: Mayo"></div>
+        <div class="form-group"><label class="form-label">Avance Inicial (%)</label><input type="number" class="form-control" id="p-prog" value="0"></div>
+        <div class="form-group"><label class="form-label">Evidencia</label><input type="text" class="form-control" id="p-evi" placeholder="Ej: Registro fotográfico"></div>
+        <div class="form-group"><label class="form-label">Estado</label>
+            <select id="p-est" class="form-control">
+                <option>PENDIENTE</option>
+                <option>EN PROCESO</option>
+                <option>COMPLETADO</option>
+            </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" id="m-plan-btn" onclick="addActividad()">Guardar Actividad</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: OTROS (GENERICO) -->
+  <div class="modal-overlay" id="modal-gen">
+    <div class="modal">
+      <div class="modal-header"><div class="card-title" id="m-gen-title">Añadir Registro</div><button class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button></div>
+      <div class="modal-body" id="m-gen-body"></div>
+      <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" id="m-gen-btn">Guardar</button></div>
+    </div>
+  </div>
+
+  <script>
+    const LS_NOV = 'dimalcco_publicidad_nov_v2';
+    const LS_EMP = 'dimalcco_publicidad_emp_v2';
+    const LS_SST_PLAN = 'dimalcco_publicidad_sst_plan_v2';
+    const LS_SST_EPP = 'dimalcco_publicidad_sst_epp_v2';
+    const LS_SST_RIESGOS = 'dimalcco_publicidad_sst_riesgos_v2';
+    const LS_SST_EST = 'dimalcco_publicidad_sst_est_v2';
+    const LS_SST_COMITES = 'dimalcco_publicidad_sst_comites_v2';
+    const LS_SST_CAPACITACION = 'dimalcco_publicidad_sst_cap_v2';
+    const LS_SST_ACTAS = 'dimalcco_publicidad_sst_actas_v2';
+    const LS_SST_PAGOS = 'dimalcco_publicidad_sst_pagos_v2';
+    const LS_SST_RESP = 'dimalcco_publicidad_sst_resp_v2';
+    const LS_SST_LEGAL = 'dimalcco_publicidad_sst_legal_v2';
+
+    let currentView = 'dashboard';
+    let editIndex = -1;
+
+    let plan = JSON.parse(localStorage.getItem(LS_SST_PLAN)) || [];
+    let epp = JSON.parse(localStorage.getItem(LS_SST_EPP)) || [];
+    let riesgos = JSON.parse(localStorage.getItem(LS_SST_RIESGOS)) || [];
+    let estData = JSON.parse(localStorage.getItem(LS_SST_EST)) || {};
+    let comites = JSON.parse(localStorage.getItem(LS_SST_COMITES)) || { COPASST: [], CCL: [], BRIGADA: [] };
+    let capacitaciones = JSON.parse(localStorage.getItem(LS_SST_CAPACITACION)) || [];
+    let actas = JSON.parse(localStorage.getItem(LS_SST_ACTAS)) || [];
+    let pagos = JSON.parse(localStorage.getItem(LS_SST_PAGOS)) || [];
+    let responsabilidades = JSON.parse(localStorage.getItem(LS_SST_RESP)) || [];
+    let matrizLegal = JSON.parse(localStorage.getItem(LS_SST_LEGAL)) || [];
+
+    const estItems = [
+      { id: '1.1.1', desc: 'Responsable del Sistema de Gestión de Seguridad y Salud en el Trabajo SG-SST', val: 0.5 },
+      { id: '1.1.2', desc: 'Responsabilidades en el Sistema de Gestión de Seguridad y Salud en el Trabajo – SG-SST', val: 0.5 },
+      { id: '1.1.3', desc: 'Asignación de recursos para el Sistema de Gestión en Seguridad y Salud en el Trabajo – SG-SST', val: 0.5 },
+      { id: '1.1.4', desc: 'Afiliación al Sistema General de Riesgos Laborales', val: 0.5 },
+      { id: '1.1.5', desc: 'Pago de pensión trabajadores alto riesgo', val: 0.5 },
+      { id: '1.1.6', desc: 'Conformación COPASST / Vigía', val: 0.5 },
+      { id: '1.1.7', desc: 'Capacitación COPASST / Vigía', val: 0.5 },
+      { id: '1.1.8', desc: 'Conformación Comité de Convivencia', val: 0.5 },
+      { id: '1.2.1', desc: 'Programa Capacitación promoción y prevención PyP', val: 2 },
+      { id: '1.2.2', desc: 'Capacitación, Inducción y Reinducción en Sistema de Gestión de Seguridad y Salud en el Trabajo SG-SST', val: 2 },
+      { id: '1.2.3', desc: 'Responsables del Sistema de Gestión de Seguridad y Salud en el Trabajo SG-SST', val: 2 },
+      { id: '2.1.1', desc: 'Política del Sistema de Gestión de Seguridad y Salud en el Trabajo SG-SST', val: 1 },
+      { id: '3.1.1', desc: 'Evaluación e Identificación de Peligros', val: 1 },
+      { id: '4.1.1', desc: 'Plan que identifica objetivos, metas', val: 2 },
+      { id: '5.1.1', desc: 'Archivo y retención documental', val: 2 },
+      { id: '8.1.1', desc: 'Reporte de los accidentes de trabajo y enfermedad laboral', val: 2 },
+      { id: '8.1.2', desc: 'Investigación de Accidentes, Incidentes', val: 2 },
+      { id: '9.1.1', desc: 'Identificación de peligros con participación', val: 4 },
+      { id: '10.1.1', desc: 'Plan de Prevención y Preparación ante emergencias', val: 5 },
+      { id: '10.1.2', desc: 'Brigada de prevención', val: 5 },
+      { id: '11.1.1', desc: 'Auditoría anual', val: 1.25 }
+    ];
+
+    const requisitosSalud = [
+      "3.1.1 Evaluación Médica Ocupacional",
+      "3.1.2 Actividades de Promoción y Prevención",
+      "3.1.3 Información al médico de los perfiles de cargo",
+      "3.1.4 Realización de los exámenes médicos",
+      "3.1.5 Custodia de Historias Clínicas",
+      "3.1.6 Restricciones y recomendaciones",
+      "3.1.7 Estilos de vida y entornos saludables",
+      "3.1.8 Agua potable, servicios sanitarios y recreativos",
+      "3.1.9 Eliminación adecuada de residuos"
+    ];
+
+    function switchView(v, el) {
+        currentView = v;
+        document.querySelectorAll('.content').forEach(c => c.style.display='none');
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        document.getElementById('view-'+v).style.display='block';
+        if(el) el.classList.add('active');
+        
+        const title = document.getElementById('view-title');
+        const btn = document.getElementById('btn-action');
+        const btnImp = document.getElementById('btn-import');
+        const btnTmp = document.getElementById('btn-template');
+        
+        btn.style.display='none';
+        btnImp.style.display='none';
+        btnTmp.style.display='none';
+
+        switch(v) {
+            case 'dashboard': title.textContent='Dashboard Operativo'; renderDashboard(); break;
+            case 'ausentismo': title.textContent='Casos Médicos (Ausentismo)'; renderAusentismo(); break;
+            case 'plan': 
+                title.textContent='Planes de Trabajo'; 
+                btnImp.style.display='flex'; 
+                btnTmp.style.display='flex'; 
+                renderPlan(); 
+                break;
+            case 'riesgos': title.textContent='Matriz IPERC'; btn.style.display='flex'; renderRiesgos(); break;
+            case 'epp': title.textContent='Elementos de Protección Personal'; btn.style.display='flex'; renderEPP(); break;
+            case 'salud': title.textContent='Condiciones de Salud en el Trabajo'; renderSalud(); break;
+            case 'estandares': title.textContent='Evaluación Inicial (Estándares)'; renderEstandares(); break;
+            case 'responsabilidades': title.textContent='Responsabilidades SG-SST'; renderResponsabilidades(); break;
+            case 'afiliacion': title.textContent='Afiliación SGRL y Seguridad Social'; renderAfiliacion(); break;
+            case 'copasst': title.textContent='Conformación COPASST y Comités'; renderComites(); renderActas(); break;
+            case 'capacitacion': title.textContent='Plan de Capacitación'; renderCapacitacion(); break;
+            case 'legal': title.textContent='Matriz Legal'; renderLegal(); break;
+            case 'uc': title.textContent='En Construcción'; break;
+        }
+    }
+
+    // ── RENDERERS ──
+    function renderDashboard() {
+        const novs = JSON.parse(localStorage.getItem(LS_NOV)) || [];
+        const sstNovs = novs.filter(n => n.tipo === 'Incapacidad' || (n.subtipo && n.subtipo.includes('médica')));
+        
+        const totalDias = sstNovs.reduce((s, n) => s + (parseFloat(n.dias) || 0), 0);
+        document.getElementById('stat-dias').textContent = totalDias;
+        
+        const avgPlan = plan.length ? Math.round(plan.reduce((s, a) => s + a.prog, 0) / plan.length) : 0;
+        document.getElementById('stat-plan-prog').textContent = avgPlan + '%';
+        
+        const cAT = sstNovs.filter(n => n.subtipo && n.subtipo.includes('(AT)')).length;
+        document.getElementById('stat-at').textContent = cAT;
+
+        const emps = JSON.parse(localStorage.getItem(LS_EMP)) || [];
+        const today = new Date();
+        const venc = emps.filter(e => {
+            if(!e.fechaExamen) return false;
+            const exDate = new Date(e.fechaExamen);
+            const expDate = new Date(exDate.setFullYear(exDate.getFullYear() + 1));
+            return expDate < today;
+        }).length;
+        document.getElementById('stat-exam-venc').textContent = venc;
+
+        // Bars
+        const cGen = sstNovs.filter(n => n.subtipo && n.subtipo.includes('EPS')).length;
+        const total = sstNovs.length || 1;
+        document.getElementById('val-gen').textContent = cGen;
+        document.getElementById('bar-gen').style.width = (cGen/total*100)+'%';
+        document.getElementById('val-at').textContent = cAT;
+        document.getElementById('bar-at').style.width = (cAT/total*100)+'%';
+
+        // Alerts
+        const container = document.getElementById('dashboard-alerts');
+        let html = '';
+        if(venc > 0) html += `<div style="background:#fff7ed; padding:10px; border-radius:10px; margin-bottom:10px; font-size:0.85rem; border-left:4px solid var(--warning)">⚠️ Hay <b>${venc}</b> exámenes médicos vencidos.</div>`;
+        if(cAT > 0) html += `<div style="background:#fef2f2; padding:10px; border-radius:10px; font-size:0.85rem; border-left:4px solid var(--danger)">🔴 Se registran <b>${cAT}</b> accidentes de trabajo (AT).</div>`;
+        container.innerHTML = html || '<div class="empty-state">Todo bajo control.</div>';
+    }
+
+    function renderAusentismo() {
+        const novs = JSON.parse(localStorage.getItem(LS_NOV)) || [];
+        const sst = novs.filter(n => n.tipo === 'Incapacidad' || (n.tipo === 'Permiso' && n.subtipo && n.subtipo.includes('Médica')));
+        document.getElementById('table-aus').innerHTML = sst.map(n => `
+            <tr>
+                <td><div class="emp-row"><div class="avatar">${n.nombre[0]}</div><div><div class="emp-name">${n.nombre}</div><div class="emp-info">C.C. ${n.cedula}</div></div></div></td>
+                <td><span class="badge ${n.tipo === 'Incapacidad' ? 'badge-red' : 'badge-amber'}">${n.tipo}</span></td>
+                <td>${n.subtipo || '—'}</td>
+                <td style="font-family:'DM Mono'">${n.fechaInicio}</td>
+                <td style="font-weight:700">${n.dias}</td>
+                <td><span class="badge badge-teal">${n.estado}</span></td>
+            </tr>
+        `).join('');
+    }
+
+    function renderPlan() {
+        document.getElementById('table-plan').innerHTML = plan.map((a, i) => `
+            <tr>
+                <td style="font-family:'DM Mono'; font-size:0.8rem">${a.cod || '—'}</td>
+                <td style="font-weight:600">${a.act}</td>
+                <td>${a.resp}</td>
+                <td style="text-transform: capitalize">${a.mes || '—'}</td>
+                <td>
+                    <div class="progress-container">
+                        <div class="progress-bar"><div class="progress-fill" style="width:${a.prog}%"></div></div>
+                        <input type="number" class="prog-input" value="${a.prog}" min="0" max="100" onchange="updPlan(${i}, this.value)">
+                    </div>
+                </td>
+                <td style="font-size:0.8rem">${a.evi || '—'}</td>
+                <td><span class="badge ${a.est === 'COMPLETADO' ? 'badge-teal' : (a.est === 'EN PROCESO' ? 'badge-amber' : 'badge-blue')}">${a.est || 'PENDIENTE'}</span></td>
+                <td>
+                    <div style="display:flex; gap:0.25rem">
+                        <button class="btn btn-ghost btn-sm" onclick="editPlan(${i})">✏️</button>
+                        <button class="btn btn-ghost btn-sm" onclick="delPlan(${i})">🗑️</button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderRiesgos() {
+        document.getElementById('table-riesgos').innerHTML = riesgos.map((r, i) => `
+            <tr>
+                <td style="font-weight:600">${r.area}</td>
+                <td>${r.peligro}</td>
+                <td style="font-size:0.8rem">${r.cons}</td>
+                <td><span class="badge ${r.nivel === 'MUY ALTO' ? 'badge-red' : (r.nivel === 'ALTO' ? 'badge-amber' : 'badge-teal')}">${r.nivel}</span></td>
+                <td style="font-size:0.8rem">${r.ctrl}</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="delRiesgo(${i})">🗑️</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function renderEPP() {
+        document.getElementById('table-epp').innerHTML = epp.map((e, i) => `
+            <tr>
+                <td><div class="emp-name">${e.nombre}</div></td>
+                <td>${e.item}</td>
+                <td style="font-family:'DM Mono'">${e.fecha}</td>
+                <td style="font-family:'DM Mono'">${e.venc}</td>
+                <td><span class="badge badge-teal">Entregado</span></td>
+                <td><button class="btn btn-ghost btn-sm" onclick="delEPP(${i})">🗑️</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function renderExams() {
+        const emps = JSON.parse(localStorage.getItem(LS_EMP)) || [];
+        document.getElementById('table-exams').innerHTML = emps.map(e => {
+            const isH = e.alturaAplica && e.alturaAplica !== 'No aplica';
+            let hVenc = false;
+            let hDays = null;
+            if(isH && e.alturaExp) {
+                const exDate = new Date(e.alturaExp + 'T00:00:00');
+                const expDate = new Date(exDate.setMonth(exDate.getMonth() + 18));
+                hVenc = expDate < new Date();
+                hDays = Math.round((expDate - new Date()) / 86400000);
+            }
+
+            const hSt = isH ? (hVenc ? 'badge-red' : 'badge-teal') : 'badge-blue';
+            const hLb = isH ? (hVenc ? 'VENCIDO' : 'VIGENTE') : 'N/A';
+
+            return `
+                <tr>
+                    <td><div class="emp-name">${e.nombre}</div><div class="emp-info">${e.cedula}</div></td>
+                    <td>${e.cargo}</td>
+                    <td style="font-family:'DM Mono'">${e.fechaExamen || '—'} <span class="badge ${st}" style="font-size:0.6rem; padding:2px 6px">${lb}</span></td>
+                    <td style="font-family:'DM Mono'">${e.alturaExp || '—'} <span class="badge ${hSt}" style="font-size:0.6rem; padding:2px 6px">${hLb}</span></td>
+                    <td>
+                        <div style="font-size:0.7rem; color:var(--text-muted)">
+                            Examen: ${e.fechaExamen ? (lb === 'VENCIDO' ? '⚠️' : '✅') : '—'} 
+                            ${isH ? `| Alturas: ${hVenc ? '⚠️' : '✅'} (${hDays}d)` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function renderEstandares() {
+        let score = 0;
+        document.getElementById('table-estandares').innerHTML = estItems.map((item, i) => {
+            const val = estData[item.id] || { status: 'NO_CUMPLE', just: false };
+            let addedScore = 0;
+            if (val.status === 'CUMPLE' || (val.status === 'NO_APLICA' && val.just)) {
+                addedScore = item.val;
+            }
+            score += addedScore;
+            
+            return `
+                <tr>
+                    <td><b>${item.id}</b> - ${item.desc}</td>
+                    <td>${item.val}</td>
+                    <td>
+                        <select class="form-control" style="width:140px; padding:0.4rem" onchange="updEst('${item.id}', 'status', this.value)">
+                            <option value="NO_CUMPLE" ${val.status === 'NO_CUMPLE' ? 'selected' : ''}>No Cumple</option>
+                            <option value="CUMPLE" ${val.status === 'CUMPLE' ? 'selected' : ''}>Cumple Totalmente</option>
+                            <option value="NO_APLICA" ${val.status === 'NO_APLICA' ? 'selected' : ''}>No Aplica</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="checkbox" ${val.status !== 'NO_APLICA' ? 'disabled' : ''} ${val.just ? 'checked' : ''} onchange="updEst('${item.id}', 'just', this.checked)">
+                    </td>
+                </tr>
+            `;
+        }).join('');
+        
+        document.getElementById('est-score').textContent = score.toFixed(2);
+    }
+    
+    function updEst(id, field, value) {
+        if (!estData[id]) estData[id] = { status: 'NO_CUMPLE', just: false };
+        estData[id][field] = value;
+        if (field === 'status' && value !== 'NO_APLICA') estData[id].just = false; // Reset just if not matching
+        saveSST(true);
+        renderEstandares();
+    }
+
+    function renderComites() {
+        ['COPASST', 'CCL', 'BRIGADA'].forEach(tipo => {
+            const list = comites[tipo] || [];
+            const container = document.getElementById('list-' + tipo.toLowerCase());
+            if (list.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding:1rem"><i class="ph-bold ph-users-three" style="font-size:2rem; opacity:0.3"></i><br>Sin registros</div>';
+            } else {
+                container.innerHTML = list.map((m, i) => `
+                    <div style="padding: 1rem; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.5rem; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-grow:1; margin-right:1rem">
+                            <div>
+                                <div style="font-weight:700">${m.nombre}</div>
+                                <div style="font-size:0.8rem; color:var(--text-muted)">${m.rol} (${m.rep})</div>
+                            </div>
+                            <button class="btn btn-sm ${m.cumple !== false ? 'btn-primary' : ''}" style="border-radius:20px; font-size:0.7rem; padding: 2px 8px; ${m.cumple === false ? 'background:var(--danger);color:white' : 'background:var(--teal);color:white' }" onclick="toggleCumple('comites', ${i}, '${tipo}')">
+                                ${m.cumple !== false ? '<i class="ph-bold ph-check"></i> OK' : '<i class="ph-bold ph-x"></i> NO'}
+                            </button>
+                        </div>
+                        <div style="display:flex; gap:0.25rem">
+                            <button class="btn btn-ghost btn-sm" onclick="editComite('${tipo}', ${i})"><i class="ph-bold ph-pencil-simple"></i></button>
+                            <button class="btn btn-ghost btn-sm" onclick="delComite('${tipo}', ${i})"><i class="ph-bold ph-trash" style="color:var(--danger)"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        });
+    }
+
+    function addComite(tipo, index) {
+        let titleMap = { 'COPASST': 'COPASST / Vigía', 'CCL': 'Comité Convivencia', 'BRIGADA': 'Brigada' };
+        
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        title.textContent = (index !== undefined && index >= 0 ? "Editar " : "Añadir a ") + titleMap[tipo];
+        const emps = JSON.parse(localStorage.getItem(LS_EMP)) || [];
+        
+        let repOptions = tipo === 'BRIGADA' 
+            ? `<option value="Brigadista">Brigadista</option><option value="Jefe Brigada">Jefe de Brigada</option>`
+            : `<option value="Representante Trabajadores">Rep. Trabajadores</option><option value="Representante Empleador">Rep. Empleador</option>`;
+            
+        let rolOptions = tipo === 'BRIGADA'
+            ? `<option value="Primeros Auxilios">Primeros Auxilios</option><option value="Evacuación">Evacuación</option><option value="Contra Incendios">Contra Incendios</option>`
+            : `<option value="Presidente">Presidente</option><option value="Secretario">Secretario</option><option value="Vocal/Suplente">Vocal/Suplente</option><option value="Vigía">Vigía (Empresas < 10)</option>`;
+            
+        body.innerHTML = `
+            <div class="form-group"><label class="form-label">Empleado</label>
+                <select id="c-nom" class="form-control">${emps.map(e=>`<option value="${e.nombre}">${e.nombre}</option>`).join('')}</select>
+            </div>
+            <div class="form-group"><label class="form-label">${tipo === 'BRIGADA' ? 'Especialidad' : 'Rol'}</label>
+                <select id="c-rol" class="form-control">${rolOptions}</select>
+            </div>
+            <div class="form-group"><label class="form-label">${tipo === 'BRIGADA' ? 'Cargo en Brigada' : 'Representación'}</label>
+                <select id="c-rep" class="form-control">${repOptions}</select>
+            </div>
+        `;
+        
+        if (index !== undefined && index >= 0) {
+            editIndex = index;
+            const m = comites[tipo][index];
+            setTimeout(() => {
+                document.getElementById('c-nom').value = m.nombre;
+                document.getElementById('c-rol').value = m.rol;
+                document.getElementById('c-rep').value = m.rep;
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+        
+        btn.onclick = () => {
+            if(!comites[tipo]) comites[tipo] = [];
+            const data = {
+                nombre: document.getElementById('c-nom').value,
+                rol: document.getElementById('c-rol').value,
+                rep: document.getElementById('c-rep').value,
+                cumple: editIndex >= 0 ? (comites[tipo][editIndex].cumple !== undefined ? comites[tipo][editIndex].cumple : true) : true
+            };
+            if(editIndex >= 0) comites[tipo][editIndex] = data;
+            else comites[tipo].push(data);
+            
+            saveSST(true);
+            renderComites();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function editComite(tipo, index) { addComite(tipo, index); }
+
+    function delComite(tipo, index) {
+        if(confirm('¿Eliminar integrante?')) {
+            comites[tipo].splice(index, 1);
+            saveSST(true);
+            renderComites();
+        }
+    }
+
+    // ── ACTAS Y REUNIONES ──
+    function renderActas() {
+        const container = document.getElementById('table-actas');
+        if (actas.length === 0) {
+            container.innerHTML = '<tr><td colspan="6" class="empty-state" style="padding:2rem">No hay actas registradas.</td></tr>';
+            return;
+        }
+        
+        container.innerHTML = actas.map((a, i) => {
+            let tipoBadge = 'badge-blue';
+            if(a.tipo === 'Capacitación' || a.tipo.includes('Capacitación')) tipoBadge = 'badge-amber';
+            if(a.tipo === 'Reunión Ordinaria') tipoBadge = 'badge-teal';
+            
+            return `
+            <tr>
+                <td style="font-weight:700">${a.comite}</td>
+                <td><span class="badge ${tipoBadge}">${a.tipo}</span></td>
+                <td style="font-family:'DM Mono'">${a.fecha}</td>
+                <td>${a.tema}</td>
+                <td style="font-size:0.8rem">${a.evidencia}</td>
+                <td>
+                    <button class="btn btn-sm ${a.cumple !== false ? 'btn-primary' : ''}" style="border-radius:20px; font-size:0.7rem; padding: 2px 8px; ${a.cumple === false ? 'background:var(--danger);color:white' : 'background:var(--teal);color:white' }" onclick="toggleCumple('actas', ${i})">
+                        ${a.cumple !== false ? '<i class="ph-bold ph-check"></i> Cumple' : '<i class="ph-bold ph-x"></i> NO'}
+                    </button>
+                </td>
+                <td>
+                    <div style="display:flex; gap:0.25rem">
+                        <button class="btn btn-ghost btn-sm" onclick="openModalActa(${i})"><i class="ph-bold ph-pencil-simple"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="delActa(${i})"><i class="ph-bold ph-trash" style="color:var(--danger)"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `}).join('');
+    }
+
+    function openModalActa(index) {
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        title.textContent = "Nueva Acta / Reunión";
+        body.innerHTML = `
+            <div class="form-group"><label class="form-label">Comité Asignado</label>
+                <select id="a-com" class="form-control"><option>COPASST / Vigía</option><option>Comité de Convivencia Laboral</option><option>Brigada de Emergencias</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Tipo de Actividad</label>
+                <select id="a-tipo" class="form-control"><option>Reunión Ordinaria</option><option>Reunión Extraordinaria</option><option>Capacitación / Formación</option><option>Inspección</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Fecha del Acta</label><input type="date" id="a-fecha" class="form-control"></div>
+            <div class="form-group"><label class="form-label">Tema Principal / Resumen</label><input type="text" id="a-tema" class="form-control" placeholder="Ej: Elección de representantes"></div>
+            <div class="form-group"><label class="form-label">Ruta Archivo / Evidencia</label><input type="text" id="a-evi" class="form-control" placeholder="Ej: C:/Actas/Acta_01.pdf - o URL"></div>
+        `;
+        document.getElementById('a-fecha').valueAsDate = new Date();
+        
+        if (index !== undefined && index >= 0) {
+            editIndex = index;
+            const a = actas[index];
+            setTimeout(() => {
+                document.getElementById('a-com').value = a.comite;
+                document.getElementById('a-tipo').value = a.tipo;
+                document.getElementById('a-fecha').value = a.fecha;
+                document.getElementById('a-tema').value = a.tema;
+                document.getElementById('a-evi').value = a.evidencia;
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+        
+        btn.onclick = () => {
+            const data = {
+                comite: document.getElementById('a-com').value,
+                tipo: document.getElementById('a-tipo').value,
+                fecha: document.getElementById('a-fecha').value,
+                tema: document.getElementById('a-tema').value || 'Sin descripción',
+                evidencia: document.getElementById('a-evi').value || 'Sin adjunto',
+                cumple: editIndex >= 0 ? (actas[editIndex].cumple !== undefined ? actas[editIndex].cumple : true) : true
+            };
+            if(editIndex >= 0) actas[editIndex] = data;
+            else actas.push(data);
+            
+            saveSST(true);
+            renderActas();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function delActa(index) {
+        if(confirm('¿Eliminar este registro de acta?')) {
+            actas.splice(index, 1);
+            saveSST(true);
+            renderActas();
+        }
+    }
+
+    function renderCapacitacion() {
+        const container = document.getElementById('table-capacitacion');
+        if (capacitaciones.length === 0) {
+            container.innerHTML = '<tr><td colspan="7" class="empty-state" style="padding:2rem">No hay capacitaciones programadas.</td></tr>';
+            return;
+        }
+        
+        container.innerHTML = capacitaciones.map((c, i) => `
+            <tr>
+                <td style="font-weight:600">${c.tema}</td>
+                <td><span class="badge ${c.mod === 'VIRTUAL' ? 'badge-blue' : 'badge-amber'}">${c.mod}</span></td>
+                <td>${c.resp}</td>
+                <td style="font-family:'DM Mono'">${c.fecha || 'N/A'}</td>
+                <td>${c.asistentes} ${c.target ? '(' + c.target + ')' : ''}</td>
+                <td>
+                    <div style="display:flex; flex-direction:column; gap:0.25rem">
+                        <span class="badge ${c.est === 'EVALUADO' ? 'badge-teal' : (c.est === 'POR EJECUTAR' ? 'badge-blue' : 'badge-amber')}">${c.est}</span>
+                        <button class="btn btn-sm ${c.cumple !== false ? 'btn-primary' : ''}" style="border-radius:20px; font-size:0.7rem; padding: 2px 8px; ${c.cumple === false ? 'background:var(--danger);color:white' : 'background:var(--teal);color:white' }" onclick="toggleCumple('capacitaciones', ${i})">
+                            ${c.cumple !== false ? '<i class="ph-bold ph-check"></i> Cumple' : '<i class="ph-bold ph-x"></i> NO'}
+                        </button>
+                    </div>
+                </td>
+                <td>
+                    <div style="display:flex; gap:0.25rem">
+                        <button class="btn btn-ghost btn-sm" onclick="openModalCap(${i})"><i class="ph-bold ph-pencil-simple"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="delCapacitacion(${i})"><i class="ph-bold ph-trash" style="color:var(--danger)"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openModalCap(index) {
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        title.textContent = "Nueva Capacitación";
+        body.innerHTML = `
+            <div class="form-group"><label class="form-label">Tema de Capacitación</label><input type="text" id="cap-tema" class="form-control" placeholder="Ej: Capacitación COPASST / Vigía"></div>
+            <div class="form-group"><label class="form-label">Modalidad</label>
+                <select id="cap-mod" class="form-control"><option>PRESENCIAL</option><option>VIRTUAL</option><option>MIXTURA</option></select>
+            </div>
+            <div class="form-group"><label class="form-label">Responsable / Entidad</label><input type="text" id="cap-resp" class="form-control" placeholder="Ej: ARL, Externo, Coord. SST"></div>
+            <div class="form-group"><label class="form-label">Fecha Prevista / Ejecución</label><input type="date" id="cap-fecha" class="form-control"></div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+               <div class="form-group"><label class="form-label">Dirigido A (Meta)</label><input type="text" id="cap-target" class="form-control" placeholder="Ej: Todo el personal"></div>
+               <div class="form-group"><label class="form-label">Cant. Asistentes</label><input type="number" id="cap-asist" class="form-control" value="0"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Estado</label>
+                <select id="cap-est" class="form-control"><option>POR EJECUTAR</option><option>EJECUTADO</option><option>EVALUADO</option><option>REPROGRAMADO</option></select>
+            </div>
+        `;
+        
+        if (index !== undefined && index >= 0) {
+            editIndex = index;
+            const c = capacitaciones[index];
+            setTimeout(() => {
+                document.getElementById('cap-tema').value = c.tema;
+                document.getElementById('cap-mod').value = c.mod;
+                document.getElementById('cap-resp').value = c.resp;
+                document.getElementById('cap-fecha').value = c.fecha;
+                document.getElementById('cap-target').value = c.target || '';
+                document.getElementById('cap-asist').value = c.asistentes || 0;
+                document.getElementById('cap-est').value = c.est;
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+
+        btn.onclick = () => {
+            const data = {
+                tema: document.getElementById('cap-tema').value || 'Sin tema',
+                mod: document.getElementById('cap-mod').value,
+                resp: document.getElementById('cap-resp').value || 'N/D',
+                fecha: document.getElementById('cap-fecha').value,
+                target: document.getElementById('cap-target').value,
+                asistentes: document.getElementById('cap-asist').value,
+                est: document.getElementById('cap-est').value,
+                cumple: editIndex >= 0 ? (capacitaciones[editIndex].cumple !== undefined ? capacitaciones[editIndex].cumple : true) : true
+            };
+            if(editIndex >= 0) capacitaciones[editIndex] = data;
+            else capacitaciones.push(data);
+            
+            saveSST(true);
+            renderCapacitacion();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function delCapacitacion(index) {
+        if(confirm('¿Eliminar capacitación?')) {
+            capacitaciones.splice(index, 1);
+            saveSST(true);
+            renderCapacitacion();
+        }
+    }
+
+    // ── PAGOS SEGURIDAD SOCIAL ──
+    function renderAfiliacion() {
+        const container = document.getElementById('table-afiliacion');
+        if (pagos.length === 0) {
+            container.innerHTML = '<tr><td colspan="7" class="empty-state" style="padding:2rem">No hay pagos de seguridad social registrados.</td></tr>';
+            return;
+        }
+        
+        container.innerHTML = pagos.map((p, i) => `
+            <tr>
+                <td style="font-weight:700; text-transform:capitalize">${p.periodo}</td>
+                <td style="font-family:'DM Mono'">${p.planilla}</td>
+                <td>${p.arl}</td>
+                <td style="font-weight:600; color:var(--success)">$ ${parseFloat(p.valor).toLocaleString('es-CO')}</td>
+                <td style="font-family:'DM Mono'">${p.fecha}</td>
+                <td style="font-size:0.8rem">${p.soporte}</td>
+                <td>
+                    <button class="btn btn-sm ${p.cumple !== false ? 'btn-primary' : ''}" style="border-radius:20px; font-size:0.7rem; padding: 2px 8px; ${p.cumple === false ? 'background:var(--danger);color:white' : 'background:var(--teal);color:white' }" onclick="toggleCumple('pagos', ${i})">
+                        ${p.cumple !== false ? '<i class="ph-bold ph-check"></i> Cumple' : '<i class="ph-bold ph-x"></i> NO'}
+                    </button>
+                </td>
+                <td>
+                    <div style="display:flex; gap:0.25rem">
+                        <button class="btn btn-ghost btn-sm" onclick="openModalAfiliacion(${i})"><i class="ph-bold ph-pencil-simple"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="delPago(${i})"><i class="ph-bold ph-trash" style="color:var(--danger)"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openModalAfiliacion(index) {
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        title.textContent = "Registrar Pago de Seguridad Social";
+        body.innerHTML = `
+            <div class="form-group"><label class="form-label">Período Cobrado (Mes / Año)</label><input type="text" id="p-per" class="form-control" placeholder="Ej: Mayo 2026"></div>
+            <div class="form-group"><label class="form-label">Número de Planilla</label><input type="text" id="p-pla" class="form-control" placeholder="Ej: 123456789"></div>
+            <div class="form-group"><label class="form-label">Aseguradora (ARL)</label><input type="text" id="p-arl" class="form-control" value="SURA"></div>
+            <div class="form-group"><label class="form-label">Valor Total Pagado ($)</label><input type="number" id="p-val" class="form-control" value="0"></div>
+            <div class="form-group"><label class="form-label">Fecha del Pago</label><input type="date" id="p-fec" class="form-control"></div>
+            <div class="form-group"><label class="form-label">Ruta Archivo / Soporte</label><input type="text" id="p-sop" class="form-control" placeholder="Ej: C:/Pagos/Planilla_Mayo.pdf"></div>
+        `;
+        document.getElementById('p-fec').valueAsDate = new Date();
+        
+        if (index !== undefined && index >= 0) {
+            editIndex = index;
+            const p = pagos[index];
+            setTimeout(() => {
+                document.getElementById('p-per').value = p.periodo;
+                document.getElementById('p-pla').value = p.planilla;
+                document.getElementById('p-arl').value = p.arl;
+                document.getElementById('p-val').value = p.valor;
+                document.getElementById('p-fec').value = p.fecha;
+                document.getElementById('p-sop').value = p.soporte;
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+
+        btn.onclick = () => {
+            const data = {
+                periodo: document.getElementById('p-per').value || 'Sin periodo',
+                planilla: document.getElementById('p-pla').value || 'N/A',
+                arl: document.getElementById('p-arl').value || 'SURA',
+                valor: document.getElementById('p-val').value || 0,
+                fecha: document.getElementById('p-fec').value,
+                soporte: document.getElementById('p-sop').value || 'Sin adjunto',
+                cumple: editIndex >= 0 ? (pagos[editIndex].cumple !== undefined ? pagos[editIndex].cumple : true) : true
+            };
+            if(editIndex >= 0) pagos[editIndex] = data;
+            else pagos.push(data);
+            
+            saveSST(true);
+            renderAfiliacion();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function delPago(index) {
+        if(confirm('¿Eliminar este registro de pago?')) {
+            pagos.splice(index, 1);
+            saveSST(true);
+            renderAfiliacion();
+        }
+    }
+
+    // ── RESPONSABILIDADES SG-SST ──
+    function renderResponsabilidades() {
+        const container = document.getElementById('table-responsabilidades');
+        if (responsabilidades.length === 0) {
+            container.innerHTML = '<tr><td colspan="6" class="empty-state" style="padding:2rem">No hay registros de responsabilidades o actas subidas.</td></tr>';
+            return;
+        }
+        
+        container.innerHTML = responsabilidades.map((r, i) => `
+            <tr>
+                <td style="font-weight:700">${r.requisito}</td>
+                <td><div class="emp-name">${r.responsable}</div></td>
+                <td style="font-family:'DM Mono'">${r.fecha || 'N/A'}</td>
+                <td style="font-size:0.85rem">${r.detalles}</td>
+                <td>
+                    <button class="btn btn-sm ${r.cumple ? 'btn-primary' : ''}" style="border-radius:20px; font-size:0.75rem; padding: 4px 10px; ${!r.cumple ? 'background:var(--danger);color:white' : 'background:var(--teal);color:white' }" onclick="toggleRespCumple(${i})">
+                        ${r.cumple ? '<i class="ph-bold ph-check"></i> Cumple' : '<i class="ph-bold ph-x"></i> No Cumple'}
+                    </button>
+                </td>
+                <td style="font-size:0.8rem; color:var(--primary)">${r.acta}</td>
+                <td>
+                    <div style="display:flex; gap:0.25rem">
+                        <button class="btn btn-ghost btn-sm" onclick="openModalResp(${i})"><i class="ph-bold ph-pencil-simple"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="delResponsabilidad(${i})"><i class="ph-bold ph-trash" style="color:var(--danger)"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function toggleRespCumple(index) {
+        responsabilidades[index].cumple = !responsabilidades[index].cumple;
+        saveSST(true);
+        renderResponsabilidades();
+    }
+
+    function openModalResp(index) {
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        const emps = JSON.parse(localStorage.getItem(LS_EMP)) || [];
+        title.textContent = "Añadir Acta de Responsabilidad / Asignación";
+        
+        body.innerHTML = `
+            <div class="form-group"><label class="form-label">Requisito Normativo</label>
+                <select id="res-req" class="form-control">
+                    <option>Responsable del SG-SST</option>
+                    <option>Responsabilidades en el SG-SST</option>
+                    <option>Asignación de Recursos para el SG-SST</option>
+                    <option>Responsables SG-SST con curso (50 / 20 horas)</option>
+                    <option>Otro Documento Normativo</option>
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">Responsable Asignado / Encargado</label>
+                <select id="res-resp" class="form-control">
+                    <option value="Gerencia General">Gerencia General</option>
+                    ${emps.map(e=>`<option value="${e.nombre}">${e.nombre}</option>`).join('')}
+                    <option value="Otro / Asesor Externo">Otro / Asesor Externo</option>
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">Fecha de Acta / Certificado</label><input type="date" id="res-fec" class="form-control"></div>
+            <div class="form-group"><label class="form-label">Detalles de Asignación / Presupuesto</label><input type="text" id="res-det" class="form-control" placeholder="Ej: Se asignan $5.000.000 COP, o 'Aprobación gerente'"></div>
+            <div class="form-group"><label class="form-label">Ubicación del Acta / Evidencia</label><input type="text" id="res-acta" class="form-control" placeholder="Ej: C:/SG-SST/Acta_Asignacion_Recursos.pdf"></div>
+        `;
+        document.getElementById('res-fec').valueAsDate = new Date();
+        
+        if (index !== undefined && index >= 0) {
+            editIndex = index;
+            const r = responsabilidades[index];
+            setTimeout(() => {
+                document.getElementById('res-req').value = r.requisito;
+                document.getElementById('res-resp').value = r.responsable;
+                document.getElementById('res-fec').value = r.fecha;
+                document.getElementById('res-det').value = r.detalles;
+                document.getElementById('res-acta').value = r.acta;
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+        
+        btn.onclick = () => {
+            const data = {
+                requisito: document.getElementById('res-req').value,
+                responsable: document.getElementById('res-resp').value,
+                fecha: document.getElementById('res-fec').value,
+                detalles: document.getElementById('res-det').value || 'Sin destalles',
+                acta: document.getElementById('res-acta').value || 'Sin adjunto',
+                cumple: editIndex >= 0 ? responsabilidades[editIndex].cumple : true // default to cumple if new
+            };
+            if(editIndex >= 0) responsabilidades[editIndex] = data;
+            else responsabilidades.push(data);
+            
+            saveSST(true);
+            renderResponsabilidades();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function delResponsabilidad(index) {
+        if(confirm('¿Seguro que deseas eliminar esta acta de asignación?')) {
+            responsabilidades.splice(index, 1);
+            saveSST(true);
+            renderResponsabilidades();
+        }
+    }
+
+    // ── AUDITORIA UNIVERSAL ──
+    function toggleCumple(modulo, index) {
+        if (modulo === 'legal') {
+            matrizLegal[index].cumple = (matrizLegal[index].cumple === false);
+            saveSST(true);
+            renderLegal();
+        } else if (modulo === 'salud') {
+            let saludData = JSON.parse(localStorage.getItem('dimalcco_sst_salud_v2')) || [];
+            saludData[index].cumple = !saludData[index].cumple;
+            localStorage.setItem('dimalcco_sst_salud_v2', JSON.stringify(saludData));
+            renderSalud();
+        }
+    }
+
+    // ── MATRIZ LEGAL ──
+    function renderLegal() {
+        const container = document.getElementById('table-legal');
+        if (matrizLegal.length === 0) {
+            container.innerHTML = '<tr><td colspan="13" class="empty-state" style="padding:4rem 2rem; background: #fafafa; border-radius: 8px;">No hay normas registradas en la Matriz Legal. Carga un Excel o añade manualmente.</td></tr>';
+            return;
+        }
+        
+        container.innerHTML = matrizLegal.map((m, i) => `
+            <tr style="border-bottom: 1px solid #eee; transition: background 0.2s; hover:background:#fbfcff; font-size: 0.85rem;">
+                <td style="font-weight:700; text-align:center; color: var(--text-muted);">${m.num || (i+1)}</td>
+                <td style="font-weight:700; color: #333; text-transform: uppercase;">${m.tipoNorma || '-'}</td>
+                <td style="font-weight:800; color:var(--primary);">${m.numero || '-'}</td>
+                <td><div style="font-weight:600; color:#555; background: #eef2f6; display:inline-block; padding: 2px 8px; border-radius: 12px;"><i class="ph-bold ph-calendar-blank" style="margin-right:2px;"></i> ${m.anio || '-'}</div></td>
+                <td style="color:var(--text-muted)"><i class="ph-fill ph-buildings" style="margin-right:4px;"></i> ${m.emisor || '-'}</td>
+                <td style="max-width:300px; white-space:normal; line-height:1.4; color: #444;">${m.descripcion || '-'}</td>
+                <td style="color:#0056b3; background:#e6f0fa; padding:4px 8px; border-radius:4px; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${m.articulos || '-'}"><b>Aplica:</b> ${m.articulos || '-'}</td>
+                <td><span class="badge ${m.aplicabilidad === 'CONOC. GENERAL' ? 'badge-amber' : 'badge-primary'}" style="font-size:0.7rem; padding:4px 6px;">${m.aplicabilidad || 'CUMPLIMIENTO'}</span></td>
+                <td style="max-width:250px; white-space:normal; color:#555;"><i class="ph-bold ph-file-text" style="color:var(--text-muted); margin-right:4px;"></i> ${m.metodo || '-'}</td>
+                <td style="font-weight:700; color:#333;">${m.responsable || '-'}</td>
+                <td style="color:var(--text-muted);"><i class="ph-bold ph-briefcase" style="margin-right:4px;"></i> ${m.area || '-'}</td>
+                <td style="text-align: center;">
+                    <button class="btn btn-sm ${m.cumple !== false ? 'btn-primary' : ''}" style="border-radius:20px; font-size:0.75rem; padding: 6px 12px; width: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); ${m.cumple === false ? 'background:#dc3545;color:white' : 'background:#198754;color:white' }" onclick="toggleCumple('legal', ${i})">
+                        ${m.cumple !== false ? '<i class="ph-bold ph-check-circle" style="font-size:1rem; margin-right:4px;"></i> Cumple' : '<i class="ph-bold ph-x-circle" style="font-size:1rem; margin-right:4px;"></i> No Cumple'}
+                    </button>
+                </td>
+                <td>
+                    <div style="display:flex; gap:0.25rem; justify-content: center;">
+                        <button class="btn btn-ghost btn-sm" onclick="openModalLegal(${i})" title="Editar"><i class="ph-bold ph-pencil-simple" style="color:#0d6efd; font-size:1.1rem;"></i></button>
+                        <button class="btn btn-ghost btn-sm" onclick="delLegal(${i})" title="Eliminar"><i class="ph-bold ph-trash" style="color:#dc3545; font-size:1.1rem;"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openModalLegal(index) {
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        title.textContent = "Añadir/Editar Norma Legal";
+        body.innerHTML = `
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                <div class="form-group"><label class="form-label">N° / Ítem</label><input type="text" id="ml-num" class="form-control"></div>
+                <div class="form-group"><label class="form-label">Tipo de Norma</label><input type="text" id="ml-tipo" class="form-control" placeholder="Ej: Ley, Decreto, Resolución"></div>
+                <div class="form-group"><label class="form-label">Número</label><input type="text" id="ml-numero" class="form-control" placeholder="Ej: 1072"></div>
+                <div class="form-group"><label class="form-label">Año de Publicación</label><input type="text" id="ml-anio" class="form-control" placeholder="Ej: 2015"></div>
+                <div class="form-group"><label class="form-label">Expedida por (Emisor)</label><input type="text" id="ml-emisor" class="form-control" placeholder="Ej: MinTrabajo"></div>
+                <div class="form-group"><label class="form-label">Tipo Aplicabilidad</label><input type="text" id="ml-aplica" class="form-control" placeholder="Ej: Cumplimiento"></div>
+            </div>
+            <div class="form-group"><label class="form-label">Descripción</label><textarea id="ml-desc" class="form-control" rows="2"></textarea></div>
+            <div class="form-group"><label class="form-label">Parágrafo, Artículo o Título que Aplica</label><textarea id="ml-art" class="form-control" rows="2"></textarea></div>
+            <div class="form-group"><label class="form-label">Método de Cumplimiento (Evidencia)</label><textarea id="ml-metodo" class="form-control" rows="2"></textarea></div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                <div class="form-group"><label class="form-label">Responsable del Cumplimiento</label><input type="text" id="ml-resp" class="form-control"></div>
+                <div class="form-group"><label class="form-label">Área de Aplicación</label><input type="text" id="ml-area" class="form-control"></div>
+            </div>
+        `;
+        
+        if (index !== undefined && index >= 0) {
+            editIndex = index;
+            const m = matrizLegal[index];
+            setTimeout(() => {
+                document.getElementById('ml-num').value = m.num || '';
+                document.getElementById('ml-tipo').value = m.tipoNorma || '';
+                document.getElementById('ml-numero').value = m.numero || '';
+                document.getElementById('ml-anio').value = m.anio || '';
+                document.getElementById('ml-emisor').value = m.emisor || '';
+                document.getElementById('ml-desc').value = m.descripcion || '';
+                document.getElementById('ml-art').value = m.articulos || '';
+                document.getElementById('ml-aplica').value = m.aplicabilidad || '';
+                document.getElementById('ml-metodo').value = m.metodo || '';
+                document.getElementById('ml-resp').value = m.responsable || '';
+                document.getElementById('ml-area').value = m.area || '';
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+
+        btn.onclick = () => {
+            const data = {
+                num: document.getElementById('ml-num').value,
+                tipoNorma: document.getElementById('ml-tipo').value,
+                numero: document.getElementById('ml-numero').value,
+                anio: document.getElementById('ml-anio').value,
+                emisor: document.getElementById('ml-emisor').value,
+                descripcion: document.getElementById('ml-desc').value,
+                articulos: document.getElementById('ml-art').value,
+                aplicabilidad: document.getElementById('ml-aplica').value,
+                metodo: document.getElementById('ml-metodo').value,
+                responsable: document.getElementById('ml-resp').value,
+                area: document.getElementById('ml-area').value,
+                cumple: editIndex >= 0 ? (matrizLegal[editIndex].cumple !== undefined ? matrizLegal[editIndex].cumple : true) : true
+            };
+            if(editIndex >= 0) matrizLegal[editIndex] = data;
+            else matrizLegal.push(data);
+            
+            saveSST(true);
+            renderLegal();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function delLegal(index) {
+        if(confirm('¿Seguro quieres borrar este requerimiento legal?')) {
+            matrizLegal.splice(index, 1);
+            saveSST(true);
+            renderLegal();
+        }
+    }
+
+    function importarMatrizLegal(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            try {
+                if(typeof XLSX === 'undefined') {
+                    alert('Librería SheetJS (XLSX) no detectada.');
+                    return;
+                }
+                const data = evt.target.result;
+                const workbook = XLSX.read(data, { type: 'binary' });
+                const firstSheet = workbook.SheetNames[0];
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { defval: "" });
+
+                let adds = 0;
+                rows.forEach(row => {
+                    const keys = Object.keys(row);
+                    const getVal = (searchVals) => {
+                        for(let k of keys) {
+                            const kl = k.toLowerCase().replace(/\s+/g, '');
+                            for(let sv of searchVals) {
+                                if(kl.includes(sv)) return row[k];
+                            }
+                        }
+                        return '';
+                    };
+
+                    const num = getVal(['n°', 'nº', 'numerodeorden']);
+                    const tipoNorma = getVal(['tipodenorma', 'tiponorma', 'normatipo']);
+                    const numero = getVal(['numero', 'número', 'n°norma']);
+                    const anio = getVal(['añodepubli', 'año', 'fecha']);
+                    const emisor = getVal(['expedidapor', 'emisor', 'entidad']);
+                    
+                    const desc = getVal(['descripci', 'requisito']);
+                    const parag = getVal(['parágrafo', 'numeral', 'literal', 'articulo', 'sección']);
+                    
+                    const metodo = getVal(['metododecumpl', 'evidencia', 'métodode']);
+                    const responsable = getVal(['responsabledelcumpl', 'responsable']);
+                    const area = getVal(['áreadeaplic', 'area', 'aplicación']);
+                    
+                    // Manejar TIPO DE APLICABILIDAD si está separado
+                    let aplicaVal = getVal(['tipodeaplic', 'aplicabilidad']);
+                    if(!aplicaVal) {
+                        if(getVal(['cumplimiento', 'x'])) aplicaVal = 'CUMPLIMIENTO';
+                        else if(getVal(['conocimientogeneral'])) aplicaVal = 'CONOC. GENERAL';
+                    }
+
+                    if ((numero && String(numero).trim() !== '') || (desc && String(desc).trim() !== '') || (tipoNorma && String(tipoNorma).trim() !== '')) {
+                        matrizLegal.push({
+                            num: num,
+                            tipoNorma: tipoNorma,
+                            numero: numero,
+                            anio: anio,
+                            emisor: emisor,
+                            descripcion: desc,
+                            articulos: parag,
+                            aplicabilidad: aplicaVal || 'CUMPLIMIENTO',
+                            metodo: metodo,
+                            responsable: responsable,
+                            area: area,
+                            cumple: true
+                        });
+                        adds++;
+                    }
+                });
+
+                if(adds > 0) {
+                    saveSST(false);
+                    renderLegal();
+                    alert(`Se han importado ${adds} normas a la matriz legal exitosamente.`);
+                } else {
+                    alert('No se detectaron columnas válidas (Norma, Requisito) en el archivo Excel.');
+                }
+            } catch(err) {
+                console.error(err);
+                alert("Error al procesar el archivo Excel. Asegúrate de que el formato sea texto o tabla básica.");
+            }
+        };
+        reader.readAsBinaryString(file);
+        e.target.value = ''; // reset
+    }
+
+    // ── AUDITORIA GLOBAL TOGGLE ──
+    function toggleCumple(arrayName, index, tipo) {
+        let arr = null;
+        if(arrayName === 'actas') arr = actas;
+        if(arrayName === 'capacitaciones') arr = capacitaciones;
+        if(arrayName === 'pagos') arr = pagos;
+        if(arrayName === 'comites') arr = comites[tipo];
+        if(arrayName === 'legal') arr = matrizLegal;
+        
+        if(arr) {
+           arr[index].cumple = arr[index].cumple === false ? true : false;
+           saveSST(true);
+           if(arrayName === 'actas') renderActas();
+           if(arrayName === 'capacitaciones') renderCapacitacion();
+           if(arrayName === 'pagos') renderAfiliacion();
+           if(arrayName === 'comites') renderComites();
+           if(arrayName === 'legal') renderLegal();
+        }
+    }
+
+    // ── ACTIONS ──
+    function openModalPlan() { 
+        editIndex = -1;
+        document.getElementById('m-plan-title').textContent = "Nueva Actividad - Plan SST";
+        document.getElementById('m-plan-btn').textContent = "Guardar Actividad";
+        document.getElementById('p-cod').value = '';
+        document.getElementById('p-act').value = '';
+        document.getElementById('p-resp').value = '';
+        document.getElementById('p-mes').value = '';
+        document.getElementById('p-prog').value = 0;
+        document.getElementById('p-evi').value = '';
+        document.getElementById('p-est').value = 'PENDIENTE';
+        document.getElementById('modal-plan').classList.add('open'); 
+    }
+
+    function editPlan(i) {
+        editIndex = i;
+        const a = plan[i];
+        document.getElementById('m-plan-title').textContent = "Editar Actividad";
+        document.getElementById('m-plan-btn').textContent = "Actualizar Actividad";
+        document.getElementById('p-cod').value = a.cod || '';
+        document.getElementById('p-act').value = a.act || '';
+        document.getElementById('p-resp').value = a.resp || '';
+        document.getElementById('p-mes').value = a.mes || '';
+        document.getElementById('p-prog').value = a.prog || 0;
+        document.getElementById('p-evi').value = a.evi || '';
+        document.getElementById('p-est').value = a.est || 'PENDIENTE';
+        document.getElementById('modal-plan').classList.add('open');
+    }
+
+    function closeModal() { document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open')); }
+    
+    function addActividad() {
+        const a = {
+            id: editIndex >= 0 ? plan[editIndex].id : Date.now(),
+            cod: document.getElementById('p-cod').value,
+            act: document.getElementById('p-act').value,
+            resp: document.getElementById('p-resp').value,
+            mes: document.getElementById('p-mes').value,
+            prog: parseInt(document.getElementById('p-prog').value) || 0,
+            evi: document.getElementById('p-evi').value,
+            est: document.getElementById('p-est').value
+        };
+        if(!a.act) return alert('La actividad es obligatoria');
+        
+        if(editIndex >= 0) plan[editIndex] = a;
+        else plan.push(a);
+
+        saveSST(true); // Silent save
+        renderPlan();
+        closeModal();
+    }
+
+    function updPlan(i, v) {
+        plan[i].prog = Math.min(100, Math.max(0, parseInt(v) || 0));
+        saveSST(true); // Silent save
+        renderPlan();
+    }
+
+    function delPlan(i) { if(confirm('¿Eliminar esta actividad?')) { plan.splice(i, 1); saveSST(); renderPlan(); } }
+    function clearPlan() { if(confirm('¿ESTÁS SEGURO? Se eliminarán TODAS las actividades del plan de trabajo.')) { plan = []; saveSST(); renderPlan(); } }
+    function delRiesgo(i) { if(confirm('¿Eliminar riesgo?')) { riesgos.splice(i, 1); saveSST(); renderRiesgos(); } }
+    function delEPP(i) { if(confirm('¿Eliminar este registro de entrega?')) { epp.splice(i, 1); saveSST(); renderEPP(); } }
+
+    function openNewModal() {
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        if(currentView === 'riesgos') {
+            title.textContent = "Añadir Riesgo";
+            body.innerHTML = `
+                <div class="form-group"><label class="form-label">Área</label><input type="text" id="r-area" class="form-control"></div>
+                <div class="form-group"><label class="form-label">Peligro</label><input type="text" id="r-peli" class="form-control"></div>
+                <div class="form-group"><label class="form-label">Consecuencia</label><input type="text" id="r-cons" class="form-control"></div>
+                <div class="form-group"><label class="form-label">Nivel</label>
+                    <select id="r-niv" class="form-control"><option>BAJO</option><option>MEDIO</option><option>ALTO</option><option>MUY ALTO</option></select>
+                </div>
+                <div class="form-group"><label class="form-label">Controles</label><textarea id="r-ctrl" class="form-control"></textarea></div>
+            `;
+            btn.onclick = () => {
+                riesgos.push({
+                    id: Date.now(), area: document.getElementById('r-area').value, peligro: document.getElementById('r-peli').value,
+                    cons: document.getElementById('r-cons').value, nivel: document.getElementById('r-niv').value, ctrl: document.getElementById('r-ctrl').value
+                });
+                renderRiesgos(); closeModal();
+            };
+        } else if(currentView === 'epp') {
+            title.textContent = "Registro Entrega EPP";
+            const emps = JSON.parse(localStorage.getItem(LS_EMP)) || [];
+            body.innerHTML = `
+                <div class="form-group"><label class="form-label">Empleado</label>
+                    <select id="e-nom" class="form-control">${emps.map(e=>`<option>${e.nombre}</option>`).join('')}</select>
+                </div>
+                <div class="form-group"><label class="form-label">Elemento</label><input type="text" id="e-item" class="form-control" placeholder="Ej: Botas, Casco..."></div>
+                <div class="form-group"><label class="form-label">F. Entrega</label><input type="date" id="e-fecha" class="form-control"></div>
+                <div class="form-group"><label class="form-label">F. Reposición</label><input type="date" id="e-venc" class="form-control"></div>
+            `;
+            document.getElementById('e-fecha').valueAsDate = new Date();
+            btn.onclick = () => {
+                epp.push({
+                    nombre: document.getElementById('e-nom').value, item: document.getElementById('e-item').value,
+                    fecha: document.getElementById('e-fecha').value, venc: document.getElementById('e-venc').value
+                });
+                renderEPP(); closeModal();
+            };
+        }
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    function saveSST(silent = false) {
+        localStorage.setItem(LS_SST_PLAN, JSON.stringify(plan));
+        localStorage.setItem(LS_SST_EPP, JSON.stringify(epp));
+        localStorage.setItem(LS_SST_RIESGOS, JSON.stringify(riesgos));
+        localStorage.setItem(LS_SST_EST, JSON.stringify(estData));
+        localStorage.setItem(LS_SST_COMITES, JSON.stringify(comites));
+        localStorage.setItem(LS_SST_CAPACITACION, JSON.stringify(capacitaciones));
+        localStorage.setItem(LS_SST_ACTAS, JSON.stringify(actas));
+        localStorage.setItem(LS_SST_PAGOS, JSON.stringify(pagos));
+        localStorage.setItem(LS_SST_RESP, JSON.stringify(responsabilidades));
+        localStorage.setItem(LS_SST_LEGAL, JSON.stringify(matrizLegal));
+        
+        // Cloud Sync Integration
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage({ type: 'sync_cloud' }, '*');
+        }
+
+        if(!silent) alert('Datos de SST guardados localmente y sincronizados con la nube.');
+    }
+
+    function exportSST() {
+        alert('Generando Informe General de SST para el COPASST...');
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(plan), "Plan Trabajo");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riesgos), "Matriz Riesgos");
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(epp), "Entregas EPP");
+        XLSX.writeFile(wb, "Informe_SST_Dimalcco_Publicidad_2026.xlsx");
+    }
+
+    // ── PLAN DE TRABAJO IMPORT ──
+    function descargarPlantillaPlan() {
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet([
+            ["Código", "Actividad", "Responsable", "Mes", "Avance (%)", "Evidencia", "Estado"],
+            ["A001", "Capacitación Primeros Auxilios", "Brigada de Salud", "Mayo", 0, "Registro de asistencia", "PENDIENTE"],
+            ["A002", "Inspección de Extintores", "Coord. SST", "Mayo", 100, "Certificado", "COMPLETADO"]
+        ]);
+        XLSX.utils.book_append_sheet(wb, ws, "Plan de Trabajo");
+        XLSX.writeFile(wb, "Plantilla_Plan_SST_Detallada.xlsx");
+    }
+
+    function triggerImportPlan() {
+        document.getElementById('import-plan-file').click();
+    }
+
+    function procPlanFile(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ex) {
+            try {
+                const data = new Uint8Array(ex.target.result);
+                const wb = XLSX.read(data, {type: 'array', cellDates: true});
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(ws, {defval: ''});
+                
+                if(rows.length === 0) throw new Error("El archivo está vacío");
+
+                const importedPlan = rows.map((r, i) => {
+                    // Try to match columns flexibly
+                    const codKey = Object.keys(r).find(k => k.toLowerCase().includes('cód')) || 'Código';
+                    const actKey = Object.keys(r).find(k => k.toLowerCase().includes('actividad')) || 'Actividad';
+                    const respKey = Object.keys(r).find(k => k.toLowerCase().includes('responsable')) || 'Responsable';
+                    const mesKey = Object.keys(r).find(k => k.toLowerCase().includes('mes')) || 'Mes';
+                    const progKey = Object.keys(r).find(k => k.toLowerCase().includes('avance')) || 'Avance (%)';
+                    const eviKey = Object.keys(r).find(k => k.toLowerCase().includes('evidencia')) || 'Evidencia';
+                    const estKey = Object.keys(r).find(k => k.toLowerCase().includes('estado')) || 'Estado';
+                    
+                    return {
+                        id: Date.now() + i,
+                        cod: r[codKey] || '',
+                        act: r[actKey] || 'Sin actividad',
+                        resp: r[respKey] || 'N/A',
+                        mes: r[mesKey] || '',
+                        prog: Math.min(100, Math.max(0, parseInt(r[progKey]) || 0)),
+                        evi: r[eviKey] || '',
+                        est: (r[estKey] || 'PENDIENTE').toUpperCase()
+                    };
+                });
+
+                if(confirm(`Se detectaron ${importedPlan.length} actividades. ¿Desea importarlas y anexarlas al plan actual?`)) {
+                    plan = [...plan, ...importedPlan];
+                    saveSST();
+                    renderPlan();
+                    alert("Importación exitosa.");
+                }
+            } catch(err) {
+                alert("Error al procesar el archivo: " + err.message);
+            }
+            e.target.value = ''; // Reset input
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // --- CONDICIONES DE SALUD ---
+    function renderSalud() {
+        const container = document.getElementById('table-salud');
+        
+        let saludData = JSON.parse(localStorage.getItem('dimalcco_publicidad_sst_salud_v2'));
+        if (!saludData || saludData.length === 0) {
+            saludData = requisitosSalud.map(req => {
+                const parts = req.split(' ');
+                return {
+                    codigo: parts[0],
+                    requisito: parts.slice(1).join(' '),
+                    responsable: '',
+                    soporte: '',
+                    obs: '',
+                    cumple: false
+                };
+            });
+            localStorage.setItem('dimalcco_publicidad_sst_salud_v2', JSON.stringify(saludData));
+        }
+
+        container.innerHTML = saludData.map((m, i) => `
+            <tr>
+                <td style="font-weight:700; color:var(--text-muted); font-size: 0.8rem;">${m.codigo}</td>
+                <td style="font-weight:600; font-size: 0.9rem;">${m.requisito}</td>
+                <td>${m.responsable || '<span style="color:#ccc">Sin asignar</span>'}</td>
+                <td style="font-size:0.85rem; color:var(--primary); font-family:monospace">${m.soporte || '-'}</td>
+                <td style="font-size:0.85rem; color:#666">${m.obs || '-'}</td>
+                <td>
+                    <button class="btn btn-sm" style="border-radius:20px; font-size:0.75rem; padding: 4px 10px; ${m.cumple ? 'background:var(--teal);color:white' : 'background:#e2e8f0;color:#64748b' }" onclick="toggleCumple('salud', ${i})">
+                        ${m.cumple ? '<i class="ph-bold ph-check"></i> Cumple' : '<i class="ph-bold ph-minus"></i> Pendiente'}
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-ghost btn-sm" onclick="openModalSalud(${i})"><i class="ph-bold ph-pencil-simple"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function openModalSalud(index) {
+        let saludData = JSON.parse(localStorage.getItem('dimalcco_publicidad_sst_salud_v2')) || [];
+        const body = document.getElementById('m-gen-body');
+        const title = document.getElementById('m-gen-title');
+        const btn = document.getElementById('m-gen-btn');
+        
+        let m = index >= 0 ? saludData[index] : null;
+
+        title.textContent = "Editar Condición de Salud";
+        body.innerHTML = `
+            <div class="form-group"><label class="form-label">Requisito Normativo</label>
+                <select id="sa-req" class="form-control" ${m ? 'disabled' : ''}>
+                    ${requisitosSalud.map(r => `<option ${m && m.codigo === r.split(' ')[0] ? 'selected' : ''}>${r}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group"><label class="form-label">Responsable</label><input type="text" id="sa-res" class="form-control" placeholder="Ej: Seguridad y Salud / Recursos Humanos"></div>
+            <div class="form-group"><label class="form-label">Enlace a Soporte / Evidencia</label><input type="text" id="sa-sop" class="form-control" placeholder="Ej: Link Drive, URL..."></div>
+            <div class="form-group"><label class="form-label">Observaciones</label><textarea id="sa-obs" class="form-control" rows="2"></textarea></div>
+        `;
+        
+        if (m) {
+            editIndex = index;
+            setTimeout(() => {
+                document.getElementById('sa-res').value = m.responsable || '';
+                document.getElementById('sa-sop').value = m.soporte || '';
+                document.getElementById('sa-obs').value = m.obs || '';
+            }, 10);
+        } else {
+            editIndex = -1;
+        }
+
+        btn.onclick = () => {
+            const reqVal = document.getElementById('sa-req').value;
+            const parts = reqVal.split(' ');
+            
+            const data = {
+                codigo: m ? m.codigo : parts[0],
+                requisito: m ? m.requisito : parts.slice(1).join(' '),
+                responsable: document.getElementById('sa-res').value,
+                soporte: document.getElementById('sa-sop').value,
+                obs: document.getElementById('sa-obs').value,
+                cumple: m ? m.cumple : false
+            };
+            
+            if(editIndex >= 0) saludData[editIndex] = data;
+            else saludData.push(data);
+            
+            localStorage.setItem('dimalcco_publicidad_sst_salud_v2', JSON.stringify(saludData));
+            renderSalud();
+            closeModal();
+        };
+        
+        document.getElementById('modal-gen').classList.add('open');
+    }
+
+    window.onload = () => switchView('dashboard');
+  </script>
+</body>
+</html>

@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flujo de Caja · DIMALCCO SAS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f4f7fb;--s:#fff;--b:#dde5ef;--bs:#f1f5f9;--t:#102033;--t2:#526276;--t3:#91a0b3;--ac:#2563eb;--ac2:#0f766e;--as:#eff6ff;--in:#059669;--ib:#ecfdf5;--ex:#dc2626;--eb:#fef2f2;--w:#d97706;--wb:#fffbeb;--hd:#111827;--fn:'Sora',sans-serif;--mo:'DM Mono',monospace;--r:8px;--rsm:6px}
+body{font-family:var(--fn);background:var(--bg);color:var(--t);font-size:14px;min-height:100vh}
+.hdr{background:var(--hd);color:#f8fafc;padding:18px 26px 20px}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:16px}
+.ey{font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#8da0b8;margin-bottom:4px}
+.title{font-size:22px;font-weight:700}
+.subtitle{font-size:12px;color:#94a3b8;margin-top:4px}
+.top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.role{display:flex;background:#1f2937;border:1px solid #334155;border-radius:8px;padding:3px}
+.role button{border:0;background:transparent;color:#94a3b8;font:600 11px var(--fn);padding:7px 10px;border-radius:5px;cursor:pointer}
+.role button.active{background:#f8fafc;color:#111827}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#263241;border-radius:8px;overflow:hidden}
+.metric{background:var(--hd);padding:13px 15px;min-width:0}
+.metric-lbl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8da0b8;margin-bottom:5px}
+.metric-val{font-family:var(--mo);font-size:16px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g{color:#34d399}.r{color:#f87171}.y{color:#fbbf24}.b{color:#93c5fd}
+.metric-sub{font-size:10px;color:#64748b;margin-top:3px}
+.layout{display:grid;grid-template-columns:270px 1fr;min-height:calc(100vh - 159px)}
+.sidebar{background:var(--s);border-right:1px solid var(--b);padding:18px 14px;overflow:auto}
+.main{padding:20px 22px;min-width:0}
+.sec{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin:0 0 10px}
+.side-card{border:1px solid var(--b);border-radius:var(--r);padding:12px;margin-bottom:10px;background:#fff}
+.side-row{display:flex;justify-content:space-between;gap:8px;font-size:12px;margin:8px 0;color:var(--t2)}
+.side-row strong{font-family:var(--mo);color:var(--t)}
+.alert{border-left:3px solid var(--w);background:var(--wb);padding:9px 10px;border-radius:6px;margin-bottom:8px;color:#854d0e;font-size:11px;line-height:1.45}
+.alert.danger{border-left-color:var(--ex);background:var(--eb);color:#991b1b}
+.tabs{display:flex;gap:4px;background:var(--s);border:1px solid var(--b);border-radius:8px;padding:4px;margin-bottom:16px;width:fit-content;max-width:100%;overflow:auto}
+.tab{border:0;background:transparent;color:var(--t2);font:600 12px var(--fn);padding:8px 14px;border-radius:5px;cursor:pointer;white-space:nowrap}
+.tab.active{background:var(--ac);color:#fff}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.spacer{flex:1}
+button,input,select{font-family:var(--fn)}
+input,select{font-size:12px;color:var(--t);background:#fff;border:1px solid var(--b);border-radius:var(--rsm);padding:8px 9px;outline:none}
+input:focus,select:focus{border-color:var(--ac)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--b);border-radius:7px;background:#fff;color:var(--t2);padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;min-height:34px}
+.btn:hover{border-color:#b6c2d1;color:var(--t)}
+.btn.primary{background:var(--ac);border-color:var(--ac);color:#fff}
+.btn.good{background:var(--ac2);border-color:var(--ac2);color:#fff}
+.btn.danger{background:var(--ex);border-color:var(--ex);color:#fff}
+.btn.icon{width:34px;padding:0}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+.panel{background:#fff;border:1px solid var(--b);border-radius:var(--r);overflow:hidden}
+.panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--b);background:#fbfdff}
+.panel-h h3{font-size:13px}
+.panel-b{padding:14px}
+.chart{height:220px;display:flex;align-items:end;gap:8px;border-left:1px solid var(--b);border-bottom:1px solid var(--b);padding:12px 8px 0;margin-top:4px}
+.bar{flex:1;background:linear-gradient(180deg,#60a5fa,#2563eb);border-radius:5px 5px 0 0;min-width:16px;position:relative}
+.bar.neg{background:linear-gradient(180deg,#f87171,#dc2626)}
+.bar span{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font:10px var(--mo);color:var(--t3)}
+.tbl-wrap{background:#fff;border:1px solid var(--b);border-radius:var(--r);overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:980px}
+thead{background:#f8fafc;border-bottom:1px solid var(--b)}
+th{padding:9px 11px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);white-space:nowrap}
+td{padding:10px 11px;font-size:12px;border-bottom:1px solid var(--bs);vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mo)}
+tr:hover td{background:#fbfdff}
+.pill{display:inline-flex;align-items:center;padding:3px 7px;border-radius:20px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.pill.in{background:var(--ib);color:var(--in)}.pill.out{background:var(--eb);color:var(--ex)}.pill.pend{background:#fef9c3;color:#854d0e}.pill.done{background:var(--ib);color:var(--in)}.pill.appr{background:var(--as);color:var(--ac)}
+.flow-card{border:1px solid var(--b);border-radius:var(--r);padding:12px;background:#fff;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
+.flow-no{font-family:var(--mo);font-size:13px;font-weight:600;color:var(--ac)}
+button.flow-no{border:0;background:none;padding:0;cursor:pointer;text-align:left}
+button.flow-no:hover{text-decoration:underline}
+.flow-title{font-size:12px;font-weight:600;margin-top:3px}
+.flow-meta{font-size:10px;color:var(--t3);margin-top:4px}
+.flow-balance{text-align:right;font-family:var(--mo);font-size:13px;font-weight:600}
+.progress{grid-column:1/-1;height:8px;background:#edf2f7;border-radius:99px;overflow:hidden}
+.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--ac2),var(--ac));border-radius:99px}
+.flow-detail-dialog{width:min(980px,100%);height:min(860px,calc(100vh - 40px))}
+.flow-hero{display:grid;grid-template-columns:1.2fr repeat(3,.75fr);gap:10px;margin-bottom:12px}
+.flow-hero-card{border:1px solid var(--b);border-radius:var(--r);padding:12px;background:#fbfdff;min-width:0}
+.flow-hero-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:6px}
+.flow-hero-value{font-family:var(--mo);font-size:15px;font-weight:600;color:var(--t)}
+.flow-hero-main .flow-hero-value{font-family:var(--fn);font-size:14px;line-height:1.35}
+.flow-hero-sub{font-size:10px;color:var(--t3);margin-top:4px}
+.flow-status{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.flow-status.open{background:var(--ib);color:var(--in)}
+.flow-status.closed{background:var(--as);color:var(--ac)}
+.flow-status.over{background:var(--eb);color:var(--ex)}
+.expense-list-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 8px}
+.expense-list-head h3{font-size:13px}
+.flow-expense-wrap{max-height:390px}
+.flow-expense-wrap table{min-width:860px}
+.flow-detail-progress{height:10px;background:#e5edf6;border-radius:99px;overflow:hidden;margin-top:10px}
+.flow-detail-progress span{display:block;height:100%;background:linear-gradient(90deg,#0f766e,#2563eb)}
+.expense-report-row{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 0;border:0;border-bottom:1px solid var(--bs);background:transparent;width:100%;text-align:left;cursor:pointer}
+.expense-report-row:hover{background:#fbfdff}
+.expense-report-row:last-child{border-bottom:0}
+.expense-report-name{font-size:12px;font-weight:600;color:var(--t)}
+.expense-report-meta{font-size:10px;color:var(--t3);margin-top:3px}
+.expense-report-value{text-align:right;font-family:var(--mo);font-size:12px;font-weight:600;color:var(--ex)}
+.expense-report-bar{grid-column:1/-1;height:7px;background:#eef2f7;border-radius:99px;overflow:hidden}
+.expense-report-bar span{display:block;height:100%;background:linear-gradient(90deg,#dc2626,#f59e0b);border-radius:99px}
+@media(max-width:760px){.flow-hero{grid-template-columns:1fr}.flow-detail-dialog{width:100%}}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.field label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:5px}
+.field input,.field select{width:100%}
+.field.full{grid-column:1/-1}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;overflow:hidden}
+.modal.show{display:flex}
+.dialog{background:#fff;width:min(720px,100%);max-height:calc(100vh - 40px);border-radius:10px;box-shadow:0 24px 70px rgba(0,0,0,.25);overflow:hidden;display:flex;flex-direction:column}
+.dialog-h{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--b);background:#fff;position:sticky;top:0;z-index:2;flex-shrink:0}
+.dialog-h h2{font-size:16px}.dialog-b{padding:18px;overflow:auto;min-height:0}.dialog-f{display:flex;justify-content:flex-end;gap:8px;padding:14px 18px;border-top:1px solid var(--b);background:#fbfdff;flex-shrink:0}
+.empty{padding:30px;text-align:center;color:var(--t3);font-size:13px}
+.hidden{display:none!important}
+@media(max-width:980px){.metrics{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--b)}.grid{grid-template-columns:1fr}.hdr-top{flex-direction:column}.top-actions{justify-content:flex-start}.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="ey">Area financiera</div>
+      <h1 class="title">Control de Flujo de Caja</h1>
+      <p class="subtitle">Seguimiento real y proyectado para Gerencia y Auxiliar Contable</p>
+    </div>
+    <div class="top-actions">
+      <div class="role" aria-label="Perfil activo">
+        <button id="roleManager" class="active" onclick="setRole('gerencia')">Gerencia</button>
+        <button id="roleAssistant" onclick="setRole('auxiliar')">Auxiliar contable</button>
+      </div>
+      <input id="importFile" type="file" accept=".xlsx,.xls,.csv,text/csv" style="display:none" onchange="importFileData(event)">
+      <button class="btn" onclick="document.getElementById('importFile').click()"><i class="ph ph-upload-simple"></i>Importar</button>
+      <button class="btn" onclick="exportCsv()"><i class="ph ph-download-simple"></i>Exportar</button>
+      <button class="btn danger" onclick="deleteAllFlows()"><i class="ph ph-trash"></i>Borrar todo</button>
+    </div>
+  </div>
+  <section class="metrics">
+    <div class="metric"><div class="metric-lbl">Saldo disponible</div><div id="mBalance" class="metric-val b">$0</div><div class="metric-sub">Caja + bancos</div></div>
+    <div class="metric"><div class="metric-lbl">Ingresos mes</div><div id="mIncome" class="metric-val g">$0</div><div class="metric-sub">Recibidos y pendientes</div></div>
+    <div class="metric"><div class="metric-lbl">Egresos mes</div><div id="mExpense" class="metric-val r">$0</div><div class="metric-sub">Pagados y programados</div></div>
+    <div class="metric"><div class="metric-lbl">Flujo neto</div><div id="mNet" class="metric-val">$0</div><div class="metric-sub">Periodo actual</div></div>
+    <div class="metric"><div class="metric-lbl">Saldo proyectado</div><div id="mProjected" class="metric-val y">$0</div><div class="metric-sub">Próximos 30 días</div></div>
+  </section>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sec">Resumen operativo</div>
+    <div class="side-card">
+      <div class="side-row"><span>Cuentas por cobrar</span><strong id="sReceivable">$0</strong></div>
+      <div class="side-row"><span>Cuentas por pagar</span><strong id="sPayable">$0</strong></div>
+      <div class="side-row"><span>Saldo minimo</span><strong id="sMin">$8.000.000</strong></div>
+    </div>
+    <div class="sec">Alertas</div>
+    <div id="alerts"></div>
+  </aside>
+
+  <main class="main">
+    <nav class="tabs">
+      <button class="tab active" onclick="showView('dashboard',this)">Dashboard</button>
+      <button class="tab" onclick="showView('flujos',this)">Flujos</button>
+      <button class="tab" onclick="showView('movimientos',this)">Movimientos</button>
+      <button class="tab" onclick="showView('proyeccion',this)">Proyección</button>
+      <button class="tab" onclick="showView('reportes',this)">Reportes</button>
+    </nav>
+
+    <section id="dashboard" class="view">
+      <div class="grid">
+        <div class="panel">
+          <div class="panel-h"><h3>Flujo proyectado por semana</h3><span class="pill appr">30 dias</span></div>
+          <div class="panel-b"><div id="chart" class="chart"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h3>Reporte por tipo de gasto</h3><select id="expenseMonthFilter" onchange="renderCategories()"></select></div>
+          <div class="panel-b" id="categorySummary"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="flujos" class="view hidden">
+      <div class="toolbar">
+        <button class="btn primary" onclick="openModal('ingreso')"><i class="ph ph-plus-circle"></i>Crear flujo por ingreso</button>
+        <button class="btn danger" onclick="openModal('egreso')"><i class="ph ph-minus-circle"></i>Cargar egreso a flujo</button>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><h3>Flujos numerados</h3><span class="pill appr">Ingreso menos egresos</span></div>
+        <div class="panel-b" id="flowSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px"></div>
+      </div>
+    </section>
+
+    <section id="movimientos" class="view hidden">
+      <div class="toolbar">
+        <select id="typeFilter" onchange="render()"><option value="">Todos</option><option value="ingreso">Ingresos</option><option value="egreso">Egresos</option></select>
+        <select id="statusFilter" onchange="render()"><option value="">Todos los estados</option><option>Pendiente</option><option>Recibido</option><option>Pagado</option><option>Vencido</option><option>Por aprobar</option></select>
+        <select id="flowFilter" onchange="render()"><option value="">Todos los flujos</option></select>
+        <input id="search" placeholder="Buscar concepto, tercero..." oninput="render()">
+        <div class="spacer"></div>
+        <button class="btn primary" onclick="openModal()"><i class="ph ph-plus"></i>Nuevo movimiento</button>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Flujo No.</th><th>Tipo</th><th>Categoria</th><th>Concepto</th><th>Tercero</th><th>Estado</th><th class="num">Valor</th><th>Perfil</th><th></th></tr></thead><tbody id="movementRows"></tbody></table></div>
+    </section>
+
+    <section id="proyeccion" class="view hidden">
+      <div class="toolbar"><button class="btn primary" onclick="openModal('ingreso')"><i class="ph ph-arrow-down"></i>Ingreso esperado</button><button class="btn danger" onclick="openModal('egreso')"><i class="ph ph-arrow-up"></i>Pago programado</button></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Flujo No.</th><th>Movimiento</th><th>Tercero</th><th>Estado</th><th class="num">Ingreso</th><th class="num">Egreso</th><th class="num">Saldo proyectado</th></tr></thead><tbody id="projectionRows"></tbody></table></div>
+    </section>
+
+    <section id="reportes" class="view hidden">
+      <div class="grid">
+        <div class="panel"><div class="panel-h"><h3>Indicadores</h3></div><div class="panel-b" id="reportIndicators"></div></div>
+        <div class="panel"><div class="panel-h"><h3>Recomendaciones</h3></div><div class="panel-b" id="recommendations"></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="flowDetailModal" class="modal">
+  <div class="dialog flow-detail-dialog">
+    <div class="dialog-h"><h2 id="flowDetailTitle">Detalle del flujo</h2><button type="button" class="btn icon" onclick="closeFlowDetail()"><i class="ph ph-x"></i></button></div>
+    <div class="dialog-b">
+      <div id="flowDetailSummary"></div>
+      <div class="expense-list-head">
+        <h3>Egresos cargados al flujo</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+          <button id="printFlowBtn" class="btn" type="button"><i class="ph ph-printer"></i>Imprimir</button>
+          <button id="addExpenseToFlowBtn" class="btn danger" type="button"><i class="ph ph-plus"></i>Cargar egreso</button>
+        </div>
+      </div>
+      <div class="tbl-wrap flow-expense-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Tipo de gasto</th><th>Estado</th><th class="num">Valor</th><th>Observacion</th><th></th></tr></thead><tbody id="flowExpenseRows"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<div id="expenseTypeModal" class="modal">
+  <div class="dialog flow-detail-dialog">
+    <div class="dialog-h"><h2 id="expenseTypeTitle">Detalle por tipo de gasto</h2><button type="button" class="btn icon" onclick="closeExpenseTypeDetail()"><i class="ph ph-x"></i></button></div>
+    <div class="dialog-b">
+      <div id="expenseTypeSummary"></div>
+      <div class="tbl-wrap flow-expense-wrap"><table><thead><tr><th>Fecha</th><th>Flujo No.</th><th>Concepto</th><th>Estado</th><th class="num">Valor</th><th>Observacion</th></tr></thead><tbody id="expenseTypeRows"></tbody></table></div>
+    </div>
+  </div>
+</div>
+
+<div id="modal" class="modal">
+  <form class="dialog" onsubmit="saveMovement(event)">
+    <div class="dialog-h"><h2 id="modalTitle">Nuevo movimiento</h2><button type="button" class="btn icon" onclick="closeModal()"><i class="ph ph-x"></i></button></div>
+    <div class="dialog-b">
+      <input type="hidden" id="editId">
+      <div class="form-grid">
+        <div class="field"><label>Tipo</label><select id="fType" required onchange="updateCategories()"><option value="ingreso">Ingreso</option><option value="egreso">Egreso</option></select></div>
+        <div class="field"><label>Fecha</label><input type="date" id="fDate" required></div>
+        <div class="field"><label>Flujo No.</label><select id="fFlowNo" required></select></div>
+        <div class="field"><label>Categoria</label><select id="fCategory" required></select></div>
+        <div class="field"><label>Estado</label><select id="fStatus" required></select></div>
+        <div class="field full"><label>Concepto</label><input id="fConcept" required placeholder="Ej. Recaudo cliente / pago proveedor"></div>
+        <div class="field"><label>Tercero</label><input id="fParty" placeholder="Cliente, proveedor o responsable"></div>
+        <div class="field"><label>Valor</label><input type="number" id="fAmount" min="0" step="1000" required></div>
+        <div class="field full"><label>Observaciones</label><input id="fNotes" placeholder="Soporte, banco, factura o comentario"></div>
+      </div>
+    </div>
+    <div class="dialog-f"><button type="button" class="btn" onclick="closeModal()">Cancelar</button><button class="btn primary" type="submit">Guardar</button></div>
+  </form>
+</div>
+
+<script>
+const money=n=>new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(n||0);
+const today=new Date().toISOString().slice(0,10);
+const minBalance=8000000;
+const incomeCats=['Ventas','Recaudo de cartera','Prestamos recibidos','Aportes','Otros ingresos'];
+const expenseCats=['Nomina','Proveedores','Arriendos','Servicios','Impuestos','Creditos','Gastos administrativos','Compras','Otros egresos'];
+let role='gerencia';
+let movements=JSON.parse(localStorage.getItem('cashflow.movements')||'null')||[
+ {id:1,flowNo:'FC-0001',date:today,type:'ingreso',category:'Recaudo de cartera',concept:'Recaudo factura FV-1048',party:'Cliente institucional',status:'Recibido',amount:18500000,profile:'Auxiliar contable',notes:'Banco principal'},
+ {id:2,flowNo:'FC-0001',date:today,type:'egreso',category:'Proveedores',concept:'Pago materia prima',party:'Proveedor nacional',status:'Por aprobar',amount:9400000,profile:'Auxiliar contable',notes:'Vence esta semana'},
+ {id:3,flowNo:'FC-0002',date:addDays(8),type:'ingreso',category:'Ventas',concept:'Ingreso esperado pedido 381',party:'Cliente comercial',status:'Pendiente',amount:31000000,profile:'Auxiliar contable',notes:''},
+ {id:4,flowNo:'FC-0002',date:addDays(14),type:'egreso',category:'Impuestos',concept:'Retenciones e ICA',party:'DIAN / Municipio',status:'Pendiente',amount:7200000,profile:'Auxiliar contable',notes:''}
+];
+movements=normalizeMovements(movements);
+function addDays(d){const x=new Date();x.setDate(x.getDate()+d);return x.toISOString().slice(0,10)}
+function persist(){localStorage.setItem('cashflow.movements',JSON.stringify(movements))}
+function signed(m){return m.type==='ingreso'?m.amount:-m.amount}
+function isDone(m){return ['Recibido','Pagado'].includes(m.status)}
+function normalizeMovements(list){
+ let seq=1, current='FC-0001';
+ return list.map(m=>{
+  if(m.flowNo)return m;
+  if(m.type==='ingreso'){current=`FC-${String(seq++).padStart(4,'0')}`;return{...m,flowNo:current}}
+  return{...m,flowNo:current}
+ });
+}
+function nextFlowNo(){
+ const nums=movements.map(m=>Number(String(m.flowNo||'').replace(/\D/g,''))).filter(Boolean);
+ return `FC-${String((Math.max(0,...nums)+1)).padStart(4,'0')}`;
+}
+function flowList(){
+ const incomes=movements.filter(m=>m.type==='ingreso').sort((a,b)=>a.flowNo.localeCompare(b.flowNo));
+ return incomes.map(inc=>{
+  const expenses=movements.filter(m=>m.type==='egreso'&&m.flowNo===inc.flowNo);
+  const spent=expenses.reduce((s,m)=>s+m.amount,0);
+  return{flowNo:inc.flowNo,income:inc,expenses,spent,balance:inc.amount-spent};
+ });
+}
+function flowBalance(flowNo, ignoreId){
+ const income=movements.filter(m=>m.type==='ingreso'&&m.flowNo===flowNo&&m.id!==ignoreId).reduce((s,m)=>s+m.amount,0);
+ const expense=movements.filter(m=>m.type==='egreso'&&m.flowNo===flowNo&&m.id!==ignoreId).reduce((s,m)=>s+m.amount,0);
+ return income-expense;
+}
+function flowSpent(flowNo, ignoreId){
+ return movements.filter(m=>m.type==='egreso'&&m.flowNo===flowNo&&m.id!==ignoreId).reduce((s,m)=>s+m.amount,0);
+}
+function setRole(r){role=r;document.getElementById('roleManager').classList.toggle('active',r==='gerencia');document.getElementById('roleAssistant').classList.toggle('active',r==='auxiliar');document.querySelectorAll('.manager-only').forEach(e=>e.classList.toggle('hidden',r!=='gerencia'));render()}
+function showView(id,btn){document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');render()}
+function totals(){
+ const month=today.slice(0,7), current=movements.filter(m=>m.date.startsWith(month));
+ const balance=15000000+movements.filter(isDone).reduce((s,m)=>s+signed(m),0);
+ const income=current.filter(m=>m.type==='ingreso').reduce((s,m)=>s+m.amount,0);
+ const expense=current.filter(m=>m.type==='egreso').reduce((s,m)=>s+m.amount,0);
+ const in30=movements.filter(m=>m.date<=addDays(30)&&!isDone(m)).reduce((s,m)=>s+signed(m),balance);
+ return{balance,income,expense,net:income-expense,projected:in30,receivable:movements.filter(m=>m.type==='ingreso'&&!isDone(m)).reduce((s,m)=>s+m.amount,0),payable:movements.filter(m=>m.type==='egreso'&&!isDone(m)).reduce((s,m)=>s+m.amount,0)}
+}
+function render(){
+ const t=totals();
+ mBalance.textContent=money(t.balance);mIncome.textContent=money(t.income);mExpense.textContent=money(t.expense);mNet.textContent=money(t.net);mNet.className='metric-val '+(t.net>=0?'g':'r');mProjected.textContent=money(t.projected);mProjected.className='metric-val '+(t.projected>=minBalance?'y':'r');
+ sReceivable.textContent=money(t.receivable);sPayable.textContent=money(t.payable);sMin.textContent=money(minBalance);
+ renderAlerts(t);renderFlowFilter();renderExpenseMonthFilter();renderFlows();renderRows();renderProjection(t.balance);renderChart(t.balance);renderCategories();renderReports(t);
+}
+function renderAlerts(t){
+ const a=[]; if(t.projected<0)a.push(['danger','El flujo proyectado queda negativo en los proximos 30 dias.']); else if(t.projected<minBalance)a.push(['danger','El saldo proyectado queda por debajo del minimo definido.']);
+ movements.filter(m=>!isDone(m)&&m.date<today).forEach(m=>a.push(['danger',`${m.concept} esta vencido por ${money(m.amount)}.`]));
+ movements.filter(m=>m.status==='Por aprobar').forEach(m=>a.push(['warn',`${m.concept} requiere aprobacion gerencial.`]));
+ alerts.innerHTML=a.length?a.map(x=>`<div class="alert ${x[0]==='danger'?'danger':''}">${x[1]}</div>`).join(''):'<div class="alert">Sin alertas criticas registradas.</div>';
+}
+function renderRows(){
+ const tf=typeFilter?.value||'', sf=statusFilter?.value||'', ff=flowFilter?.value||'', q=(search?.value||'').toLowerCase();
+ const list=movements.filter(m=>(!tf||m.type===tf)&&(!sf||m.status===sf)&&(!ff||m.flowNo===ff)&&(`${m.flowNo} ${m.concept} ${m.party} ${m.category}`.toLowerCase().includes(q))).sort((a,b)=>a.flowNo.localeCompare(b.flowNo)||a.date.localeCompare(b.date));
+ movementRows.innerHTML=list.length?list.map(m=>`<tr><td>${m.date}</td><td><button class="flow-no" onclick="showFlowExpenses('${m.flowNo}')">${m.flowNo}</button></td><td><span class="pill ${m.type==='ingreso'?'in':'out'}">${m.type}</span></td><td>${m.category}</td><td>${m.concept}</td><td>${m.party||'-'}</td><td>${pill(m.status)}</td><td class="num">${money(m.amount)}</td><td>${m.profile}</td><td>${rowActions(m)}</td></tr>`).join(''):'<tr><td colspan="10" class="empty">No hay movimientos con estos filtros.</td></tr>';
+}
+function renderFlowFilter(){
+ if(!window.flowFilter)return;
+ const selected=flowFilter.value;
+ flowFilter.innerHTML='<option value="">Todos los flujos</option>'+flowList().map(f=>`<option value="${f.flowNo}">${f.flowNo} · saldo ${money(f.balance)}</option>`).join('');
+ flowFilter.value=selected;
+}
+function monthName(value){
+ const [year,month]=value.split('-');
+ const date=new Date(Number(year),Number(month)-1,1);
+ return date.toLocaleDateString('es-CO',{month:'long',year:'numeric'});
+}
+function renderExpenseMonthFilter(){
+ if(!window.expenseMonthFilter)return;
+ const selected=expenseMonthFilter.value||today.slice(0,7);
+ const months=[...new Set(movements.filter(m=>m.type==='egreso'&&m.date).map(m=>m.date.slice(0,7)))].sort().reverse();
+ if(!months.includes(today.slice(0,7)))months.unshift(today.slice(0,7));
+ expenseMonthFilter.innerHTML=months.map(m=>`<option value="${m}">${monthName(m)}</option>`).join('');
+ expenseMonthFilter.value=months.includes(selected)?selected:months[0];
+}
+function renderFlows(){
+ const flows=flowList();
+ flowSummary.innerHTML=flows.length?flows.map(f=>{
+  const pct=f.income.amount?Math.min(100,Math.max(0,(f.balance/f.income.amount)*100)):0;
+  const state=f.balance===0?'Cerrado':f.balance<0?'Sobregirado':'Abierto';
+  return `<article class="flow-card">
+    <div><button class="flow-no" onclick="showFlowExpenses('${f.flowNo}')">${f.flowNo}</button><div class="flow-title">${f.income.concept}</div><div class="flow-meta">${f.income.date} · ${f.expenses.length} egresos cargados · ${state}</div></div>
+    <div class="flow-balance ${f.balance<0?'r':'g'}">${money(f.balance)}<div class="flow-meta">de ${money(f.income.amount)}</div></div>
+    <div class="progress"><span style="width:${pct}%"></span></div>
+  </article>`;
+ }).join(''):'<div class="empty">Crea un ingreso para abrir el primer flujo de caja.</div>';
+}
+function pill(s){const c=s==='Recibido'||s==='Pagado'?'done':s==='Por aprobar'?'appr':'pend';return `<span class="pill ${c}">${s}</span>`}
+function esc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function escAttr(value){return String(value??'').replace(/[\\'"]/g,c=>c==='"'?'&quot;':'&#39;')}
+function selectedExpenseMonth(){return expenseMonthFilter?.value||today.slice(0,7)}
+function showExpenseTypeDetail(category){
+ const month=selectedExpenseMonth();
+ const list=movements.filter(m=>m.type==='egreso'&&m.category===category&&m.date.startsWith(month)).sort((a,b)=>a.date.localeCompare(b.date));
+ const total=list.reduce((s,m)=>s+m.amount,0);
+ expenseTypeTitle.textContent=`${category} · ${monthName(month)}`;
+ expenseTypeSummary.innerHTML=`<div class="flow-hero">
+  <div class="flow-hero-card flow-hero-main"><div class="flow-hero-label">Tipo de gasto</div><div class="flow-hero-value">${esc(category)}</div><div class="flow-hero-sub">${list.length} egresos asociados</div></div>
+  <div class="flow-hero-card"><div class="flow-hero-label">Mes</div><div class="flow-hero-value">${esc(monthName(month))}</div></div>
+  <div class="flow-hero-card"><div class="flow-hero-label">Total</div><div class="flow-hero-value r">${money(total)}</div></div>
+  <div class="flow-hero-card"><div class="flow-hero-label">Promedio</div><div class="flow-hero-value">${money(list.length?total/list.length:0)}</div></div>
+ </div>`;
+ expenseTypeRows.innerHTML=list.length?list.map(m=>`<tr><td>${esc(m.date)}</td><td><button class="flow-no" onclick="showFlowExpenses('${m.flowNo}')">${esc(m.flowNo)}</button></td><td>${esc(m.concept)}</td><td>${pill(m.status)}</td><td class="num">${money(m.amount)}</td><td>${esc(m.notes||'')}</td></tr>`).join(''):'<tr><td colspan="6" class="empty">No hay egresos para este tipo de gasto.</td></tr>';
+ expenseTypeModal.classList.add('show');
+}
+function closeExpenseTypeDetail(){expenseTypeModal.classList.remove('show')}
+function showFlowExpenses(flowNo){
+ const flow=flowList().find(f=>f.flowNo===flowNo);
+ if(!flow)return;
+ const pct=flow.income.amount?Math.min(100,Math.max(0,(flow.spent/flow.income.amount)*100)):0;
+ const statusClass=flow.balance<0?'over':flow.balance===0?'closed':'open';
+ const statusText=flow.balance<0?'Sobregirado':flow.balance===0?'Cerrado':'Abierto';
+ flowDetailTitle.textContent=`Detalle del flujo ${flowNo}`;
+ flowDetailSummary.innerHTML=`<div class="flow-hero">
+  <div class="flow-hero-card flow-hero-main"><div class="flow-hero-label">Ingreso origen</div><div class="flow-hero-value">${esc(flow.income.concept)}</div><div class="flow-hero-sub">${esc(flow.income.date)} · ${esc(flow.income.category)} · ${pill(flow.income.status)}</div><div class="flow-detail-progress"><span style="width:${pct}%"></span></div></div>
+  <div class="flow-hero-card"><div class="flow-hero-label">Valor ingreso</div><div class="flow-hero-value g">${money(flow.income.amount)}</div><div class="flow-hero-sub">${flow.expenses.length} egresos</div></div>
+  <div class="flow-hero-card"><div class="flow-hero-label">Total gastado</div><div class="flow-hero-value r">${money(flow.spent)}</div><div class="flow-hero-sub">${pct.toFixed(1)}% consumido</div></div>
+  <div class="flow-hero-card"><div class="flow-hero-label">Saldo</div><div class="flow-hero-value ${flow.balance<0?'r':'g'}">${money(flow.balance)}</div><div class="flow-hero-sub"><span class="flow-status ${statusClass}">${statusText}</span></div></div>
+ </div>`;
+ addExpenseToFlowBtn.onclick=()=>openExpenseForFlow(flowNo);
+ printFlowBtn.onclick=()=>printFlowDetail(flowNo);
+ flowExpenseRows.innerHTML=flow.expenses.length?flow.expenses.map(m=>`<tr><td>${esc(m.date)}</td><td>${esc(m.concept)}</td><td>${esc(m.category)}</td><td>${pill(m.status)}</td><td class="num">${money(m.amount)}</td><td>${esc(m.notes||'')}</td><td><div style="display:flex;gap:6px;justify-content:flex-end"><button class="btn icon" title="Editar" onclick="editMovement(${m.id});closeFlowDetail()"><i class="ph ph-pencil-simple"></i></button><button class="btn icon" title="Borrar" onclick="deleteMovement(${m.id});refreshFlowDetail('${flowNo}')"><i class="ph ph-trash"></i></button></div></td></tr>`).join(''):'<tr><td colspan="7" class="empty">Este flujo aun no tiene egresos cargados.</td></tr>';
+ flowDetailModal.classList.add('show');
+}
+function closeFlowDetail(){flowDetailModal.classList.remove('show')}
+function refreshFlowDetail(flowNo){flowList().some(f=>f.flowNo===flowNo)?showFlowExpenses(flowNo):closeFlowDetail()}
+function printFlowDetail(flowNo){
+ const flow=flowList().find(f=>f.flowNo===flowNo);
+ if(!flow)return;
+ const status=flow.balance<0?'Sobregirado':flow.balance===0?'Cerrado':'Abierto';
+ const rows=flow.expenses.map(m=>`<tr><td>${esc(m.date)}</td><td>${esc(m.concept)}</td><td>${esc(m.category)}</td><td>${esc(m.status)}</td><td class="num">${money(m.amount)}</td><td>${esc(m.notes||'')}</td></tr>`).join('')||'<tr><td colspan="6">Sin egresos cargados.</td></tr>';
+ const win=window.open('','_blank','width=980,height=720');
+ win.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Detalle ${esc(flowNo)}</title><style>
+  body{font-family:Arial,sans-serif;color:#111827;margin:28px;font-size:12px}
+  h1{font-size:20px;margin:0 0 4px} .muted{color:#64748b;margin-bottom:18px}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}
+  .card{border:1px solid #d9e2ec;border-radius:6px;padding:10px}
+  .label{font-size:10px;text-transform:uppercase;color:#64748b;font-weight:700;margin-bottom:5px}
+  .value{font-size:14px;font-weight:700}.green{color:#047857}.red{color:#b91c1c}
+  table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border-bottom:1px solid #e5e7eb;padding:8px;text-align:left;vertical-align:top}
+  th{font-size:10px;text-transform:uppercase;color:#64748b;background:#f8fafc}.num{text-align:right;white-space:nowrap}
+  @media print{body{margin:16mm}.no-print{display:none}}
+ </style></head><body>
+  <button class="no-print" onclick="window.print()" style="float:right;padding:8px 12px">Imprimir</button>
+  <h1>Detalle del flujo ${esc(flowNo)}</h1>
+  <div class="muted">${new Date().toLocaleDateString('es-CO')} · Estado: ${status}</div>
+  <div class="summary">
+    <div class="card"><div class="label">Ingreso origen</div><div>${esc(flow.income.concept)}</div></div>
+    <div class="card"><div class="label">Valor ingreso</div><div class="value green">${money(flow.income.amount)}</div></div>
+    <div class="card"><div class="label">Total egresos</div><div class="value red">${money(flow.spent)}</div></div>
+    <div class="card"><div class="label">Saldo restante</div><div class="value ${flow.balance<0?'red':'green'}">${money(flow.balance)}</div></div>
+  </div>
+  <table><thead><tr><th>Fecha</th><th>Concepto</th><th>Tipo de gasto</th><th>Estado</th><th class="num">Valor</th><th>Observacion</th></tr></thead><tbody>${rows}</tbody></table>
+ </body></html>`);
+ win.document.close();
+ win.focus();
+}
+function openExpenseForFlow(flowNo){
+ closeFlowDetail();
+ openModal('egreso');
+ fFlowNo.value=flowNo;
+}
+function rowActions(m){const approve=role==='gerencia'&&m.status==='Por aprobar'?`<button class="btn icon" title="Aprobar" onclick="approve(${m.id})"><i class="ph ph-check"></i></button>`:'';const edit=role==='auxiliar'||role==='gerencia'?`<button class="btn icon" title="Editar" onclick="editMovement(${m.id})"><i class="ph ph-pencil-simple"></i></button>`:'';const del=role==='auxiliar'||role==='gerencia'?`<button class="btn icon" title="Borrar" onclick="deleteMovement(${m.id})"><i class="ph ph-trash"></i></button>`:'';return `<div style="display:flex;gap:6px;justify-content:flex-end">${approve}${edit}${del}</div>`}
+function renderProjection(balance){
+ let running=balance; const list=movements.filter(m=>!isDone(m)).sort((a,b)=>a.date.localeCompare(b.date));
+ projectionRows.innerHTML=list.map(m=>{running+=signed(m);return `<tr><td>${m.date}</td><td><button class="flow-no" onclick="showFlowExpenses('${m.flowNo}')">${m.flowNo}</button></td><td>${m.concept}</td><td>${m.party||'-'}</td><td>${pill(m.status)}</td><td class="num">${m.type==='ingreso'?money(m.amount):'-'}</td><td class="num">${m.type==='egreso'?money(m.amount):'-'}</td><td class="num">${money(running)}</td></tr>`}).join('')||'<tr><td colspan="8" class="empty">No hay movimientos pendientes para proyectar.</td></tr>';
+}
+function renderChart(balance){
+ const weeks=[0,1,2,3].map(i=>({label:`S${i+1}`,value:balance}));
+ movements.filter(m=>!isDone(m)&&m.date<=addDays(30)).forEach(m=>{const ix=Math.min(3,Math.floor((new Date(m.date)-new Date(today))/(7*864e5)));if(ix>=0){for(let i=ix;i<4;i++)weeks[i].value+=signed(m)}});
+ const max=Math.max(...weeks.map(w=>Math.abs(w.value)),1); chart.innerHTML=weeks.map(w=>`<div class="bar ${w.value<0?'neg':''}" style="height:${Math.max(8,Math.abs(w.value)/max*190)}px" title="${money(w.value)}"><span>${w.label}</span></div>`).join('');
+}
+function renderCategories(){
+ const month=expenseMonthFilter?.value||today.slice(0,7), data={};
+ movements.filter(m=>m.type==='egreso'&&m.date.startsWith(month)).forEach(m=>{
+  if(!data[m.category])data[m.category]={total:0,count:0};
+  data[m.category].total+=m.amount;
+  data[m.category].count+=1;
+ });
+ const total=Object.values(data).reduce((s,x)=>s+x.total,0);
+ categorySummary.innerHTML=Object.entries(data).sort((a,b)=>b[1].total-a[1].total).map(([name,item])=>{
+  const pct=total?item.total/total*100:0;
+  return `<button class="expense-report-row" onclick="showExpenseTypeDetail('${escAttr(name)}')"><div><div class="expense-report-name">${esc(name)}</div><div class="expense-report-meta">${item.count} movimientos · ${pct.toFixed(1)}% del gasto</div></div><div class="expense-report-value">${money(item.total)}</div><div class="expense-report-bar"><span style="width:${pct}%"></span></div></button>`;
+ }).join('')||'<div class="empty">Sin egresos registrados en el mes actual.</div>';
+}
+function renderReports(t){
+ reportIndicators.innerHTML=`<div class="side-row"><span>Liquidez estimada</span><strong>${money(t.projected)}</strong></div><div class="side-row"><span>Compromisos pendientes</span><strong>${money(t.payable)}</strong></div><div class="side-row"><span>Recaudo pendiente</span><strong>${money(t.receivable)}</strong></div>`;
+ const rec=[]; if(t.projected<minBalance)rec.push('Priorizar recaudos y revisar pagos no criticos antes de autorizarlos.'); if(t.payable>t.receivable)rec.push('Las cuentas por pagar superan la cartera esperada; conviene validar fuentes de liquidez.'); if(!rec.length)rec.push('El flujo se mantiene controlado frente al saldo minimo definido.');
+ recommendations.innerHTML=rec.map(x=>`<div class="alert">${x}</div>`).join('');
+}
+function updateCategories(){
+ const type=fType.value; fCategory.innerHTML=(type==='ingreso'?incomeCats:expenseCats).map(c=>`<option>${c}</option>`).join('');
+ fStatus.innerHTML=(type==='ingreso'?['Pendiente','Recibido','Vencido']:['Pendiente','Por aprobar','Pagado','Vencido']).map(c=>`<option>${c}</option>`).join('');
+ if(type==='ingreso'){
+  const current=editId.value?movements.find(m=>m.id===Number(editId.value))?.flowNo:nextFlowNo();
+  fFlowNo.innerHTML=`<option value="${current}">${current} · nuevo flujo</option>`;
+ }else{
+  const flows=flowList().filter(f=>f.balance>0||f.flowNo===fFlowNo.value);
+  fFlowNo.innerHTML=flows.map(f=>`<option value="${f.flowNo}">${f.flowNo} · disponible ${money(f.balance)}</option>`).join('');
+ }
+}
+function openModal(type){editId.value='';modalTitle.textContent='Nuevo movimiento';fType.value=type||'ingreso';fDate.value=today;fConcept.value='';fParty.value='';fAmount.value='';fNotes.value='';updateCategories();modal.classList.add('show')}
+function closeModal(){modal.classList.remove('show')}
+function saveMovement(e){
+ e.preventDefault(); const id=editId.value?Number(editId.value):Date.now();
+ if(fType.value==='egreso'&&!fFlowNo.value){alert('Primero debe existir un flujo con saldo para cargar el egreso.');return}
+ const amount=Number(fAmount.value);
+ if(fType.value==='egreso'&&amount>flowBalance(fFlowNo.value,id)){alert(`El egreso supera el saldo disponible del flujo ${fFlowNo.value}.`);return}
+ if(fType.value==='ingreso'&&amount<flowSpent(fFlowNo.value,id)){alert(`El ingreso no puede ser menor que los egresos ya cargados al flujo ${fFlowNo.value}.`);return}
+ const item={id,flowNo:fFlowNo.value,date:fDate.value,type:fType.value,category:fCategory.value,concept:fConcept.value,party:fParty.value,status:fStatus.value,amount,profile:role==='gerencia'?'Gerencia':'Auxiliar contable',notes:fNotes.value};
+ movements=editId.value?movements.map(m=>m.id===id?item:m):[...movements,item]; persist(); closeModal(); render();
+}
+function editMovement(id){const m=movements.find(x=>x.id===id); if(!m)return; editId.value=m.id;modalTitle.textContent='Editar movimiento';fType.value=m.type;fFlowNo.innerHTML=`<option value="${m.flowNo}">${m.flowNo}</option>`;updateCategories();fFlowNo.value=m.flowNo;fDate.value=m.date;fCategory.value=m.category;fStatus.value=m.status;fConcept.value=m.concept;fParty.value=m.party;fAmount.value=m.amount;fNotes.value=m.notes;modal.classList.add('show')}
+function approve(id){movements=movements.map(m=>m.id===id?{...m,status:'Pagado',profile:'Gerencia'}:m);persist();render()}
+function approveAll(){movements=movements.map(m=>m.status==='Por aprobar'?{...m,status:'Pagado',profile:'Gerencia'}:m);persist();render()}
+function deleteMovement(id){
+ const item=movements.find(m=>m.id===id);
+ if(!item)return;
+ if(item.type==='ingreso'&&movements.some(m=>m.type==='egreso'&&m.flowNo===item.flowNo)){
+  alert(`No se puede borrar el ingreso ${item.flowNo} porque tiene egresos cargados. Borra primero esos egresos.`);
+  return;
+ }
+ if(!confirm(`Borrar ${item.type} del flujo ${item.flowNo}?`))return;
+ movements=movements.filter(m=>m.id!==id);
+ persist();
+ render();
+}
+function deleteAllFlows(){
+ if(!movements.length){alert('No hay flujos para borrar.');return}
+ if(!confirm('Esto borrara todos los flujos de caja, ingresos y egresos cargados.'))return;
+ if(!confirm('Confirmacion final: esta accion no se puede deshacer. Deseas borrar todo?'))return;
+ movements=[];
+ persist();
+ closeFlowDetail();
+ render();
+}
+function parseCsvLine(line){
+ const cells=[];let current='',quoted=false;
+ for(let i=0;i<line.length;i++){
+  const ch=line[i], next=line[i+1];
+  if(ch==='"'&&quoted&&next==='"'){current+='"';i++;continue}
+  if(ch==='"'){quoted=!quoted;continue}
+  if((ch===';'||ch===',')&&!quoted){cells.push(current.trim());current='';continue}
+  current+=ch;
+ }
+ cells.push(current.trim());
+ return cells;
+}
+function normalizeHeader(text){
+ return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/g,'');
+}
+function importFileData(event){
+ const file=event.target.files[0];
+ if(!file)return;
+ if(/\.(xlsx|xls)$/i.test(file.name)){importExcel(file,event);return}
+ importCsv(file,event);
+}
+function excelDate(value){
+ if(!value)return today;
+ if(value instanceof Date)return value.toISOString().slice(0,10);
+ if(typeof value==='number'){
+  const date=new Date(Math.round((value-25569)*86400*1000));
+  return date.toISOString().slice(0,10);
+ }
+ const text=String(value).trim();
+ if(/^\d{4}-\d{2}-\d{2}/.test(text))return text.slice(0,10);
+ const parts=text.split(/[\/\-]/);
+ if(parts.length===3){
+  const [d,m,y]=parts;
+  if(y.length===4)return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+ }
+ return text||today;
+}
+function parseAmount(value){
+ if(typeof value==='number')return value;
+ return Number(String(value||'0').replace(/\./g,'').replace(/,/g,'.').replace(/[^\d.-]/g,''));
+}
+function importRows(rows,event){
+ const imported=[], incomes=new Set();
+ rows.forEach((row)=>{
+  const flowNo=String(row.flujo||'').trim();
+  const incomeValue=parseAmount(row.valorIngreso);
+  const expenseValue=parseAmount(row.valorGasto);
+  if(!flowNo)return;
+  if(incomeValue>0&&!incomes.has(flowNo)&&!movements.some(m=>m.type==='ingreso'&&m.flowNo===flowNo)){
+   imported.push({
+    id:Date.now()+imported.length,
+    flowNo,
+    date:excelDate(row.fechaIngreso),
+    type:'ingreso',
+    category:'Recaudo de cartera',
+    concept:`Ingreso flujo ${flowNo}`,
+    party:'',
+    status:'Recibido',
+    amount:incomeValue,
+    profile:role==='gerencia'?'Gerencia':'Auxiliar contable',
+    notes:row.observacion||''
+   });
+   incomes.add(flowNo);
+  }
+  if(expenseValue>0){
+   imported.push({
+    id:Date.now()+imported.length,
+    flowNo,
+    date:excelDate(row.fechaGasto||row.fechaIngreso),
+    type:'egreso',
+    category:row.tipoGasto||'Otros egresos',
+    concept:row.descripcionGasto||`Gasto flujo ${flowNo}`,
+    party:'',
+    status:'Pagado',
+    amount:expenseValue,
+    profile:role==='gerencia'?'Gerencia':'Auxiliar contable',
+    notes:row.observacion||''
+   });
+  }
+ });
+ if(!imported.length){alert('No se encontraron registros validos para importar.');return}
+ const overdrawn=[...new Set(imported.map(m=>m.flowNo))].filter(flowNo=>{
+  const income=[...movements,...imported].filter(m=>m.type==='ingreso'&&m.flowNo===flowNo).reduce((s,m)=>s+m.amount,0);
+  const expense=[...movements,...imported].filter(m=>m.type==='egreso'&&m.flowNo===flowNo).reduce((s,m)=>s+m.amount,0);
+  return expense>income;
+ });
+ if(overdrawn.length&&!confirm(`Algunos flujos quedaran con gastos superiores al ingreso: ${overdrawn.join(', ')}. Importar de todas formas?`))return;
+ if(!confirm(`Importar ${imported.length} movimientos desde el archivo? Se agregaran a los datos actuales.`))return;
+ movements=normalizeMovements([...movements,...imported]);
+ persist();
+ render();
+ alert(`Se importaron ${imported.length} movimientos.`);
+ event.target.value='';
+}
+function importExcel(file,event){
+ if(!window.XLSX){alert('No se pudo cargar el lector de Excel. Revisa la conexion e intenta de nuevo.');return}
+ const reader=new FileReader();
+ reader.onload=()=>{
+  const workbook=XLSX.read(reader.result,{type:'array',cellDates:true});
+  const sheet=workbook.Sheets[workbook.SheetNames[0]];
+  const raw=XLSX.utils.sheet_to_json(sheet,{defval:''});
+  const rows=raw.map(r=>{
+   const get=(names)=>{for(const n of names){const key=Object.keys(r).find(k=>normalizeHeader(k)===normalizeHeader(n));if(key)return r[key]}return ''};
+   return {
+    flujo:get(['FLUJO']),
+    valorIngreso:get(['VALOR DE INGRESO','VALOR INGRESO']),
+    fechaIngreso:get(['FECHA','FECHA DE INGRESO']),
+    descripcionGasto:get(['DESCRIPCION DEL GASTO','DESCRIPCIÓN DEL GASTO','GASTO']),
+    valorGasto:get(['VALOR DE GASTO','VALOR GASTO']),
+    tipoGasto:get(['TIPO DE GASTO']),
+    fechaGasto:get(['FECHA DE GASTO']),
+    observacion:get(['OBSERVACION','OBSERVACIÓN'])
+   };
+  });
+  importRows(rows,event);
+ };
+ reader.readAsArrayBuffer(file);
+}
+function importCsv(file,event){
+ const reader=new FileReader();
+ reader.onload=()=>{
+  const lines=String(reader.result).split(/\r?\n/).filter(x=>x.trim());
+  if(lines.length<2){alert('El archivo no tiene registros para importar.');return}
+  const headers=parseCsvLine(lines[0]).map(normalizeHeader);
+  const find=(names)=>names.map(normalizeHeader).map(n=>headers.indexOf(n)).find(i=>i>=0);
+  const idx={
+   date:find(['fecha']),
+   flowNo:find(['flujo no','flujo','numero flujo','no flujo']),
+   type:find(['tipo']),
+   category:find(['categoria','categoría']),
+   concept:find(['concepto','descripcion','descripción']),
+   party:find(['tercero','cliente proveedor','cliente/proveedor']),
+   status:find(['estado']),
+   amount:find(['valor','monto','importe']),
+   notes:find(['observaciones','notas'])
+  };
+  if(idx.date==null||idx.flowNo==null||idx.type==null||idx.concept==null||idx.amount==null){
+   alert('El CSV debe incluir como minimo: Fecha, Flujo No., Tipo, Concepto y Valor.');
+   return;
+  }
+  const rows=[];
+  for(const line of lines.slice(1)){
+   const row=parseCsvLine(line);
+   rows.push({
+    flujo:row[idx.flowNo],
+    valorIngreso:String(row[idx.type]||'').toLowerCase().includes('ingreso')?row[idx.amount]:'',
+    fechaIngreso:row[idx.date],
+    descripcionGasto:String(row[idx.type]||'').toLowerCase().includes('egreso')?row[idx.concept]:'',
+    valorGasto:String(row[idx.type]||'').toLowerCase().includes('egreso')?row[idx.amount]:'',
+    tipoGasto:row[idx.category],
+    fechaGasto:row[idx.date],
+    observacion:row[idx.notes]
+   });
+  }
+  importRows(rows,event);
+ };
+ reader.readAsText(file,'utf-8');
+}
+function exportCsv(){const rows=[['Fecha','Flujo No.','Tipo','Categoria','Concepto','Tercero','Estado','Valor','Perfil','Observaciones'],...movements.map(m=>[m.date,m.flowNo,m.type,m.category,m.concept,m.party,m.status,m.amount,m.profile,m.notes])];const csv=rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='flujo_caja.csv';a.click()}
+setRole('gerencia');updateCategories();render();
+</script>
+</body>
+</html>

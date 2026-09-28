@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liquidación de Prestaciones · DIMALCCO SAS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f1f5f9;
+  --s:#fff;
+  --b:#e2e8f0;
+  --bs:#f8fafc;
+  --t:#0f172a;
+  --t2:#475569;
+  --t3:#94a3b8;
+  --ac:#4338ca;
+  --as:#eef2ff;
+  --ac-glow:rgba(67, 56, 202, 0.12);
+  --in:#059669;
+  --ib:#ecfdf5;
+  --ex:#dc2626;
+  --eb:#fef2f2;
+  --w:#d97706;
+  --wb:#fffbeb;
+  --hd:#0f172a;
+  --fn:'Sora',sans-serif;
+  --mo:'DM Mono',monospace;
+  --r:12px;
+  --rsm:8px;
+}
+
+body{font-family:var(--fn);background:var(--bg);color:var(--t);font-size:14px;min-height:100vh;overflow-x:hidden}
+.hdr{background:var(--hd);color:#f8fafc;padding:18px 28px 20px}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.hdr-ey{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#64748b;margin-bottom:3px}
+.hdr-ti{font-size:20px;font-weight:600;letter-spacing:-0.02em}
+
+.layout{display:grid;grid-template-columns:280px 1fr;min-height:calc(100vh - 75px)}
+.sidebar{background:var(--s);border-right:1px solid var(--b);padding:18px 14px;overflow-y:auto;max-height:calc(100vh - 75px)}
+.sec-ti{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+.search-wrap{position:relative;margin-bottom:14px}
+.search-wrap i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:16px}
+.search-wrap input{width:100%;padding:8px 10px 8px 32px;font-family:var(--fn);font-size:12px;border:1px solid var(--b);border-radius:var(--rsm);outline:none;background:var(--bs)}
+.search-wrap input:focus{border-color:var(--ac);background:#fff}
+
+.emp-list{display:flex;flex-direction:column;gap:8px}
+.emp-card{padding:12px;border:1px solid var(--b);border-radius:var(--rsm);cursor:pointer;transition:all .2s ease;background:var(--s)}
+.emp-card:hover{border-color:var(--ac);transform:translateY(-1px);box-shadow:0 4px 12px rgba(67,56,202,0.05)}
+.emp-card.active{border-color:var(--ac);background:var(--as);box-shadow:0 4px 12px var(--ac-glow)}
+.emp-name{font-size:12px;font-weight:600;color:var(--t);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emp-cargo{font-size:10px;color:var(--t2);margin-bottom:6px;display:flex;justify-content:space-between}
+.emp-details{display:flex;justify-content:space-between;font-size:10px;color:var(--t3);font-family:var(--mo)}
+
+.main{padding:24px 28px;overflow-y:auto;max-height:calc(100vh - 75px)}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);text-decoration:none;margin-bottom:18px;transition:color .15s}
+.back-link:hover{color:var(--ac)}
+
+.tab-bar{display:flex;gap:4px;background:var(--s);border:1px solid var(--b);border-radius:var(--rsm);padding:4px;margin-bottom:20px;width:fit-content}
+.tab{padding:8px 20px;border-radius:6px;font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;border:none;background:none;font-family:var(--fn);transition:all .15s}
+.tab.active{background:var(--ac);color:#fff;box-shadow:0 2px 6px rgba(67,56,202,.25)}
+
+.content-pane{display:none;animation:fade .25s ease-out}
+.content-pane.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* Grid structure for standard calculator page */
+.calc-grid{display:grid;grid-template-columns:380px 1fr;gap:24px;align-items:start}
+
+.card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.02);margin-bottom:20px}
+.card-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--t2);margin-bottom:16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bs);padding-bottom:10px}
+.card-title i{font-size:16px;color:var(--ac)}
+
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--t2);margin-bottom:6px}
+input[type=date],input[type=number],select,input[type=text]{width:100%;font-family:var(--fn);font-size:12px;color:var(--t);background:var(--bs);border:1px solid var(--b);border-radius:var(--rsm);padding:8px 11px;outline:none;transition:all 0.15s}
+input:focus,select:focus{border-color:var(--ac);background:#fff;box-shadow:0 0 0 3px var(--ac-glow)}
+input:disabled,select:disabled{background:#f1f5f9;color:var(--t3);cursor:not-allowed}
+
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.concept-checkboxes{display:flex;flex-direction:column;gap:10px;background:var(--bs);padding:14px;border-radius:var(--rsm);border:1px solid var(--b);margin-top:16px}
+.checkbox-item{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:12px;font-weight:500;user-select:none}
+.checkbox-item input{width:16px;height:16px;accent-color:var(--ac);cursor:pointer}
+
+/* Results panel styles */
+.result-header-card{background:linear-gradient(135deg, #4338ca 0%, #1e1b4b 100%);color:#fff;border:none;border-radius:var(--r);padding:24px;text-align:center;box-shadow:0 10px 25px rgba(67, 56, 202, 0.2);position:relative;overflow:hidden}
+.result-header-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);pointer-events:none}
+.total-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#c7d2fe;margin-bottom:6px}
+.total-amount{font-family:var(--mo);font-size:32px;font-weight:600;letter-spacing:-0.03em;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,0.1)}
+.total-meta{font-size:11px;color:#a5b4fc;margin-top:8px;display:flex;justify-content:center;gap:16px}
+.total-meta span{display:inline-flex;align-items:center;gap:4px}
+
+.results-list{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+.result-item-card{background:var(--s);border:1px solid var(--b);border-radius:var(--rsm);padding:14px 16px;transition:all 0.2s ease}
+.result-item-card.disabled{opacity:0.45;pointer-events:none}
+.result-item-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.result-item-title{font-size:12px;font-weight:700;color:var(--t);display:flex;align-items:center;gap:6px}
+.result-item-title span.badge{font-size:9px;font-weight:500;padding:2px 6px;border-radius:4px;text-transform:uppercase}
+.result-item-title span.badge.prima{background:#e0e7ff;color:#4338ca}
+.result-item-title span.badge.ces{background:#ecfdf5;color:#059669}
+.result-item-title span.badge.int{background:#fffbeb;color:#d97706}
+.result-item-title span.badge.vac{background:#fdf2f8;color:#db2777}
+.result-item-val{font-family:var(--mo);font-size:15px;font-weight:600;color:var(--t)}
+.result-item-formula{font-size:11px;color:var(--t3);font-family:var(--mo);background:var(--bs);padding:6px 10px;border-radius:4px;border:1px solid #f1f5f9;margin-bottom:8px;word-break:break-all}
+.result-item-details{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;font-size:11px;color:var(--t2)}
+.result-item-details div{display:flex;flex-direction:column}
+.result-item-details span{font-size:9px;color:var(--t3);font-weight:600;text-transform:uppercase;margin-bottom:2px}
+
+.action-buttons{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;font-family:var(--fn);font-size:12px;font-weight:600;border-radius:var(--rsm);cursor:pointer;border:none;transition:all 0.15s}
+.btn-pri{background:var(--ac);color:#fff}
+.btn-pri:hover{background:#3730a3;box-shadow:0 4px 12px rgba(67, 56, 202, 0.2)}
+.btn-sec{background:var(--s);color:var(--t2);border:1px solid var(--b)}
+.btn-sec:hover{border-color:var(--t3);color:var(--t)}
+.btn-success{background:var(--in);color:#fff}
+.btn-success:hover{background:#047857;box-shadow:0 4px 12px rgba(5, 150, 105, 0.2)}
+
+/* History table stylesheet */
+.tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.02)}
+table{width:100%;border-collapse:collapse;text-align:left}
+thead{background:var(--bs);border-bottom:1px solid var(--b)}
+th{padding:12px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3)}
+td{padding:14px 16px;font-size:12px;color:var(--t);border-bottom:1px solid var(--bs);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bs)}
+td.num{text-align:right;font-family:var(--mo);font-size:11px}
+th.num{text-align:right}
+
+.badge-status{display:inline-block;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:600;text-transform:uppercase}
+.badge-status.termination{background:var(--eb);color:var(--ex)}
+.badge-status.periodical{background:var(--as);color:var(--ac)}
+
+.btn-icon{width:28px;height:28px;border-radius:6px;border:1px solid var(--b);background:#fff;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);cursor:pointer;transition:all 0.15s;margin-left:4px}
+.btn-icon:hover{border-color:var(--ac);color:var(--ac)}
+.btn-icon.del:hover{border-color:var(--ex);color:var(--ex);background:var(--eb)}
+
+/* Empty state styling */
+.history-toolbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--s);border:1px solid var(--b);border-radius:var(--r);margin-bottom:12px}
+.empty-state{text-align:center;padding:48px 20px;color:var(--t3);background:var(--s);border:1px solid var(--b);border-radius:var(--r)}
+.empty-state i{font-size:48px;color:var(--t3);margin-bottom:16px;display:block}
+.empty-state h3{font-size:14px;font-weight:600;color:var(--t);margin-bottom:6px}
+.empty-state p{font-size:12px;margin-bottom:0}
+
+/* Modal and printing overlays */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--s);border-radius:var(--r);padding:24px;width:750px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.15)}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--b);padding-bottom:12px}
+.modal-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}
+.modal-close{width:28px;height:28px;border:none;background:var(--bg);border-radius:6px;cursor:pointer;font-size:16px;color:var(--t2);display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--b);color:var(--t)}
+
+/* PRINT RECEIPT FORMAT (A4 page proportions) */
+#receipt-print-area{padding:20px;color:#000;background:#fff;font-family:'Sora', sans-serif}
+.receipt-header{text-align:center;margin-bottom:24px;border-bottom:2px double #000;padding-bottom:14px}
+.receipt-company{font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em}
+.receipt-nit{font-size:11px;color:#555;margin-top:2px}
+.receipt-title{font-size:13px;font-weight:700;margin-top:10px;text-transform:uppercase;letter-spacing:0.05em}
+
+.receipt-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;margin-bottom:20px;font-size:11px}
+.receipt-info-item{display:flex;border-bottom:1px dashed #ccc;padding-bottom:3px}
+.receipt-info-lbl{font-weight:700;width:140px;text-transform:uppercase;color:#333;font-size:10px}
+.receipt-info-val{flex:1;color:#000}
+
+.receipt-table{width:100%;border-collapse:collapse;margin-bottom:24px;font-size:11px}
+.receipt-table th{border-bottom:2px solid #000;border-top:1px solid #000;padding:8px;font-weight:700;text-transform:uppercase;color:#000;background:none;font-size:10px}
+.receipt-table td{border-bottom:1px solid #eee;padding:8px;color:#000;background:none}
+.receipt-table tr.total-row td{border-top:2px solid #000;border-bottom:2px solid #000;font-weight:700;font-size:12px}
+
+.receipt-clause{font-size:10px;line-height:1.6;text-align:justify;margin-bottom:40px;color:#222;border:1px solid #ccc;padding:12px;border-radius:4px;background:#fafafa}
+.receipt-signatures{display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-top:50px}
+.receipt-sig-line{border-top:1px solid #000;text-align:center;padding-top:8px;font-size:11px;font-weight:600}
+.receipt-sig-sub{font-size:9px;color:#555;margin-top:2px;font-weight:400}
+
+/* PRINT CSS OVERRIDES */
+@media print {
+  @page { size: portrait; margin: 8mm; }
+  body { height: auto; overflow: visible; background: #fff; }
+  body > *:not(#modal-receipt-backdrop) { display: none !important; }
+  #modal-receipt-backdrop { display: block !important; position: static !important; background: transparent !important; backdrop-filter: none !important; z-index: auto !important; height: auto !important; padding: 0 !important; margin: 0 !important; }
+  .modal { box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; max-height: none !important; overflow: visible !important; }
+  .modal-hdr, .modal-close, .modal > div:last-child { display: none !important; }
+  #receipt-print-area { display: block !important; position: static !important; width: 100%; padding: 4px !important; margin: 0 !important; background:#fff; font-size: 10px !important; line-height: 1.35 !important; page-break-inside: avoid; }
+  .receipt-header { margin-bottom: 12px !important; padding-bottom: 6px !important; border-bottom: 2px double #000 !important; }
+  .receipt-company { font-size: 15px !important; }
+  .receipt-title { font-size: 11px !important; margin-top: 4px !important; }
+  
+  .receipt-info-grid { gap: 6px 16px !important; margin-bottom: 12px !important; font-size: 9.5px !important; display: grid !important; grid-template-columns: 1fr 1fr !important; }
+  .receipt-info-item { padding-bottom: 2px !important; border-bottom: 1px dashed #ccc !important; display: flex !important; }
+  .receipt-info-lbl { width: 110px !important; font-size: 8.5px !important; font-weight: 700 !important; }
+  
+  .receipt-table { margin-bottom: 12px !important; font-size: 9.5px !important; width: 100% !important; border-collapse: collapse !important; }
+  .receipt-table th { padding: 5px !important; font-size: 8.5px !important; border-bottom: 2px solid #000 !important; border-top: 1px solid #000 !important; }
+  .receipt-table td { padding: 5px !important; border-bottom: 1px solid #eee !important; }
+  .receipt-table tr.total-row td { border-top: 2px solid #000 !important; border-bottom: 2px solid #000 !important; font-size: 11px !important; font-weight: 700 !important; }
+  
+  .receipt-clause { font-size: 8.5px !important; line-height: 1.4 !important; margin-bottom: 20px !important; padding: 8px !important; border: 1px solid #ccc !important; text-align: justify !important; background: #fafafa !important; }
+  
+  .receipt-signatures { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 40px !important; margin-top: 20px !important; page-break-inside: avoid; }
+  .receipt-sig-line { border-top: 1px solid #000 !important; text-align: center !important; padding-top: 6px !important; font-size: 9.5px !important; font-weight: 600 !important; }
+  .receipt-sig-sub { font-size: 8px !important; color: #555 !important; margin-top: 2px !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-ey">DIMALCCO SAS · Talento Humano</div>
+      <div class="hdr-ti">Liquidación de Prestaciones Sociales</div>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- SIDEBAR: Employee Selector -->
+  <aside class="sidebar">
+    <div class="sec-ti"><i class="ph ph-users"></i> Empleados activos</div>
+    <div class="search-wrap">
+      <i class="ph ph-magnifying-glass"></i>
+      <input type="text" id="emp-search" placeholder="Buscar empleado..." oninput="filterEmployees()">
+    </div>
+    <div class="emp-list" id="emp-list-container">
+      <!-- Generated via JS -->
+    </div>
+  </aside>
+
+  <!-- MAIN AREA: Calculator and History -->
+  <main class="main">
+    <a class="back-link" href="../index.html">← Volver al workspace</a>
+    
+    <div class="tab-bar">
+      <button class="tab active" onclick="switchTab('tab-calculator', this)">Calcular Liquidación</button>
+      <button class="tab" onclick="switchTab('tab-history', this)">Historial de Liquidaciones</button>
+    </div>
+
+    <!-- TAB 1: CALCULATOR -->
+    <div id="tab-calculator" class="content-pane active">
+      <div class="calc-grid">
+        
+        <!-- Parameter Form -->
+        <div class="card">
+          <div class="card-title"><i class="ph ph-sliders"></i> Parámetros de Cálculo</div>
+          
+          <div class="form-group">
+            <label class="form-label">Empleado Seleccionado</label>
+            <input type="text" id="calc-emp-nombre" disabled placeholder="Selecciona un empleado de la izquierda">
+            <input type="hidden" id="calc-emp-id">
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Identificación</label>
+              <input type="text" id="calc-emp-cedula" disabled>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Salario Básico</label>
+              <input type="text" id="calc-emp-salario" disabled style="font-family:var(--mo)">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Fecha de Ingreso</label>
+              <input type="date" id="calc-fecha-ingreso" disabled>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Auxilio de Transporte</label>
+              <input type="text" id="calc-emp-auxilio" disabled style="font-family:var(--mo)">
+            </div>
+          </div>
+
+          <div class="divider" style="height:1px; background:var(--b); margin:15px 0"></div>
+
+          <div class="form-group">
+            <label class="form-label">Motivo de Liquidación</label>
+            <select id="calc-motivo" onchange="handleRecalculate()">
+              <option value="Terminación sin justa causa">Terminación de contrato sin justa causa</option>
+              <option value="Terminación con justa causa">Terminación de contrato con justa causa</option>
+              <option value="Renuncia voluntaria">Renuncia voluntaria</option>
+              <option value="Liquidación periódica / Semestral">Liquidación periódica / Semestral</option>
+            </select>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label">Fecha Inicio Liquidación</label>
+              <input type="date" id="calc-fecha-inicio" onchange="handleRecalculate()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Fecha Fin Liquidación</label>
+              <input type="date" id="calc-fecha-fin" onchange="handleRecalculate()">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Variables Mensuales Promedio (COP)</label>
+            <input type="number" id="calc-variables" value="0" min="0" placeholder="Horas extra, recargos, comisiones..." oninput="handleRecalculate()">
+            <span style="font-size:10px; color:var(--t3); margin-top:4px; display:block">Promedio del periodo o último año si es variable.</span>
+          </div>
+
+          <div class="concept-checkboxes">
+            <label class="form-label" style="margin-bottom:8px">Conceptos a Liquidar</label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="chk-prima" checked onchange="handleRecalculate()">
+              <span>Prima de Servicios</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="chk-cesantias" checked onchange="handleRecalculate()">
+              <span>Cesantías</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="chk-intereses" checked onchange="handleRecalculate()">
+              <span>Intereses sobre Cesantías (12% anual)</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="chk-vacaciones" checked onchange="handleRecalculate()">
+              <span>Vacaciones</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Calculations Breakdown Preview -->
+        <div>
+          <!-- Giant Summary Badge -->
+          <div class="result-header-card">
+            <div class="total-title">Total Neto a Liquidar</div>
+            <div class="total-amount" id="res-total">$ 0</div>
+            <div class="total-meta">
+              <span><i class="ph ph-calendar"></i> Días Calculados: <strong id="res-dias">0</strong></span>
+              <span><i class="ph ph-coins"></i> Devengado Prestacional</span>
+            </div>
+          </div>
+
+          <!-- Breakdown list cards -->
+          <div class="results-list">
+            
+            <!-- Prima de Servicios -->
+            <div class="result-item-card" id="card-prima">
+              <div class="result-item-top">
+                <div class="result-item-title">
+                  <span class="badge prima">Prima</span> Prima de Servicios
+                </div>
+                <div class="result-item-val" id="res-prima-val">$ 0</div>
+              </div>
+              <div class="result-item-formula">Fórmula: (Salario Base * Días) / 360</div>
+              <div class="result-item-details">
+                <div><span>Base Cálculo</span><strong id="res-prima-base">$ 0</strong></div>
+                <div><span>Días Aplicados</span><strong id="res-prima-dias">0</strong></div>
+                <div><span>Cálculo</span><strong id="res-prima-calc">$ 0</strong></div>
+              </div>
+            </div>
+
+            <!-- Cesantías -->
+            <div class="result-item-card" id="card-cesantias">
+              <div class="result-item-top">
+                <div class="result-item-title">
+                  <span class="badge ces">Cesantías</span> Cesantías
+                </div>
+                <div class="result-item-val" id="res-cesantias-val">$ 0</div>
+              </div>
+              <div class="result-item-formula">Fórmula: (Salario Base * Días) / 360</div>
+              <div class="result-item-details">
+                <div><span>Base Cálculo</span><strong id="res-cesantias-base">$ 0</strong></div>
+                <div><span>Días Aplicados</span><strong id="res-cesantias-dias">0</strong></div>
+                <div><span>Cálculo</span><strong id="res-cesantias-calc">$ 0</strong></div>
+              </div>
+            </div>
+
+            <!-- Intereses de Cesantías -->
+            <div class="result-item-card" id="card-intereses">
+              <div class="result-item-top">
+                <div class="result-item-title">
+                  <span class="badge int">Intereses</span> Intereses de Cesantías
+                </div>
+                <div class="result-item-val" id="res-intereses-val">$ 0</div>
+              </div>
+              <div class="result-item-formula">Fórmula: (Cesantías * Días * 12%) / 360</div>
+              <div class="result-item-details">
+                <div><span>Valor Cesantías</span><strong id="res-intereses-ces">$ 0</strong></div>
+                <div><span>Días Aplicados</span><strong id="res-intereses-dias">0</strong></div>
+                <div><span>Cálculo</span><strong id="res-intereses-calc">$ 0</strong></div>
+              </div>
+            </div>
+
+            <!-- Vacaciones -->
+            <div class="result-item-card" id="card-vacaciones">
+              <div class="result-item-top">
+                <div class="result-item-title">
+                  <span class="badge vac">Vacaciones</span> Vacaciones
+                </div>
+                <div class="result-item-val" id="res-vacaciones-val">$ 0</div>
+              </div>
+              <div class="result-item-formula">Fórmula: (Salario Básico * Días) / 720</div>
+              <div class="result-item-details">
+                <div><span>Base Vacaciones</span><strong id="res-vacaciones-base">$ 0</strong></div>
+                <div><span>Días Aplicados</span><strong id="res-vacaciones-dias">0</strong></div>
+                <div><span>Cálculo</span><strong id="res-vacaciones-calc">$ 0</strong></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Actions -->
+          <div class="action-buttons">
+            <button class="btn btn-sec" onclick="exportExcelCurrent()"><i class="ph ph-file-xls"></i> Exportar Excel</button>
+            <button class="btn btn-sec" onclick="openPrintModalCurrent()"><i class="ph ph-printer"></i> Vista Impresión</button>
+            <button class="btn btn-pri" id="btn-save-liq" onclick="saveLiquidation()"><i class="ph ph-floppy-disk"></i> Guardar en Historial</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: HISTORY -->
+    <div id="tab-history" class="content-pane">
+      <div id="history-toolbar" class="history-toolbar" style="display:none">
+        <button class="btn btn-pri" onclick="exportFullHistory()">
+          <i class="ph ph-file-xls"></i> Exportar Historial Completo a Excel
+        </button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Empleado</th>
+              <th>Periodo Liquidado</th>
+              <th>Días</th>
+              <th>Motivo</th>
+              <th class="num">Devengado Variables</th>
+              <th class="num" style="background:#f8fafc">Total Liquidado</th>
+              <th style="width:120px; text-align:center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-history">
+            <!-- Loaded via JS -->
+          </tbody>
+        </table>
+      </div>
+      <div id="history-empty" class="empty-state" style="display:none">
+        <i class="ph ph-folder-open"></i>
+        <h3>Historial Vacío</h3>
+        <p>No se han registrado liquidaciones de prestaciones aún. Utiliza el calculador de arriba.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: RECIBO PREVIEW & PRINT -->
+<div class="modal-backdrop" id="modal-receipt-backdrop">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3 class="modal-title">Recibo de Liquidación Laboral</h3>
+      <button class="modal-close" onclick="closeReceiptModal()">&times;</button>
+    </div>
+    
+    <div id="receipt-print-area">
+      <div class="receipt-header">
+        <div class="receipt-company">DIMALCCO SAS</div>
+        <div class="receipt-nit">NIT: 900.342.175-2 · Liquidación de Contrato y Prestaciones Sociales</div>
+        <div class="receipt-title">Documento de Liquidación y Paz y Salvo</div>
+      </div>
+      
+      <div class="receipt-info-grid">
+        <div class="receipt-info-item">
+          <div class="receipt-info-lbl">Trabajador:</div>
+          <div class="receipt-info-val" id="rec-nombre">Martínez Ruiz, Carlos Alberto</div>
+        </div>
+        <div class="receipt-info-item">
+          <div class="receipt-info-lbl">Identificación:</div>
+          <div class="receipt-info-val" id="rec-cedula">1.023.456.789</div>
+        </div>
+        <div class="receipt-info-item">
+          <div class="receipt-info-lbl">Cargo:</div>
+          <div class="receipt-info-val" id="rec-cargo">Maestro Ebanista</div>
+        </div>
+        <div class="receipt-info-item">
+          <div class="receipt-info-lbl">Centro Costo:</div>
+          <div class="receipt-info-val" id="rec-cc">Producción</div>
+        </div>
+        <div class="receipt-info-item">
+          <div class="receipt-info-lbl">Fecha Ingreso:</div>
+          <div class="receipt-info-val" id="rec-f-ingreso">2021-03-15</div>
+        </div>
+        <div class="receipt-info-item">
+          <div class="receipt-info-lbl">Fecha Retiro:</div>
+          <div class="receipt-info-val" id="rec-f-retiro">2026-06-05</div>
+        </div>
+        <div class="receipt-info-item">
+          <div class="receipt-info-lbl">Días Liquidados:</div>
+          <div class="receipt-info-val" id="rec-dias">0</div>
+        </div>
+        <div class="receipt-info-item">
+          <div class="receipt-info-lbl">Motivo Retiro:</div>
+          <div class="receipt-info-val" id="rec-motivo">Terminación sin justa causa</div>
+        </div>
+      </div>
+
+      <table class="receipt-table">
+        <thead>
+          <tr>
+            <th>Concepto Prestacional</th>
+            <th class="num">Salario Base</th>
+            <th class="num" style="text-align:center">Días</th>
+            <th>Fórmula Aplicada</th>
+            <th class="num" style="text-align:right">Valor Liquidado</th>
+          </tr>
+        </thead>
+        <tbody id="rec-tbody">
+          <!-- Loaded dynamically -->
+        </tbody>
+      </table>
+
+      <div class="receipt-clause">
+        Por medio del presente documento, yo manifesto que he recibido de la empresa DIMALCCO SAS a entera satisfacción los valores detallados anteriormente por concepto de la liquidación de mis prestaciones sociales y/o indemnizaciones laboradas. Con el pago de esta suma de dinero me declaro totalmente pagado y a paz y salvo con el empleador por salarios, horas extras, primas, cesantías, intereses de cesantías, vacaciones e indemnizaciones, no quedando saldo pendiente alguno por reclamar judicial o extrajudicialmente.
+      </div>
+
+      <div class="receipt-signatures">
+        <div class="receipt-sig-line">
+          Firma del Trabajador
+          <div class="receipt-sig-sub" id="rec-sig-cedula">C.C. 1.023.456.789</div>
+          <div class="receipt-sig-sub">Recibí conforme / Huella</div>
+        </div>
+        <div class="receipt-sig-line">
+          Representante Legal
+          <div class="receipt-sig-sub">DIMALCCO SAS</div>
+          <div class="receipt-sig-sub">NIT: 900.342.175-2</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid var(--b); padding-top:16px">
+      <button class="btn btn-sec" onclick="closeReceiptModal()">Cerrar</button>
+      <button class="btn btn-success" onclick="window.print()"><i class="ph ph-printer"></i> Imprimir Recibo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// DB key and default state fallback
+const KEY_EMP = 'dimalcco_emp_v2';
+const KEY_LIQ = 'dimalcco_liq_prestaciones_v1';
+const SMMLV = 1750905, AUX_TRANS = 249095;
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+const fmt = v => '$ ' + Math.round(v).toLocaleString('es-CO');
+const todayISO = () => new Date().toISOString().split('T')[0];
+
+let S = { empleados: [], history: [] };
+let activeEmployee = null;
+let currentCalculation = null;
+
+// Default fallbacks identical to nomina.html to work offline/out-of-box
+const defaultEmployees = [
+  {id:'e1',nombre:'Martínez Ruiz, Carlos Alberto',cedula:'1.023.456.789',cargo:'Maestro Ebanista',cc:'Producción',salario:2200000,tipo:'indefinido',inicio:'2021-03-15',arl:'1.044',activo:true},
+  {id:'e2',nombre:'González Pérez, Luis Fernando',cedula:'1.035.678.901',cargo:'Ebanista',cc:'Producción',salario:1800000,tipo:'indefinido',inicio:'2022-06-01',arl:'1.044',activo:true},
+  {id:'e3',nombre:'Vargas Torres, Andrés Felipe',cedula:'1.018.234.567',cargo:'Auxiliar de producción',cc:'Producción',salario:1423500,tipo:'indefinido',inicio:'2023-01-10',arl:'1.044',activo:true},
+  {id:'e4',nombre:'Rodríguez Soto, María Alejandra',cedula:'52.345.678',cargo:'Auxiliar contable',cc:'Administración',salario:1600000,tipo:'indefinido',inicio:'2022-08-01',arl:'0.522',activo:true},
+  {id:'e5',nombre:'Ospina Leal, Juan Pablo',cedula:'1.012.345.678',cargo:'Vendedor',cc:'Comercial',salario:1423500,tipo:'indefinido',inicio:'2023-05-15',arl:'0.522',activo:true}
+];
+
+// Load from LocalStorage
+function loadData() {
+  try {
+    const rawEmp = localStorage.getItem(KEY_EMP);
+    if(rawEmp) {
+      const emps = JSON.parse(rawEmp);
+      if(emps && emps.length > 0) {
+        S.empleados = emps.map(e => ({
+          id: e.cedula || uid(),
+          nombre: e.nombre || 'Sin nombre',
+          cedula: e.cedula || '',
+          cargo: e.cargo || '',
+          cc: e.centro || e.cc || 'Producción',
+          salario: Number(e.salario || 0),
+          inicio: e.fechaIngreso || e.inicio || '2020-01-01',
+          activo: e.activo !== false
+        }));
+      }
+    }
+  } catch(e) {
+    console.error("Error loading employees:", e);
+  }
+  
+  if(!S.empleados || S.empleados.length === 0) {
+    S.empleados = defaultEmployees;
+  }
+
+  try {
+    const rawLiq = localStorage.getItem(KEY_LIQ);
+    S.history = rawLiq ? JSON.parse(rawLiq) : [];
+  } catch(e) {
+    console.error("Error loading liquidation history:", e);
+    S.history = [];
+  }
+}
+
+// Save history to localStorage
+function saveHistory() {
+  localStorage.setItem(KEY_LIQ, JSON.stringify(S.history));
+  // Global cloud sync trigger if available
+  if (window.parent && window.parent.postMessage) {
+    window.parent.postMessage('sync_cloud', '*');
+  }
+}
+
+// Render Employee list in sidebar
+function renderEmployees() {
+  const container = document.getElementById('emp-list-container');
+  if(!container) return;
+
+  const query = document.getElementById('emp-search').value.toLowerCase();
+  const filtered = S.empleados.filter(e => e.activo !== false && (
+    e.nombre.toLowerCase().includes(query) || e.cedula.toLowerCase().includes(query)
+  ));
+
+  if(filtered.length === 0) {
+    container.innerHTML = `<div style="font-size:11px; text-align:center; color:var(--t3); padding:20px 0">No se encontraron empleados.</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(e => {
+    const isActiveClass = activeEmployee && activeEmployee.id === e.id ? 'active' : '';
+    return `
+      <div class="emp-card ${isActiveClass}" onclick="selectEmployee('${e.id}')">
+        <div class="emp-name">${e.nombre}</div>
+        <div class="emp-cargo">
+          <span>${e.cargo}</span>
+          <span style="font-weight:600; color:var(--ac)">${e.cc}</span>
+        </div>
+        <div class="emp-details">
+          <span>S: ${fmt(e.salario)}</span>
+          <span>Ing: ${e.inicio}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function filterEmployees() {
+  renderEmployees();
+}
+
+// Select employee and fill forms
+function selectEmployee(id) {
+  const emp = S.empleados.find(e => e.id === id);
+  if(!emp) return;
+
+  activeEmployee = emp;
+  
+  // Rerender sidebar to show active class
+  renderEmployees();
+
+  // Populate form
+  document.getElementById('calc-emp-id').value = emp.id;
+  document.getElementById('calc-emp-nombre').value = emp.nombre;
+  document.getElementById('calc-emp-cedula').value = emp.cedula;
+  document.getElementById('calc-emp-salario').value = fmt(emp.salario);
+  document.getElementById('calc-fecha-ingreso').value = emp.inicio;
+
+  const aux = emp.salario <= 2 * SMMLV ? AUX_TRANS : 0;
+  document.getElementById('calc-emp-auxilio').value = fmt(aux);
+
+  // Set default dates
+  // Start date should be max of contract start or Jan 1st of current year (unless doing complete contract termination, where it can default to start of contract)
+  const currentYearStart = new Date().getFullYear() + '-01-01';
+  document.getElementById('calc-fecha-inicio').value = emp.inicio > currentYearStart ? emp.inicio : currentYearStart;
+  document.getElementById('calc-fecha-fin').value = todayISO();
+  
+  // Enable date changes & variables
+  document.getElementById('calc-fecha-inicio').disabled = false;
+  document.getElementById('calc-fecha-fin').disabled = false;
+  document.getElementById('calc-variables').disabled = false;
+  
+  document.getElementById('btn-save-liq').disabled = false;
+
+  handleRecalculate();
+}
+
+// Colombian labor days calculator: US/European 30/360 rule + 1 standard for labor liquidation
+function calculateLaborDays360(date1Str, date2Str) {
+  if (!date1Str || !date2Str) return 0;
+  
+  const d1 = new Date(date1Str + 'T00:00:00');
+  const d2 = new Date(date2Str + 'T00:00:00');
+  
+  if (d1 > d2) return 0;
+
+  let y1 = d1.getFullYear();
+  let m1 = d1.getMonth() + 1;
+  let r1 = d1.getDate();
+
+  let y2 = d2.getFullYear();
+  let m2 = d2.getMonth() + 1;
+  let r2 = d2.getDate();
+
+  const isLeap = y => (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
+  const isLastDayFeb = (y, m, r) => m === 2 && r === (isLeap(y) ? 29 : 28);
+
+  // 30/360 rules (Standard Colombian labor calculation)
+  if (r1 === 31 || isLastDayFeb(y1, m1, r1)) r1 = 30;
+  if (r2 === 31 || isLastDayFeb(y2, m2, r2)) r2 = 30;
+
+  let days = ((y2 - y1) * 360) + ((m2 - m1) * 30) + (r2 - r1) + 1;
+  
+  return Math.max(0, days);
+}
+
+// Perform calculations reactively
+function handleRecalculate() {
+  if(!activeEmployee) return;
+
+  const fInicio = document.getElementById('calc-fecha-inicio').value;
+  const fFin = document.getElementById('calc-fecha-fin').value;
+  const variables = parseFloat(document.getElementById('calc-variables').value) || 0;
+  
+  const chkPrima = document.getElementById('chk-prima').checked;
+  const chkCesantias = document.getElementById('chk-cesantias').checked;
+  const chkIntereses = document.getElementById('chk-intereses').checked;
+  const chkVacaciones = document.getElementById('chk-vacaciones').checked;
+
+  const motivo = document.getElementById('calc-motivo').value;
+
+  const days = calculateLaborDays360(fInicio, fFin);
+  document.getElementById('res-dias').textContent = days;
+
+  // Constants
+  const aux = activeEmployee.salario <= 2 * SMMLV ? AUX_TRANS : 0;
+  
+  // Base Salary Prima/Cesantías/Intereses (Includes basic + transport + average variables)
+  const basePrestacional = activeEmployee.salario + aux + variables;
+  
+  // Base Salary Vacaciones (Basic + variables, EXCLUDES Auxilio de transporte)
+  const baseVacaciones = activeEmployee.salario + variables;
+
+  // Calculos
+  const primaVal = chkPrima ? Math.round((basePrestacional * days) / 360) : 0;
+  const cesantiasVal = chkCesantias ? Math.round((basePrestacional * days) / 360) : 0;
+  const interesesVal = (chkIntereses && chkCesantias) ? Math.round((cesantiasVal * days * 0.12) / 360) : 0;
+  const vacacionesVal = chkVacaciones ? Math.round((baseVacaciones * days) / 720) : 0;
+  
+  const totalNeto = primaVal + cesantiasVal + interesesVal + vacacionesVal;
+
+  // Store in current calculation object
+  currentCalculation = {
+    empId: activeEmployee.id,
+    empNombre: activeEmployee.nombre,
+    empCedula: activeEmployee.cedula,
+    empCargo: activeEmployee.cargo,
+    empCc: activeEmployee.cc,
+    empInicio: activeEmployee.inicio,
+    fechaInicio: fInicio,
+    fechaFin: fFin,
+    motivo: motivo,
+    dias: days,
+    salarioBasico: activeEmployee.salario,
+    auxTransporte: aux,
+    variables: variables,
+    basePrestacional: basePrestacional,
+    baseVacaciones: baseVacaciones,
+    prima: primaVal,
+    cesantias: cesantiasVal,
+    intereses: interesesVal,
+    vacaciones: vacacionesVal,
+    total: totalNeto,
+    activeConcepts: {
+      prima: chkPrima,
+      cesantias: chkCesantias,
+      intereses: chkIntereses,
+      vacaciones: chkVacaciones
+    }
+  };
+
+  // Update UI Elements
+  document.getElementById('res-total').textContent = fmt(totalNeto);
+
+  // Prima
+  document.getElementById('res-prima-val').textContent = fmt(primaVal);
+  document.getElementById('res-prima-base').textContent = fmt(basePrestacional);
+  document.getElementById('res-prima-dias').textContent = days;
+  document.getElementById('res-prima-calc').textContent = fmt(primaVal);
+  document.getElementById('card-prima').classList.toggle('disabled', !chkPrima);
+
+  // Cesantías
+  document.getElementById('res-cesantias-val').textContent = fmt(cesantiasVal);
+  document.getElementById('res-cesantias-base').textContent = fmt(basePrestacional);
+  document.getElementById('res-cesantias-dias').textContent = days;
+  document.getElementById('res-cesantias-calc').textContent = fmt(cesantiasVal);
+  document.getElementById('card-cesantias').classList.toggle('disabled', !chkCesantias);
+
+  // Intereses
+  document.getElementById('res-intereses-val').textContent = fmt(interesesVal);
+  document.getElementById('res-intereses-ces').textContent = fmt(cesantiasVal);
+  document.getElementById('res-intereses-dias').textContent = days;
+  document.getElementById('res-intereses-calc').textContent = fmt(interesesVal);
+  document.getElementById('card-intereses').classList.toggle('disabled', !chkIntereses || !chkCesantias);
+
+  // Vacaciones
+  document.getElementById('res-vacaciones-val').textContent = fmt(vacacionesVal);
+  document.getElementById('res-vacaciones-base').textContent = fmt(baseVacaciones);
+  document.getElementById('res-vacaciones-dias').textContent = days;
+  document.getElementById('res-vacaciones-calc').textContent = fmt(vacacionesVal);
+  document.getElementById('card-vacaciones').classList.toggle('disabled', !chkVacaciones);
+}
+
+// Switch tabs view
+function switchTab(tabId, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+
+  document.querySelectorAll('.content-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+
+  if(tabId === 'tab-history') {
+    renderHistory();
+  }
+}
+
+// Save liquidation into history
+function saveLiquidation() {
+  if(!currentCalculation) {
+    alert("❌ Primero selecciona un empleado y realiza el cálculo.");
+    return;
+  }
+
+  if(!confirm("¿Deseas guardar esta liquidación en el historial de DIMALCCO SAS?")) return;
+
+  const liq = {
+    id: uid(),
+    fechaRegistro: todayISO(),
+    ...currentCalculation
+  };
+
+  S.history.push(liq);
+  saveHistory();
+  
+  alert("✅ Liquidación guardada exitosamente.");
+  switchTab('tab-history', document.querySelectorAll('.tab')[1]);
+}
+
+// Render saved liquidations history table
+function renderHistory() {
+  const tbody = document.getElementById('tbody-history');
+  const emptyState = document.getElementById('history-empty');
+
+  const toolbar = document.getElementById('history-toolbar');
+
+  if(S.history.length === 0) {
+    tbody.innerHTML = '';
+    emptyState.style.display = 'block';
+    if(toolbar) toolbar.style.display = 'none';
+    return;
+  }
+
+  emptyState.style.display = 'none';
+  if(toolbar) toolbar.style.display = 'flex';
+  const sorted = [...S.history].sort((a,b) => new Date(b.fechaRegistro) - new Date(a.fechaRegistro));
+
+  tbody.innerHTML = sorted.map(h => {
+    const isTermination = h.motivo !== "Liquidación periódica / Semestral";
+    const badgeClass = isTermination ? 'termination' : 'periodical';
+    const motivoText = isTermination ? 'Terminación' : 'Periódica';
+    
+    return `
+      <tr>
+        <td>
+          <div style="font-weight:600">${h.empNombre}</div>
+          <div style="font-size:10px; color:var(--t3)">C.C. ${h.empCedula} · ${h.empCargo}</div>
+        </td>
+        <td>
+          <div style="font-family:var(--mo)">${h.fechaInicio} al ${h.fechaFin}</div>
+          <div style="font-size:9px; color:var(--t3)">Guardado: ${h.fechaRegistro}</div>
+        </td>
+        <td style="font-family:var(--mo)">${h.dias}</td>
+        <td><span class="badge-status ${badgeClass}">${motivoText}</span></td>
+        <td class="num">${fmt(h.variables)}</td>
+        <td class="num" style="font-weight:700; background:#f0fdf4; color:var(--in)">${fmt(h.total)}</td>
+        <td style="text-align:center">
+          <button class="btn-icon" onclick="openPrintModalHistory('${h.id}')" title="Ver / Imprimir Recibo"><i class="ph ph-printer"></i></button>
+          <button class="btn-icon" onclick="exportExcelHistory('${h.id}')" title="Exportar Excel"><i class="ph ph-file-xls"></i></button>
+          <button class="btn-icon del" onclick="deleteHistory('${h.id}')" title="Eliminar"><i class="ph ph-trash"></i></button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Delete liquidation item from history
+function deleteHistory(id) {
+  if(!confirm("¿Estás seguro de que deseas eliminar permanentemente esta liquidación del historial?")) return;
+
+  S.history = S.history.filter(h => h.id !== id);
+  saveHistory();
+  renderHistory();
+}
+
+// MODAL RECIBO SETUP
+function populateReceipt(liq) {
+  // Populate headers
+  document.getElementById('rec-nombre').textContent = liq.empNombre;
+  document.getElementById('rec-cedula').textContent = liq.empCedula;
+  document.getElementById('rec-sig-cedula').textContent = 'C.C. ' + liq.empCedula;
+  document.getElementById('rec-cargo').textContent = liq.empCargo;
+  document.getElementById('rec-cc').textContent = liq.empCc;
+  document.getElementById('rec-f-ingreso').textContent = liq.empInicio;
+  document.getElementById('rec-f-retiro').textContent = liq.fechaFin;
+  document.getElementById('rec-dias').textContent = liq.dias;
+  document.getElementById('rec-motivo').textContent = liq.motivo;
+
+  // Render Table rows
+  const tbody = document.getElementById('rec-tbody');
+  let rows = '';
+
+  if (liq.activeConcepts.prima) {
+    rows += `
+      <tr>
+        <td><strong>Prima de Servicios</strong></td>
+        <td class="num">${fmt(liq.basePrestacional)}</td>
+        <td class="num" style="text-align:center">${liq.dias}</td>
+        <td>(Base Prestacional * Días) / 360</td>
+        <td class="num" style="text-align:right"><strong>${fmt(liq.prima)}</strong></td>
+      </tr>
+    `;
+  }
+  if (liq.activeConcepts.cesantias) {
+    rows += `
+      <tr>
+        <td><strong>Cesantías</strong></td>
+        <td class="num">${fmt(liq.basePrestacional)}</td>
+        <td class="num" style="text-align:center">${liq.dias}</td>
+        <td>(Base Prestacional * Días) / 360</td>
+        <td class="num" style="text-align:right"><strong>${fmt(liq.cesantias)}</strong></td>
+      </tr>
+    `;
+  }
+  if (liq.activeConcepts.intereses && liq.activeConcepts.cesantias) {
+    rows += `
+      <tr>
+        <td><strong>Intereses sobre Cesantías</strong></td>
+        <td class="num">${fmt(liq.cesantias)}</td>
+        <td class="num" style="text-align:center">${liq.dias}</td>
+        <td>(Valor Cesantías * Días * 12%) / 360</td>
+        <td class="num" style="text-align:right"><strong>${fmt(liq.intereses)}</strong></td>
+      </tr>
+    `;
+  }
+  if (liq.activeConcepts.vacaciones) {
+    rows += `
+      <tr>
+        <td><strong>Vacaciones Compensadas / Disfrutadas</strong></td>
+        <td class="num">${fmt(liq.baseVacaciones)}</td>
+        <td class="num" style="text-align:center">${liq.dias}</td>
+        <td>(Base Vacaciones * Días) / 720</td>
+        <td class="num" style="text-align:right"><strong>${fmt(liq.vacaciones)}</strong></td>
+      </tr>
+    `;
+  }
+
+  // Row for averages if variables were entered
+  if (liq.variables > 0) {
+    rows += `
+      <tr style="color:#555; font-style:italic">
+        <td colspan="4">Devengados variables promedio adicionados a bases (Horas extra, comisiones, bonos)</td>
+        <td class="num" style="text-align:right">${fmt(liq.variables)} / mes</td>
+      </tr>
+    `;
+  }
+
+  // Row for Total
+  rows += `
+    <tr class="total-row">
+      <td colspan="4" style="text-align:right; font-weight:700; text-transform:uppercase">Neto total pagado al trabajador:</td>
+      <td class="num" style="text-align:right; font-weight:700">${fmt(liq.total)}</td>
+    </tr>
+  `;
+
+  tbody.innerHTML = rows;
+}
+
+function openReceiptModal() {
+  document.getElementById('modal-receipt-backdrop').classList.add('open');
+}
+
+function closeReceiptModal() {
+  document.getElementById('modal-receipt-backdrop').classList.remove('open');
+}
+
+function openPrintModalCurrent() {
+  if(!currentCalculation) {
+    alert("❌ Primero selecciona un empleado y realiza el cálculo.");
+    return;
+  }
+  populateReceipt(currentCalculation);
+  openReceiptModal();
+}
+
+function openPrintModalHistory(id) {
+  const liq = S.history.find(h => h.id === id);
+  if(!liq) return;
+  populateReceipt(liq);
+  openReceiptModal();
+}
+
+// EXPORT TO EXCEL LOGIC
+function generateExcelFile(liq) {
+  const fileDate = new Date().toISOString().split('T')[0];
+  const filename = `liquidacion_${liq.empNombre.replace(/[,.\s]+/g, '_')}_${fileDate}.xlsx`;
+
+  const data = [
+    ["DIMALCCO SAS - NIT 900.342.175-2"],
+    ["LIQUIDACIÓN DE PRESTACIONES SOCIALES Y CONTRATO LABORAL"],
+    ["Fecha Reporte:", new Date().toLocaleDateString('es-CO')],
+    [],
+    ["DATOS GENERALES DEL TRABAJADOR"],
+    ["Nombre del Empleado", liq.empNombre, "Cargo", liq.empCargo],
+    ["Cédula de Ciudadanía", liq.empCedula, "Centro de Costos", liq.empCc],
+    ["Fecha de Ingreso", liq.empInicio, "Motivo de Liquidación", liq.motivo],
+    [],
+    ["DATOS DEL PERIODO A LIQUIDAR"],
+    ["Fecha Inicio", liq.fechaInicio, "Fecha Fin", liq.fechaFin],
+    ["Total Días Laborados", liq.dias, "Variables Adicionales / Mes", liq.variables],
+    [],
+    ["DESGLOSE DETALLADO DEL CÁLCULO"],
+    ["Concepto Prestacional", "Base Salarial", "Días", "Fórmula Aplicada", "Valor Liquidado (COP)"],
+  ];
+
+  if(liq.activeConcepts.prima) {
+    data.push(["Prima de Servicios", liq.basePrestacional, liq.dias, "(Base * Días) / 360", liq.prima]);
+  }
+  if(liq.activeConcepts.cesantias) {
+    data.push(["Cesantías", liq.basePrestacional, liq.dias, "(Base * Días) / 360", liq.cesantias]);
+  }
+  if(liq.activeConcepts.intereses && liq.activeConcepts.cesantias) {
+    data.push(["Intereses sobre Cesantías", liq.cesantias, liq.dias, "(Cesantías * Días * 12%) / 360", liq.intereses]);
+  }
+  if(liq.activeConcepts.vacaciones) {
+    data.push(["Vacaciones Compensadas", liq.baseVacaciones, liq.dias, "(Base * Días) / 720", liq.vacaciones]);
+  }
+
+  data.push([]);
+  data.push(["TOTAL NETO LIQUIDADO A PAGAR", "", "", "", liq.total]);
+
+  // Convert array of arrays to sheet
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  
+  // Create new workbook and append sheet
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Liquidacion");
+  
+  // Write to disk
+  XLSX.writeFile(wb, filename);
+}
+
+function exportExcelCurrent() {
+  if(!currentCalculation) {
+    alert("❌ Primero selecciona un empleado y realiza el cálculo.");
+    return;
+  }
+  generateExcelFile(currentCalculation);
+}
+
+function exportExcelHistory(id) {
+  const liq = S.history.find(h => h.id === id);
+  if(!liq) return;
+  generateExcelFile(liq);
+}
+
+// Export full history to a single Excel file with summary + detail sheets
+function exportFullHistory() {
+  if(!S.history || S.history.length === 0) {
+    alert('❌ El historial de liquidaciones está vacío.');
+    return;
+  }
+
+  const sorted = [...S.history].sort((a,b) => new Date(b.fechaRegistro) - new Date(a.fechaRegistro));
+  const wb = XLSX.utils.book_new();
+
+  // --- SHEET 1: RESUMEN ---
+  const summaryData = [
+    ['DIMALCCO SAS - NIT 900.342.175-2'],
+    ['HISTORIAL COMPLETO DE LIQUIDACIONES DE PRESTACIONES SOCIALES'],
+    ['Fecha de Exportación:', new Date().toLocaleDateString('es-CO')],
+    ['Total Liquidaciones:', sorted.length],
+    [],
+    ['#', 'Empleado', 'Cédula', 'Cargo', 'Centro Costos', 'Periodo Inicio', 'Periodo Fin', 'Días', 'Motivo', 'Prima', 'Cesantías', 'Int. Cesantías', 'Vacaciones', 'Total Liquidado', 'Fecha Registro']
+  ];
+
+  let grandTotal = 0;
+  sorted.forEach((h, i) => {
+    grandTotal += (h.total || 0);
+    summaryData.push([
+      i + 1,
+      h.empNombre || '',
+      h.empCedula || '',
+      h.empCargo || '',
+      h.empCc || '',
+      h.fechaInicio || '',
+      h.fechaFin || '',
+      h.dias || 0,
+      h.motivo || '',
+      h.prima || 0,
+      h.cesantias || 0,
+      h.intereses || 0,
+      h.vacaciones || 0,
+      h.total || 0,
+      h.fechaRegistro || ''
+    ]);
+  });
+
+  summaryData.push([]);
+  summaryData.push(['', '', '', '', '', '', '', '', 'GRAN TOTAL:', '', '', '', '', grandTotal, '']);
+
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+
+  // Set column widths for readability
+  wsSummary['!cols'] = [
+    {wch:4}, {wch:28}, {wch:14}, {wch:18}, {wch:16}, {wch:14}, {wch:14}, {wch:6}, {wch:26}, {wch:16}, {wch:16}, {wch:16}, {wch:16}, {wch:18}, {wch:14}
+  ];
+
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumen');
+
+  // --- INDIVIDUAL DETAIL SHEETS ---
+  sorted.forEach((liq, i) => {
+    const detail = [
+      ['DIMALCCO SAS - NIT 900.342.175-2'],
+      ['LIQUIDACIÓN DE PRESTACIONES SOCIALES'],
+      [],
+      ['DATOS DEL TRABAJADOR'],
+      ['Nombre', liq.empNombre, 'Cargo', liq.empCargo],
+      ['Cédula', liq.empCedula, 'Centro Costos', liq.empCc],
+      ['Fecha Ingreso', liq.empInicio, 'Motivo', liq.motivo],
+      [],
+      ['PERIODO LIQUIDADO'],
+      ['Desde', liq.fechaInicio, 'Hasta', liq.fechaFin],
+      ['Días', liq.dias, 'Variables Adicionales', liq.variables || 0],
+      [],
+      ['DESGLOSE DEL CÁLCULO'],
+      ['Concepto', 'Base', 'Días', 'Fórmula', 'Valor (COP)']
+    ];
+
+    if(liq.activeConcepts && liq.activeConcepts.prima)
+      detail.push(['Prima de Servicios', liq.basePrestacional, liq.dias, '(Base * Días) / 360', liq.prima]);
+    if(liq.activeConcepts && liq.activeConcepts.cesantias)
+      detail.push(['Cesantías', liq.basePrestacional, liq.dias, '(Base * Días) / 360', liq.cesantias]);
+    if(liq.activeConcepts && liq.activeConcepts.intereses && liq.activeConcepts.cesantias)
+      detail.push(['Intereses sobre Cesantías', liq.cesantias, liq.dias, '(Cesantías * Días * 12%) / 360', liq.intereses]);
+    if(liq.activeConcepts && liq.activeConcepts.vacaciones)
+      detail.push(['Vacaciones', liq.baseVacaciones, liq.dias, '(Base * Días) / 720', liq.vacaciones]);
+
+    detail.push([]);
+    detail.push(['TOTAL NETO LIQUIDADO', '', '', '', liq.total]);
+
+    const ws = XLSX.utils.aoa_to_sheet(detail);
+    ws['!cols'] = [{wch:26}, {wch:18}, {wch:8}, {wch:30}, {wch:18}];
+
+    // Sheet name must be ≤31 chars and unique
+    const sheetName = `${i+1}. ${(liq.empNombre || 'Empleado').substring(0, 24)}`;
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+
+  const fileDate = new Date().toISOString().split('T')[0];
+  XLSX.writeFile(wb, `historial_liquidaciones_DIMALCCO_${fileDate}.xlsx`);
+}
+
+// Initial page setup
+window.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  renderEmployees();
+
+  // If there are employees, select the first one by default
+  if(S.empleados && S.empleados.length > 0) {
+    selectEmployee(S.empleados[0].id);
+  } else {
+    // Disable saving if no employees
+    document.getElementById('btn-save-liq').disabled = true;
+  }
+
+  // Keyboard events
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') {
+      closeReceiptModal();
+    }
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nómina · DIMALCCO Publicidad</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--s:#fff;--b:#e2e8f0;--bs:#f8fafc;--t:#0f172a;--t2:#475569;--t3:#94a3b8;--ac:#4338ca;--as:#eef2ff;--in:#059669;--ib:#ecfdf5;--ex:#dc2626;--eb:#fef2f2;--w:#d97706;--wb:#fffbeb;--hd:#0f172a;--fn:'Sora',sans-serif;--mo:'DM Mono',monospace;--r:10px;--rsm:6px}
+body{font-family:var(--fn);background:var(--bg);color:var(--t);font-size:14px;min-height:100vh}
+.hdr{background:var(--hd);color:#f8fafc;padding:18px 28px 20px}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.hdr-ey{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#64748b;margin-bottom:3px}
+.hdr-ti{font-size:20px;font-weight:600}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#1e293b;border-radius:8px;overflow:hidden}
+.metric{background:var(--hd);padding:13px 16px}
+.metric-lbl{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#64748b;margin-bottom:5px}
+.metric-val{font-family:var(--mo);font-size:16px;font-weight:500;color:#f8fafc}
+.metric-val.g{color:#34d399}.metric-val.r{color:#f87171}.metric-val.y{color:#fbbf24}
+.metric-sub{font-size:10px;color:#475569;margin-top:2px}
+.layout{display:grid;grid-template-columns:248px 1fr;min-height:calc(100vh - 168px)}
+.sidebar{background:var(--s);border-right:1px solid var(--b);padding:18px 14px;overflow-y:auto}
+.sec-ti{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+.emp-card{padding:10px 12px;border:1px solid var(--b);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.emp-card:hover{border-color:var(--ac)}
+.emp-name{font-size:12px;font-weight:500;color:var(--t);margin-bottom:4px}
+.emp-cargo{font-size:10px;color:var(--t3);margin-bottom:4px}
+.emp-sal{font-family:var(--mo);font-size:11px;color:var(--t2)}
+.emp-cc{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.main{padding:20px 22px}
+.tab-bar{display:flex;gap:4px;background:var(--s);border:1px solid var(--b);border-radius:8px;padding:4px;margin-bottom:18px;width:fit-content}
+.tab{padding:7px 18px;border-radius:5px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;border:none;background:none;font-family:var(--fn);transition:all .15s}
+.tab.active{background:var(--ac);color:#fff;box-shadow:0 1px 4px rgba(67,56,202,.3)}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.spacer{flex:1}
+.btn-pri{display:flex;align-items:center;gap:5px;padding:8px 15px;background:var(--ac);color:#fff;border:none;border-radius:7px;font-family:var(--fn);font-size:12px;font-weight:500;cursor:pointer;transition:background .15s}
+.btn-pri:hover{background:#3730a3}
+.btn-sec{padding:7px 14px;background:none;border:1px solid var(--b);border-radius:var(--rsm);font-family:var(--fn);font-size:12px;cursor:pointer;color:var(--t2)}
+.btn-sec:hover{border-color:var(--t3)}
+select,input[type=date],input[type=text],input[type=number]{font-family:var(--fn);font-size:12px;color:var(--t);background:var(--s);border:1px solid var(--b);border-radius:var(--rsm);padding:6px 9px;outline:none}
+select:focus,input:focus{border-color:var(--ac)}
+.tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:#f8fafc;border-bottom:1px solid var(--b)}
+th{padding:9px 12px;text-align:left;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3)}
+th.num{text-align:right}
+td{padding:10px 12px;font-size:12px;color:var(--t);border-bottom:1px solid var(--bs);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+td.num{text-align:right;font-family:var(--mo);font-size:11px}
+.btn-sm{padding:3px 8px;border:1px solid var(--b);border-radius:4px;background:none;font-family:var(--fn);font-size:10px;cursor:pointer;color:var(--t2);transition:all .15s;margin-right:3px}
+.btn-sm:hover{border-color:var(--ac);color:var(--ac)}
+/* Liquidación detail */
+.liq-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin-bottom:14px}
+.liq-card-hdr{background:#f8fafc;border-bottom:1px solid var(--b);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.liq-card-ti{font-size:12px;font-weight:600;color:var(--t);text-transform:uppercase;letter-spacing:.05em}
+.liq-row{display:flex;justify-content:space-between;align-items:center;padding:9px 16px;border-bottom:1px solid var(--bs);font-size:12px}
+.liq-row:last-child{border-bottom:none}
+.liq-row.total{background:#f8fafc;font-weight:600;border-top:1px solid var(--b)}
+.liq-lbl{color:var(--t2)}
+.liq-val{font-family:var(--mo);font-size:11px;font-weight:500}
+.liq-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.stat-mini{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:12px 14px}
+.stat-mini-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-bottom:4px}
+.stat-mini-val{font-family:var(--mo);font-size:15px;font-weight:500}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--s);border-radius:14px;padding:26px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 40px rgba(0,0,0,.2);animation:mi .2s ease}
+@keyframes mi{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-size:15px;font-weight:600}
+.modal-close{width:28px;height:28px;border:none;background:var(--bg);border-radius:5px;cursor:pointer;font-size:15px;color:var(--t2);display:flex;align-items:center;justify-content:center}
+.form-row{margin-bottom:14px}
+.form-lbl{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t2);margin-bottom:5px}
+.form-row input,.form-row select{width:100%;padding:9px 11px;font-family:var(--fn);font-size:13px;background:var(--bg);border:1px solid var(--b);border-radius:8px;color:var(--t);outline:none}
+.form-row input:focus,.form-row select:focus{border-color:var(--ac);background:#fff}
+.form-g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.modal-ftr{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--b)}
+.divider{height:1px;background:var(--b);margin:16px 0}
+.info-box{background:var(--bg);border-radius:8px;padding:12px;font-size:12px;line-height:1.8;margin-bottom:14px;color:var(--t2)}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);text-decoration:none;margin-bottom:16px;transition:color .15s}
+.back-link:hover{color:var(--ac)}
+.grid-in{width:100%; border:none; background:transparent; font-family:var(--mo); font-size:12px; text-align:right; padding:4px; outline:1px solid transparent; transition:all 0.2s;}
+.grid-in:focus{outline:1px solid var(--ac); background:#fff; border-radius:4px;}
+.grid-in::-webkit-inner-spin-button, .grid-in::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-top">
+    <div>
+      <div class="hdr-ey">DIMALCCO Publicidad · Módulo Finanzas</div>
+      <div class="hdr-ti">Nómina & Carga Laboral</div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn-diag" onclick="checkSync()" style="background:#4f46e5">Verificar Sincronización</button>
+      <button class="btn-diag" onclick="runDiagnostic()">Diagnóstico Datos</button>
+      <button class="btn-save" onclick="saveAllGrid()">Guardar Todo</button>
+    </div>
+  </div>
+  <div class="metrics" id="metrics"></div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sec-ti">Empleados activos</div>
+    <div id="emp-list"></div>
+    <button style="width:100%;padding:9px;border:1px dashed var(--b);border-radius:8px;background:none;font-family:var(--fn);font-size:11px;color:var(--t3);cursor:pointer;margin-top:4px" onclick="openModalEmp()">+ Nuevo empleado</button>
+  </aside>
+
+  <main class="main">
+    <a class="back-link" href="../index.html">← Volver al workspace</a>
+    <div class="tab-bar">
+      <button class="tab active" onclick="setTab('liquidar',this)">Liquidar período</button>
+      <button class="tab" onclick="setTab('historial',this)">Historial</button>
+    </div>
+
+    <div id="tab-liquidar">
+      <div class="toolbar" style="background:#fff; padding:12px; border-radius:10px; border:1px solid var(--b); margin-bottom:15px;">
+        <div style="display:flex; align-items:center; gap:15px;">
+          <div>
+            <span style="font-size:11px; font-weight:700; color:var(--t3); display:block; text-transform:uppercase; margin-bottom:4px;">Mes</span>
+            <select id="liq-mes" onchange="renderGrid()">
+              <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+              <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+              <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+              <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+            </select>
+          </div>
+          <div>
+            <span style="font-size:11px; font-weight:700; color:var(--t3); display:block; text-transform:uppercase; margin-bottom:4px;">Año</span>
+            <select id="liq-anio" onchange="renderGrid()"><option value="2026" selected>2026</option><option value="2025">2025</option><option value="2024">2024</option></select>
+          </div>
+          <div>
+            <span style="font-size:11px; font-weight:700; color:var(--t3); display:block; text-transform:uppercase; margin-bottom:4px;">Periodo</span>
+            <select id="liq-quincena" onchange="renderGrid()">
+              <option value="1">1ª Quincena (Días 1-15)</option>
+              <option value="2">2ª Quincena (Días 16-30)</option>
+            </select>
+          </div>
+          <div style="flex:1; max-width:300px; margin-left:15px">
+            <span style="font-size:11px; font-weight:700; color:var(--t3); display:block; text-transform:uppercase; margin-bottom:4px;">Buscar Empleado</span>
+            <input type="text" id="grid-search" placeholder="Nombre o cédula..." oninput="filterGrid()" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--b); font-size:12px">
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-pri" style="background:#10b981" onclick="guardarNominaGrid()">💾 Guardar Nómina</button>
+          <button class="btn-sec" onclick="exportarExcelGrid()">📥 Exportar Excel</button>
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <table id="grid-nomina">
+          <thead>
+            <tr>
+              <th style="width:250px">Empleado</th>
+              <th class="num">Sueldo Base</th>
+              <th class="num" style="width:80px">Días</th>
+              <th class="num">Sueldo Q.</th>
+              <th class="num">Aux. Transp.</th>
+              <th class="num" style="width:110px">H. Extra / Ads</th>
+              <th class="num">Seg. Social</th>
+              <th class="num" style="width:110px">Otras Ded.</th>
+              <th class="num" style="background:#f1f5f9; width:130px">Neto a Pagar</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-grid"></tbody>
+          <tfoot id="tfoot-grid" style="background:#f8fafc; font-weight:700"></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div id="tab-historial" style="display:none">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Período</th><th>Empleados</th>
+            <th class="num">Total devengado</th><th class="num">Deducciones</th><th class="num">Neto pagado</th>
+            <th class="num">Costo empleador</th><th class="num">Provisiones</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-hist"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const DB='dim_publicidad_nomina_v1';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
+const fmt=v=>'$ '+Math.abs(v).toLocaleString('es-CO');
+const todayISO=()=>new Date().toISOString().split('T')[0];
+const MESES_NOM=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const SMMLV=1750905, AUX_TRANS=249095;
+
+const HOLIDAYS = {
+    "2026-01-01": "Año Nuevo", "2026-01-12": "Reyes Magos", "2026-03-23": "Día de San José",
+    "2026-04-02": "Jueves Santo", "2026-04-03": "Viernes Santo", "2026-05-01": "Día del Trabajo",
+    "2026-05-18": "Ascensión de Jesús", "2026-06-08": "Corpus Christi", "2026-06-15": "Sagrado Corazón de Jesús",
+    "2026-06-29": "San Pedro y San Pablo", "2026-07-20": "Día de la Independencia", "2026-08-07": "Batalla de Boyacá",
+    "2026-08-17": "Asunción de la Virgen", "2026-10-12": "Día de la Raza", "2026-11-02": "Todos los Santos",
+    "2026-11-16": "Independencia de Cartagena", "2026-12-08": "Inmaculada Concepción", "2026-12-25": "Navidad"
+};
+
+const getDayInfo = (dateStr) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    const day = date.getDay();
+    return { isSunday: (day === 0), isHoliday: !!HOLIDAYS[dateStr] };
+};
+
+const calculateRates = (salario) => {
+    const hour = (salario / 30 / 8);
+    return {
+        hour,
+        extDia: hour * 1.25,
+        rNoct: hour * 0.35,
+        extNoct: hour * 1.75,
+        rDom: hour * 0.75,
+        extDom: hour * 2.00,
+        travel: hour * 0.50
+    };
+};
+
+function defaultState(){
+  return{
+    empleados:[
+      {id:'e1',nombre:'Martínez Ruiz, Carlos Alberto',cedula:'1.023.456.789',cargo:'Maestro Ebanista',cc:'Producción',salario:2200000,tipo:'indefinido',inicio:'2021-03-15',arl:'1.044',activo:true},
+      {id:'e2',nombre:'González Pérez, Luis Fernando',cedula:'1.035.678.901',cargo:'Ebanista',cc:'Producción',salario:1800000,tipo:'indefinido',inicio:'2022-06-01',arl:'1.044',activo:true},
+      {id:'e3',nombre:'Vargas Torres, Andrés Felipe',cedula:'1.018.234.567',cargo:'Auxiliar de producción',cc:'Producción',salario:1423500,tipo:'indefinido',inicio:'2023-01-10',arl:'1.044',activo:true},
+      {id:'e4',nombre:'Rodríguez Soto, María Alejandra',cedula:'52.345.678',cargo:'Auxiliar contable',cc:'Administración',salario:1600000,tipo:'indefinido',inicio:'2022-08-01',arl:'0.522',activo:true},
+      {id:'e5',nombre:'Ospina Leal, Juan Pablo',cedula:'1.012.345.678',cargo:'Vendedor',cc:'Comercial',salario:1423500,tipo:'indefinido',inicio:'2023-05-15',arl:'0.522',activo:true}
+    ],
+    liquidaciones:[]
+  };
+}
+
+function checkSync() {
+    const rawShifts = localStorage.getItem('publicidad_shiftRecords');
+    if(!rawShifts) { alert("❌ No se encontraron registros en el Módulo de Horarios."); return; }
+    
+    const shifts = JSON.parse(rawShifts);
+    const mesSel = document.getElementById('liq-mes').value.padStart(2, '0');
+    const qSel = document.getElementById('liq-quincena').value;
+    
+    let logs = `📊 REPORTE DE SINCRONIZACIÓN (Mes ${mesSel}, Q${qSel})\n`;
+    logs += `------------------------------------------\n`;
+    logs += `Total registros en Horarios: ${shifts.length}\n\n`;
+
+    let encontrados = 0;
+    S.empleados.forEach(e => {
+        const payrollTokens = e.nombre.toUpperCase().replace(/[,.-]/g,' ').split(/\s+/).filter(t => t.length > 2);
+        const matches = shifts.filter(s => {
+            if(!s.workerName) return false;
+            const horName = s.workerName.toUpperCase();
+            const hits = payrollTokens.filter(t => horName.includes(t));
+            if(hits.length < 1) return false;
+            
+            const [y, m, d] = s.date.split('-');
+            return m === mesSel && (qSel === "1" ? parseInt(d) <= 15 : parseInt(d) > 15);
+        });
+
+        if(matches.length > 0) {
+            encontrados++;
+            logs += `✅ ${e.nombre}: ${matches.length} turnos encontrados.\n`;
+        } else {
+            logs += `❌ ${e.nombre}: No se encontraron turnos.\n`;
+        }
+    });
+
+    alert(logs + `\nTotal Vinculados: ${encontrados} de ${S.empleados.length}`);
+}
+
+function runDiagnostic() {
+  const e = localStorage.getItem('dimalcco_publicidad_emp_v2');
+  const n = localStorage.getItem('dimalcco_publicidad_nov_v2');
+  const h = localStorage.getItem(DB);
+  
+  const ce = e ? JSON.parse(e).length : 0;
+  const cn = n ? JSON.parse(n).length : 0;
+  const cev = ev ? JSON.parse(ev).length : 0;
+  const ch = h ? JSON.parse(h).liquidaciones.length : 0;
+
+  alert(`📊 DIAGNÓSTICO DE DATOS:\n\n` +
+        `• Empleados en Base Central: ${ce}\n` +
+        `• Novedades registradas: ${cn}\n` +
+        `• Evaluaciones: ${cev}\n` +
+        `• Liquidaciones guardadas: ${ch}\n\n` +
+        `Si los números son mayores a 0, tus datos están a salvo y es un error de visualización.`);
+  console.log("DEBUG STORAGE:", {ce, cn, cev, ch, raw_emp: e, raw_nov: n});
+}
+
+let S;
+function load(){
+  let state = defaultState();
+  try {
+    const s = localStorage.getItem(DB);
+    if(s) state = JSON.parse(s);
+    
+    // FORZAR SINCRONIZACIÓN CON MAESTRO DE PERSONAL (Central)
+    const rawP = localStorage.getItem('dimalcco_publicidad_emp_v2');
+    if(rawP) {
+      const pEmps = JSON.parse(rawP);
+      if(pEmps && pEmps.length > 0) {
+        state.empleados = pEmps.map(e => {
+          let rate = '0.522';
+          if(e.arl === 'II') rate = '1.044';
+          else if(e.arl === 'III') rate = '2.436';
+          else if(e.arl === 'IV') rate = '4.350';
+          else if(e.arl === 'V') rate = '6.960';
+          else if(e.arl && e.arl.includes('.')) rate = e.arl;
+
+          return {
+            id: e.cedula || uid(),
+            nombre: e.nombre || 'Sin nombre',
+            cedula: e.cedula || '',
+            cargo: e.cargo || '',
+            cc: e.centro || 'Producción',
+            salario: Number(e.salario || 0),
+            bono: Number(e.bono || 0),
+            tipo: 'indefinido',
+            inicio: e.fechaIngreso || e.inicio || '2020-01-01',
+            arl: rate,
+            activo: true // FORZAR VISIBILIDAD TOTAL
+          };
+        });
+      }
+    }
+  } catch(e) { console.error("Sync Error:", e); }
+  
+  if(!state.empleados || state.empleados.length === 0) {
+    state.empleados = defaultState().empleados;
+  }
+  return state;
+}
+
+function getFiltrados() {
+  try {
+    if(!S || !S.empleados) return [];
+    return S.empleados.filter(e => e.activo !== false);
+  } catch(e) { return []; }
+}
+    function save() {
+        localStorage.setItem(DB, JSON.stringify(S));
+        // Sincronización Automática
+        if (window.parent && window.parent.postMessage) {
+            window.parent.postMessage('sync_cloud', '*');
+        }
+    }
+
+// ── LOGICA DE GRID (EXCEL STYLE) ─────────────────────────────────────────────
+function renderGrid() {
+  const tbody = document.getElementById('tbody-grid');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  
+  const activos = getFiltrados();
+  console.log("Visualizando grid para", activos.length, "empleados");
+
+  if(activos.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:40px; color:var(--t3)">No se encontraron empleados activos para este periodo. Revisa el maestro de personal.</td></tr>`;
+    updateTotals();
+    return;
+  }
+  
+  activos.forEach(e => {
+    try {
+      // ── 1. CARGAR NOVEDADES EXTERNAS (Manuales) ──
+      let adsPre = 0, dedPre = 0;
+      try {
+        const rawNovs = localStorage.getItem('dimalcco_publicidad_nov_v2') || localStorage.getItem('dimalcco_nov_v1') || '[]';
+        const novs = JSON.parse(rawNovs);
+        novs.forEach(n => {
+          if(n.cedula === e.cedula) {
+            const v = parseFloat(n.valor || 0);
+            if(['Bonificación','Adición','Horas Extra'].includes(n.tipo)) adsPre += v;
+            if(['Deducción','Préstamo'].includes(n.tipo)) dedPre += v;
+          }
+        });
+      } catch(err) {}
+
+      // ── 2. INTEGRACIÓN CON CONTROL DE HORARIOS (Fuzzy Matching) ──
+      let adsHoras = 0;
+      let tieneHoras = false;
+      try {
+        const rawShifts = localStorage.getItem('publicidad_shiftRecords');
+        if(rawShifts) {
+          const shifts = JSON.parse(rawShifts);
+          const mesSel = document.getElementById('liq-mes').value.padStart(2, '0');
+          const qSel = document.getElementById('liq-quincena').value;
+          
+          const rates = calculateRates(e.salario);
+
+          const workerShifts = shifts.filter(s => {
+            if(!s.workerName) return false;
+            // Token-based matching (more robust)
+            const payrollTokens = e.nombre.toUpperCase().replace(/[,.-]/g,' ').split(/\s+/).filter(t => t.length > 2);
+            const horName = s.workerName.toUpperCase();
+            const hits = payrollTokens.filter(t => horName.includes(t));
+            
+            // Si coincide al menos un token importante (apellido o nombre largo)
+            if(hits.length < 1) return false;
+            
+            const [y, m, d] = s.date.split('-');
+            if(m !== mesSel) return false;
+            return qSel === "1" ? parseInt(d) <= 15 : parseInt(d) > 15;
+          });
+
+          if(workerShifts.length > 0) {
+            tieneHoras = true;
+            workerShifts.forEach(s => {
+                const totalHours = parseFloat(s.totalHours) || 0;
+                const ordHours = parseFloat(s.ordinaryHours) || 0;
+                const extrasQty = Math.max(0, totalHours - ordHours);
+                const { isSunday, isHoliday } = getDayInfo(s.date);
+                const isSunOrHol = isSunday || isHoliday;
+                
+                // Recargos básicos (Estimación de integración según tabla de horarios)
+                if(isSunOrHol) {
+                    adsHoras += (ordHours * rates.rDom) + (extrasQty * rates.extDom);
+                } else {
+                    adsHoras += (extrasQty * rates.extDia);
+                }
+                adsHoras += (parseFloat(s.travelHours || 0) * rates.travel);
+            });
+          }
+        }
+      } catch(err) { console.error("Sync Horarios Error:", err); }
+
+      const totalAds = adsPre + Math.round(adsHoras);
+
+      const tr = document.createElement('tr');
+      tr.id = `row-${e.cedula}`;
+      tr.innerHTML = `
+        <td>
+          <div style="font-weight:600">${e.nombre}</div>
+          <div style="font-size:10px; color:var(--t3)">
+            ${e.cargo} ${tieneHoras ? '<span style="background:#e0e7ff; color:#4338ca; padding:1px 4px; border-radius:4px; font-size:9px; margin-left:4px">⏱️ Horas Sincronizadas</span>' : ''}
+          </div>
+        </td>
+        <td class="num">${fmt(e.salario)}</td>
+        <td class="num"><input type="number" class="grid-in" value="15" min="0" max="15" oninput="updateRow('${e.cedula}')" id="dias-${e.cedula}"></td>
+        <td class="num" id="val-sueldo-${e.cedula}">$ 0</td>
+        <td class="num" id="val-aux-${e.cedula}">$ 0</td>
+        <td class="num"><input type="number" class="grid-in" value="${totalAds}" oninput="updateRow('${e.cedula}')" id="ads-${e.cedula}"></td>
+        <td class="num" id="val-ss-${e.cedula}" style="color:var(--ex)">$ 0</td>
+        <td class="num"><input type="number" class="grid-in" value="${dedPre}" oninput="updateRow('${e.cedula}')" id="ded-${e.cedula}"></td>
+        <td class="num" id="val-neto-${e.cedula}" style="font-weight:700; background:#f0f9ff">$ 0</td>
+      `;
+      tbody.appendChild(tr);
+      updateRow(e.cedula);
+    } catch(err) {
+      console.error("Error renderizando fila para:", e.nombre, err);
+    }
+  });
+  updateTotals();
+}
+
+function updateRow(cedula) {
+  const emp = S.empleados.find(e => e.cedula === cedula);
+  if(!emp) return;
+
+  const dias = parseFloat(document.getElementById(`dias-${cedula}`).value) || 0;
+  const ads = parseFloat(document.getElementById(`ads-${cedula}`).value) || 0;
+  const ded_ext = parseFloat(document.getElementById(`ded-${cedula}`).value) || 0;
+
+  // Cálculos proporcionales
+  const sueldoQ = (emp.salario / 30) * dias;
+  const auxQ = emp.salario <= 2 * SMMLV ? (AUX_TRANS / 30) * dias : 0;
+  
+  // Seguridad Social (Sobre el proporcional o SMMLV según política)
+  const base_ss = Math.max(sueldoQ, (SMMLV / 30) * dias);
+  const salud = Math.round(base_ss * 0.04);
+  const pension = Math.round(base_ss * 0.04);
+  const total_ss = salud + pension;
+
+  const neto = sueldoQ + auxQ + ads - total_ss - ded_ext;
+
+  document.getElementById(`val-sueldo-${cedula}`).textContent = fmt(sueldoQ);
+  document.getElementById(`val-aux-${cedula}`).textContent = fmt(auxQ);
+  document.getElementById(`val-ss-${cedula}`).textContent = `- ${fmt(total_ss)}`;
+  document.getElementById(`val-neto-${cedula}`).textContent = fmt(neto);
+  
+  updateTotals();
+}
+
+function filterGrid() {
+  const query = document.getElementById('grid-search').value.toLowerCase();
+  const rows = document.querySelectorAll('#tbody-grid tr');
+  
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(query) ? '' : 'none';
+  });
+  
+  updateTotals();
+}
+
+function updateTotals() {
+  const tfoot = document.getElementById('tfoot-grid');
+  if(!tfoot) return;
+  
+  const rows = document.querySelectorAll('#tbody-grid tr');
+  let totalNeto = 0;
+
+  rows.forEach(row => {
+    if(row.style.display !== 'none') {
+      const netoCell = row.querySelector('[id^="val-neto-"]');
+      if(netoCell) {
+        const neto = parseFloat(netoCell.textContent.replace(/[^0-9.-]+/g,"")) || 0;
+        totalNeto += neto;
+      }
+    }
+  });
+
+  tfoot.innerHTML = `
+    <tr>
+      <td colspan="8" style="text-align:right">TOTAL NETO (VISIBLES):</td>
+      <td class="num" style="background:#bae6fd; color:var(--ac); font-size:14px">${fmt(totalNeto)}</td>
+    </tr>
+  `;
+}
+
+function guardarNominaGrid() {
+  const mes = parseInt(document.getElementById('liq-mes').value);
+  const anio = parseInt(document.getElementById('liq-anio').value);
+  const q = document.getElementById('liq-quincena').value;
+  const qText = q === '1' ? '1Q' : '2Q';
+  
+  const activos = getFiltrados();
+  let tNeto = 0;
+  
+  // Recopilar datos de la tabla
+  const registros = activos.map(e => {
+    const netoStr = document.getElementById(`val-neto-${e.cedula}`).textContent;
+    const neto = parseFloat(netoStr.replace(/[^0-9.-]+/g,"")) || 0;
+    tNeto += neto;
+    return {
+      cedula: e.cedula,
+      nombre: e.nombre,
+      neto: neto,
+      dias: document.getElementById(`dias-${e.cedula}`).value,
+      ads: document.getElementById(`ads-${e.cedula}`).value,
+      ded: document.getElementById(`ded-${e.cedula}`).value
+    };
+  });
+
+  S.liquidaciones.push({
+    id: uid(), 
+    mes, anio, 
+    periodo: `${MESES_NOM[mes]} ${anio} (${qText})`,
+    empleados: activos.length,
+    neto: tNeto,
+    detalles: registros
+  });
+
+  save();
+  alert(`✅ Nómina ${qText} de ${MESES_NOM[mes]} guardada exitosamente.`);
+  setTab('historial', document.querySelectorAll('.tab')[1]);
+}
+
+function exportarExcelGrid() {
+  const mes = document.getElementById('liq-mes').value;
+  const q = document.getElementById('liq-quincena').value;
+  const data = [['Empleado', 'Cédula', 'Sueldo Base', 'Días', 'Sueldo Q', 'Aux Transp', 'Adiciones', 'Seg Social', 'Deducciones', 'Neto']];
+  
+  const activos = getFiltrados();
+  activos.forEach(e => {
+    const row = [
+      e.nombre, e.cedula, e.salario,
+      document.getElementById(`dias-${e.cedula}`).value,
+      document.getElementById(`val-sueldo-${e.cedula}`).textContent,
+      document.getElementById(`val-aux-${e.cedula}`).textContent,
+      document.getElementById(`ads-${e.cedula}`).value,
+      document.getElementById(`val-ss-${e.cedula}`).textContent,
+      document.getElementById(`ded-${e.cedula}`).value,
+      document.getElementById(`val-neto-${e.cedula}`).textContent
+    ];
+    data.push(row);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Nomina");
+  XLSX.writeFile(wb, `Nomina_Dimalcco_Publicidad_${MESES_NOM[mes]}_Q${q}.xlsx`);
+}
+
+function renderConsolidado() {
+  const tbody = document.getElementById('tbody-cons');
+  const tfoot = document.getElementById('tfoot-cons');
+  tbody.innerHTML = '';
+  
+  const activos = getFiltrados();
+  let tots = { sal:0, aux:0, ads:0, ded:0, neto:0 };
+
+  activos.forEach(e => {
+    const c = calculo(e);
+    tots.sal += c.sal;
+    tots.aux += c.aux;
+    tots.ads += c.bono_nomina;
+    tots.ded += c.total_ded;
+    tots.neto += c.neto;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>
+          <strong>${e.nombre}</strong><br>
+          <small style="color:var(--t3)">${e.cargo}</small><br>
+          <button class="btn-sm" style="margin-top:4px; color:var(--ac); border-color:var(--ac)" onclick="openModalNov('${e.cedula}', '${e.nombre}')">➕ Novedad</button>
+        </td>
+        <td class="num">${fmt(c.sal)}</td>
+        <td class="num">${fmt(c.aux)}</td>
+        <td class="num" style="color:var(--in)">${fmt(c.bono_nomina)}</td>
+        <td class="num" style="color:var(--ex)">${fmt(c.total_ded)}</td>
+        <td class="num" style="font-weight:600; background:#f8fafc">${fmt(c.neto)}</td>
+      </tr>
+    `;
+  });
+
+  tfoot.innerHTML = `
+    <tr>
+      <td>TOTALES (${activos.length} empleados)</td>
+      <td class="num">${fmt(tots.sal)}</td>
+      <td class="num">${fmt(tots.aux)}</td>
+      <td class="num">${fmt(tots.ads)}</td>
+      <td class="num">${fmt(tots.ded)}</td>
+      <td class="num" style="color:var(--ac)">${fmt(tots.neto)}</td>
+    </tr>
+  `;
+
+  document.getElementById('modal-consolidado').classList.add('open');
+}
+
+function guardarLiquidacion() {
+  const mes = parseInt(document.getElementById('liq-mes').value);
+  const anio = parseInt(document.getElementById('liq-anio').value);
+  const q = document.getElementById('liq-quincena').value;
+  const qText = q === '1' ? '1Q' : (q === '2' ? '2Q' : 'MES');
+  
+  const activos = getFiltrados();
+  let tDev=0, tDed=0, tNeto=0, tEmp=0, tProv=0;
+  activos.forEach(e => {
+    const c = calculo(e);
+    tDev += c.devengado; tDed += c.total_ded; tNeto += c.neto;
+    tEmp += c.total_emp; tProv += c.total_prov;
+  });
+
+  S.liquidaciones.push({
+    id: uid(), 
+    mes, anio, 
+    periodo: `${MESES_NOM[mes]} ${anio} (${qText})`,
+    empleados: activos.length,
+    total_devengado: tDev,
+    total_ded: tDed,
+    neto: tNeto,
+    costo_empleador: tEmp,
+    provisiones: tProv
+  });
+
+  save();
+  document.getElementById('modal-consolidado').classList.remove('open');
+  alert(`Nómina ${qText} de ${MESES_NOM[mes]} guardada en historial.`);
+  renderHistorial();
+}
+
+function renderHistorial(){
+  const tbody=document.getElementById('tbody-hist');
+  const sorted=[...S.liquidaciones].sort((a,b)=>b.anio-a.anio||b.mes-a.mes);
+  if(!sorted.length){tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--t3)">No hay liquidaciones guardadas</td></tr>`;return;}
+  tbody.innerHTML=sorted.map(l=>`<tr>
+    <td style="font-weight:500">${l.periodo}</td>
+    <td style="color:var(--t2)">${l.empleados}</td>
+    <td class="num">${fmt(l.total_devengado)}</td>
+    <td class="num" style="color:var(--ex)">- ${fmt(l.total_ded)}</td>
+    <td class="num" style="color:var(--in);font-weight:600">${fmt(l.neto)}</td>
+    <td class="num" style="color:var(--ex)">${fmt(l.costo_empleador)}</td>
+    <td class="num" style="color:var(--w)">${fmt(l.provisiones)}</td>
+    <td><button class="btn-sm" onclick="deleteLiq('${l.id}')">×</button></td>
+  </tr>`).join('');
+}
+
+function deleteLiq(id){if(!confirm('¿Eliminar?'))return;S.liquidaciones=S.liquidaciones.filter(l=>l.id!==id);save();renderHistorial();}
+
+function setTab(tab,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('tab-liquidar').style.display=tab==='liquidar'?'block':'none';
+  document.getElementById('tab-historial').style.display=tab==='historial'?'block':'none';
+  if(tab==='historial')renderHistorial();
+}
+
+function renderEmployees(){
+  const CC_CLR={'Producción':'#4338ca','Administración':'#d97706','Comercial':'#059669'};
+  const filtrados = getFiltrados();
+  document.getElementById('emp-list').innerHTML = filtrados.map((e, idx) => `
+    <div class="emp-card" onclick="openModalEmp(${S.empleados.indexOf(e)})">
+      <div style="display:flex; justify-content:space-between">
+        <div class="emp-name">${e.nombre}</div>
+        <div style="display:flex; gap:6px">
+          <button class="btn-sm" style="padding:2px 5px; font-size:9px" onclick="event.stopPropagation(); openModalNov('${e.cedula}', '${e.nombre}')">➕ Nov.</button>
+          <div style="font-size:10px; color:var(--ac)">✏️</div>
+        </div>
+      </div>
+      <div class="emp-cargo">${e.cargo}</div>
+      <div class="emp-sal">${fmt(e.salario)} ${e.bono?` (+${fmt(e.bono)})`:''}</div>
+      <div class="emp-cc" style="color:${CC_CLR[e.cc]||'var(--t3)'}">${e.cc}</div>
+    </div>`).join('');
+}
+
+function openModalEmp(idx){
+  document.getElementById('e-inicio').value=todayISO();
+  if(idx !== undefined) {
+    const e = S.empleados[idx];
+    document.getElementById('e-id-hidden').value = idx;
+    document.getElementById('e-nombre').value = e.nombre;
+    document.getElementById('e-cc').value = e.cedula;
+    document.getElementById('e-cargo').value = e.cargo;
+    document.getElementById('e-cc-sel').value = e.cc;
+    document.getElementById('e-sal').value = e.salario;
+    document.getElementById('e-bono').value = e.bono || 0;
+    document.getElementById('e-tipo').value = e.tipo || 'indefinido';
+    document.getElementById('e-inicio').value = e.inicio;
+    document.getElementById('e-arl').value = e.arl || '0.522';
+    document.querySelector('.modal-title').textContent = 'Editar empleado';
+  } else {
+    document.getElementById('e-id-hidden').value = -1;
+    document.getElementById('e-nombre').value = '';
+    document.getElementById('e-cc').value = '';
+    document.getElementById('e-cargo').value = '';
+    document.getElementById('e-sal').value = '';
+    document.getElementById('e-bono').value = '';
+    document.querySelector('.modal-title').textContent = 'Nuevo empleado';
+  }
+  document.getElementById('modal-emp-bk').classList.add('open');
+}
+function closeModalEmp(){document.getElementById('modal-emp-bk').classList.remove('open');}
+function saveEmp(){
+  const idx = parseInt(document.getElementById('e-id-hidden').value);
+  const nombre=document.getElementById('e-nombre').value.trim();
+  const sal=parseFloat(document.getElementById('e-sal').value);
+  const bono=parseFloat(document.getElementById('e-bono').value) || 0;
+  if(!nombre||!sal){alert('Completa los campos obligatorios.');return;}
+  
+  const data = {
+    nombre,
+    cedula:document.getElementById('e-cc').value.trim(),
+    cargo:document.getElementById('e-cargo').value.trim(),
+    cc:document.getElementById('e-cc-sel').value,
+    salario:sal,
+    bono:bono,
+    tipo:document.getElementById('e-tipo').value,
+    inicio:document.getElementById('e-inicio').value,
+    arl:document.getElementById('e-arl').value,
+    activo:true
+  };
+
+  if(idx === -1) {
+    data.id = uid();
+    S.empleados.push(data);
+  } else {
+    S.empleados[idx] = {...S.empleados[idx], ...data};
+  }
+  
+  save();
+  closeModalEmp();
+  renderAll();
+  renderGrid();
+}
+
+function renderAll(){renderHeader();renderEmployees();}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalEmp();});
+document.getElementById('modal-emp-bk').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModalEmp();});
+
+try {
+  S = load();
+  console.log("Estado cargado:", S);
+  
+  if(document.getElementById('liq-mes')) {
+    document.getElementById('liq-mes').value = new Date().getMonth() + 1;
+  }
+  
+  // Renderizado por pasos para evitar que un error en uno bloquee al otro
+  try { renderHeader(); } catch(e) { console.error("Error Header:", e); }
+  try { renderEmployees(); } catch(e) { console.error("Error Emps:", e); }
+  try { renderGrid(); } catch(e) { console.error("Error Grid:", e); }
+  
+} catch(e) {
+  console.error("CRITICAL LOAD ERROR:", e);
+  alert("Error al cargar datos. Pulsa F12 para ver la consola.");
+}
+</script>
+</body>
+</html>
