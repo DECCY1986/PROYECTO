@@ -18,10 +18,15 @@ document.addEventListener('DOMContentLoaded', () => {
         "JHONNY RAFAEL CASTRELLON RODRIGUEZ": 1182500,
         "CAMILO DURAN": 1210000,
         "JULIO PIERNAGORDA": 1000000,
-        "DIEGO VELANDIA": 1265000,
+        "DIEGO VELANDIA": 1350000,
         "JORGE GILBERTO RODRIGUEZ AGUILERA": 1350000,
         "HENRY GONZALES": 1320000,
-        "JOSE MANUEL FORERO": 1210000
+        "JOSE MANUEL FORERO": 1210000,
+        "DEVID ALEJANDRO MEDINA": 1100000,
+        "JOSE MANUEL FORERO AREVALO": 1210000,
+        "HENRY ALEXANDER ARIAS": 1100000,
+        "ANDRES FRANCISCO FLORIAN": 1100000,
+        "JAVIER LEONARDO QUINTERO": 1100000
     };
 
     // DOM Elements
@@ -55,7 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Cargar Lista de Trabajadores
     function populateWorkers() {
-        const workers = Object.keys(FIXED_QUINCENA).sort();
+        const workersFromRates = (() => {
+            try { return Object.keys(JSON.parse(localStorage.getItem('workerRates') || '{}')); }
+            catch (error) { return []; }
+        })();
+        const workers = [...new Set([...Object.keys(FIXED_QUINCENA), ...workersFromRates])].sort();
         workerSelect.innerHTML = '<option value="">Seleccione su nombre...</option>' + 
             workers.map(w => `<option value="${w}">${w}</option>`).join('');
     }
@@ -303,22 +312,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeRecord = records[existingRecordIndex !== -1 ? existingRecordIndex : records.length - 1];
 
         // Transmitir inmediatamente a la nube pública de relay para que el PC lo reciba al instante
-        if (typeof pushMobileShiftToCloud === 'function') {
-            pushMobileShiftToCloud(activeRecord);
-        } else {
-            fetch('https://ntfy.sh/dimalcco_shifts_2026_x77', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(activeRecord)
-            }).catch(e => {});
-        }
+        const sendRecordToCloud = async () => {
+            for (let attempt = 0; attempt < 3; attempt++) {
+                try {
+                    const result = typeof pushMobileShiftToCloud === 'function'
+                        ? await pushMobileShiftToCloud(activeRecord)
+                        : await fetch('https://ntfy.sh/dimalcco_shifts_2026_x77', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+                            body: JSON.stringify(activeRecord)
+                        });
+                    if (result === true || result?.ok === true) return true;
+                } catch (error) {
+                    console.warn('No se pudo sincronizar la marcación QR:', error);
+                }
+                if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+            }
+            return false;
+        };
+        const cloudSyncPromise = sendRecordToCloud();
+
+        const actionLabelStr = actionType === 'ENTRADA' ? 'ENTRADA' : 'SALIDA';
 
         // Configurar botones de WhatsApp y Copiar Código
         const btnShareWhatsapp = document.getElementById('btnShareWhatsapp');
         const btnCopyShiftCode = document.getElementById('btnCopyShiftCode');
 
         if (btnShareWhatsapp) {
-            const textMsg = `*DIMALCCO CONTROL DE HORARIOS*\n📌 *Trabajador:* ${workerName}\n⏰ *Marca:* ${actionLabel} (${currentTimeStr})\n🛠️ *OP:* #${opNumber}\n🏢 *Ubicación:* ${projectName} (${location.toUpperCase()})\n📅 *Fecha:* ${currentDateStr}`;
+            const textMsg = `*DIMALCCO CONTROL DE HORARIOS*\n📌 *Trabajador:* ${workerName}\n⏰ *Marca:* ${actionLabelStr} (${currentTimeStr})\n🛠️ *OP:* #${opNumber}\n🏢 *Ubicación:* ${projectName} (${location.toUpperCase()})\n📅 *Fecha:* ${currentDateStr}`;
             btnShareWhatsapp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(textMsg)}`;
             btnShareWhatsapp.style.display = 'flex';
         }
@@ -335,15 +356,77 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Mostrar confirmación modal
-        const actionLabelStr = actionType === 'ENTRADA' ? 'ENTRADA 🟢' : 'SALIDA 🔴';
+        const actionLabelStrWithIcon = actionType === 'ENTRADA' ? 'ENTRADA 🟢' : 'SALIDA 🔴';
         successMessage.innerHTML = `
             <strong>${workerName}</strong><br>
-            Se registró tu <strong>${actionLabelStr}</strong> a las <strong>${currentTimeStr}</strong>.<br>
+            Se registró tu <strong>${actionLabelStrWithIcon}</strong> a las <strong>${currentTimeStr}</strong>.<br>
             <span style="font-size: 0.82rem; color: #64748b; margin-top:6px; display:inline-block;">
                 OP #${opNumber} (${projectName})
             </span>
         `;
         successOverlay.style.display = 'flex';
+
+        const closeQrPage = () => {
+            window.close();
+            setTimeout(() => {
+                if (!window.closed) {
+                    window.location.replace('about:blank');
+                }
+            }, 250);
+        };
+
+        const closeAfterSync = async () => {
+            const synced = await Promise.race([
+                cloudSyncPromise,
+                new Promise(resolve => setTimeout(() => resolve(false), 10000))
+            ]);
+            if (synced) {
+                successMessage.insertAdjacentHTML('beforeend', `
+                    <br><strong style="color:#059669; display:inline-block; margin-top:8px;">
+                        ${actionType === 'ENTRADA' ? 'Tu entrada' : 'Tu salida'} quedó registrada y sincronizada.
+                    </strong>
+                `);
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                closeQrPage();
+                return;
+            }
+
+            successMessage.insertAdjacentHTML('beforeend', `
+                <br><span style="color:#b91c1c; display:inline-block; margin-top:8px;">
+                    La marca quedó guardada en este teléfono, pero no se confirmó la sincronización. Revisa la conexión e inténtalo de nuevo.
+                </span>
+            `);
+            btnCloseSuccess.style.display = 'none';
+            let retryButton = document.getElementById('btnRetryCloudSync');
+            if (!retryButton) {
+                retryButton = document.createElement('button');
+                retryButton.id = 'btnRetryCloudSync';
+                retryButton.type = 'button';
+                retryButton.className = 'btn-submit';
+                retryButton.style.cssText = 'background:#0284c7; padding:12px; margin-top:8px;';
+                retryButton.textContent = 'Reintentar sincronización';
+                successOverlay.querySelector('.success-card').insertBefore(retryButton, btnCloseSuccess);
+            }
+            retryButton.onclick = async () => {
+                retryButton.disabled = true;
+                retryButton.textContent = 'Sincronizando...';
+                const retrySucceeded = await sendRecordToCloud();
+                if (retrySucceeded) {
+                    successMessage.querySelector('span[style*="color:#b91c1c"]')?.remove();
+                    successMessage.insertAdjacentHTML('beforeend', `
+                        <br><strong style="color:#059669; display:inline-block; margin-top:8px;">
+                            ${actionType === 'ENTRADA' ? 'Tu entrada' : 'Tu salida'} quedó registrada y sincronizada.
+                        </strong>
+                    `);
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    closeQrPage();
+                } else {
+                    retryButton.disabled = false;
+                    retryButton.textContent = 'Reintentar sincronización';
+                }
+            };
+        };
+        closeAfterSync();
     });
 
     btnCloseSuccess.addEventListener('click', () => {

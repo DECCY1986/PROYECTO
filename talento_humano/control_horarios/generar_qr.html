@@ -432,6 +432,7 @@
                         title = `CARNET: ${worker}`;
                         sub = `Escanea con la cámara para abrir la app`;
                     }
+                    qrData += `${qrData.includes('?') ? '&' : '?'}appv=20261023-2`;
                 }
 
                 posterTitle.textContent = title;

@@ -22,7 +22,7 @@ async function pushMobileShiftToCloud(shiftObj) {
         console.log("☁️ Enviando turno a la nube pública...", shiftObj);
         const resp = await fetch(SHIFT_RELAY_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
             body: JSON.stringify(shiftObj)
         });
         return resp.ok;
@@ -60,6 +60,12 @@ async function pullMobileShiftsFromCloud() {
                     } catch(e) {}
                     
                     if (shift && shift.workerName && shift.date) {
+                        let deletedShiftIds = new Set();
+                        try {
+                            deletedShiftIds = new Set(JSON.parse(localStorage.getItem('deletedShiftRecordIds') || '[]').map(String));
+                        } catch (e) {}
+                        if (deletedShiftIds.has(String(shift.id))) return;
+
                         const exists = records.some(r => 
                             (shift.id && String(r.id) === String(shift.id)) || 
                             ((r.workerName || '').trim().toUpperCase() === (shift.workerName || '').trim().toUpperCase() && 

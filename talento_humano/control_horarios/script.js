@@ -6,11 +6,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableWorkerFilter = document.getElementById('tableWorkerFilter');
     const payrollModeSelect = document.getElementById('payrollMode');
     const clearDataBtn = document.getElementById('clearData');
+    const btnDeleteSelected = document.getElementById('btnDeleteSelected');
+    const selectedRecordsCount = document.getElementById('selectedRecordsCount');
+    const selectAllRecords = document.getElementById('selectAllRecords');
     const inputDate = document.getElementById('date');
     const exportPdfBtn = document.getElementById('exportPdf');
     const exportSummaryBtn = document.getElementById('exportSummary');
     const savePdfSummaryBtn = document.getElementById('savePdfSummary');
     const printSummaryBtn = document.getElementById('printSummary');
+    const printRecordsBtn = document.getElementById('printRecords');
     const exportFullReportBtn = document.getElementById('exportFullReport');
     const btnGlobalSave = document.getElementById('btn-global-save');
     const editIdInput = document.getElementById('editId');
@@ -20,8 +24,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterFortnight = document.getElementById('filterFortnight');
     const isHalfDayCheckbox = document.getElementById('isHalfDay');
     const isAbsentCheckbox = document.getElementById('isAbsent');
+    const absenceReasonSelect = document.getElementById('absenceReason');
+    const absenceReasonGroup = document.getElementById('absenceReasonGroup');
+    const syncAbsenceReasonVisibility = () => {
+        if (absenceReasonGroup) absenceReasonGroup.style.display = isAbsentCheckbox && isAbsentCheckbox.checked ? 'block' : 'none';
+    };
+    if (isAbsentCheckbox) isAbsentCheckbox.addEventListener('change', syncAbsenceReasonVisibility);
+    if (hourForm) hourForm.addEventListener('reset', () => setTimeout(syncAbsenceReasonVisibility, 0));
     const recordTypeSelect = document.getElementById('recordType');
     const btnSubmit = hourForm ? hourForm.querySelector('button[type="submit"]') : null;
+    const addWorkerButton = document.getElementById('btn-add-worker-control');
+    const addWorkerModal = document.getElementById('addWorkerModal');
+    const addWorkerForm = document.getElementById('addWorkerForm');
+    const addWorkerNameInput = document.getElementById('addWorkerName');
+    const addWorkerQuincenaInput = document.getElementById('addWorkerQuincena');
+    const cancelAddWorkerButton = document.getElementById('btn-cancel-add-worker');
+    const workerNameSelect = document.getElementById('workerName');
+    const downloadExcelWorkbook = (workbook, fileName) => {
+        try {
+            if (typeof XLSX === 'undefined') throw new Error('La librería de Excel no está disponible.');
+            XLSX.writeFile(workbook, fileName, { bookType: 'xlsx' });
+        } catch (error) {
+            console.error('No se pudo generar el archivo Excel:', error);
+            alert('No se pudo generar el archivo Excel. Verifique su conexión e intente nuevamente.');
+        }
+    };
 
     // --- Helpers ---
     const parseAmount = (val) => {
@@ -49,11 +76,16 @@ document.addEventListener('DOMContentLoaded', () => {
         "JULIO ARMANDO RODRIGUEZ": 1188000,
         "JHONNY RAFAEL CASTRELLON RODRIGUEZ": 1182500,
         "CAMILO DURAN": 1210000,
-        "JULIO PIERNAGORDA": 1000000,
-        "DIEGO VELANDIA": 1265000,
+        "JULIO PIERNAGORDA": 1100000,
+        "DIEGO VELANDIA": 1350000,
         "JORGE GILBERTO RODRIGUEZ AGUILERA": 1350000,
         "HENRY GONZALES": 1320000,
-        "JOSE MANUEL FORERO": 1210000
+        "JOSE MANUEL FORERO": 1210000,
+        "DEVID ALEJANDRO MEDINA": 1100000,
+        "JOSE MANUEL FORERO AREVALO": 1210000,
+        "HENRY ALEXANDER ARIAS": 1100000,
+        "ANDRES FRANCISCO FLORIAN": 1100000,
+        "JAVIER LEONARDO QUINTERO": 1100000
     };
 
     let workerRates = {};
@@ -127,14 +159,24 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     loadWorkersFromPersonal();
+    workerRates['DIEGO VELANDIA'] = {
+        ...(workerRates['DIEGO VELANDIA'] || {}),
+        quincena: FIXED_QUINCENA['DIEGO VELANDIA']
+    };
+    ['DEVID ALEJANDRO MEDINA', 'JOSE MANUEL FORERO AREVALO', 'HENRY ALEXANDER ARIAS', 'ANDRES FRANCISCO FLORIAN', 'JAVIER LEONARDO QUINTERO', 'JULIO PIERNAGORDA'].forEach(name => {
+        workerRates[name] = { ...(workerRates[name] || {}), quincena: FIXED_QUINCENA[name] };
+    });
+    localStorage.setItem('workerRates', JSON.stringify(workerRates));
 
-    // Comprobar si se requiere restauración de emergencia desde backup previo
+    const recordsWereInitialized = localStorage.getItem('shiftRecords_initialized') === 'true';
+
+    // Restore old backups only on first setup, never after the user intentionally empties the list.
     let storedRecords = [];
     try {
         storedRecords = JSON.parse(localStorage.getItem('shiftRecords')) || [];
     } catch(e){}
 
-    if (!Array.isArray(storedRecords) || storedRecords.length === 0) {
+    if (!recordsWereInitialized && (!Array.isArray(storedRecords) || storedRecords.length === 0)) {
         // Escanear todas las claves de localStorage en busca de respaldos automáticos
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
@@ -153,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Si aún no hay registros guardados en el dispositivo/navegador, generar semillas iniciales para los 21 trabajadores
-    if (!Array.isArray(storedRecords) || storedRecords.length === 0) {
+    if (!recordsWereInitialized && (!Array.isArray(storedRecords) || storedRecords.length === 0)) {
         const now = new Date();
         const year = now.getFullYear();
         const monthStr = (now.getMonth() + 1).toString().padStart(2, '0');
@@ -173,9 +215,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const isSat = (dow === 6);
                 const tIn = "07:00";
-                const tOut = isSat ? "12:00" : "17:00";
-                const ord = isSat ? 5 : 10;
-                const tot = isSat ? "5.00" : "10.00";
+                const isDeccy = w.trim().toUpperCase().startsWith("DECCY BAYONA");
+                if (isSat && isDeccy) continue;
+                const tOut = isSat ? "12:00" : (isDeccy ? "16:00" : (dow === 1 ? "18:00" : "17:00"));
+                const ord = isSat ? 5 : (isDeccy ? 9 : (dow === 1 ? 11 : 10));
+                const tot = isSat ? "5.00" : (isDeccy ? "9.00" : (dow === 1 ? "11.00" : "10.00"));
 
                 seededShifts.push({
                     id: Date.now() + Math.floor(Math.random() * 1000000) + idx * 100 + d,
@@ -209,12 +253,23 @@ document.addEventListener('DOMContentLoaded', () => {
     window.manualCrossHoursVal = 0; // Para el modo parcial
     window.lastRenderedWorker = "";
 
+    const getDeletedShiftIds = () => {
+        try { return new Set(JSON.parse(localStorage.getItem('deletedShiftRecordIds') || '[]').map(String)); }
+        catch (e) { return new Set(); }
+    };
+
+    const markShiftRecordsDeleted = (ids) => {
+        const deletedIds = getDeletedShiftIds();
+        ids.forEach(id => deletedIds.add(String(id)));
+        localStorage.setItem('deletedShiftRecordIds', JSON.stringify([...deletedIds]));
+    };
+
     // Global cloud sync functions for mobile relay (ntfy.sh)
     window.pushMobileShiftToCloud = async function(record) {
         try {
             await fetch('https://ntfy.sh/dimalcco_shifts_2026_x77', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
                 body: JSON.stringify(record)
             });
         } catch(e) {
@@ -241,9 +296,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         const record = JSON.parse(ntfyObj.message);
                         if (record && record.workerName && record.date) {
                             const recWorker = (record.workerName || '').trim().toUpperCase();
-                            const existingIdx = localRecords.findIndex(r => 
-                                (r.id && record.id && r.id === record.id) ||
-                                ((r.workerName || '').trim().toUpperCase() === recWorker && r.date === record.date)
+                            // Un trabajador puede tener más de un turno el mismo día.
+                            // Solo fusionamos el mismo registro, no cualquier turno de esa fecha.
+                            if (getDeletedShiftIds().has(String(record.id))) return;
+
+                            const existingIdx = localRecords.findIndex(r =>
+                                (r.id && record.id && String(r.id) === String(record.id)) ||
+                                ((r.workerName || '').trim().toUpperCase() === recWorker &&
+                                 r.date === record.date &&
+                                 String(r.opNumber || '') === String(record.opNumber || '') &&
+                                 String(r.timeIn || '') === String(record.timeIn || ''))
                             );
                             
                             if (existingIdx !== -1) {
@@ -264,9 +326,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (importedCount > 0) {
-                localStorage.setItem('shiftRecords', JSON.stringify(localRecords));
-                window.records = localRecords;
                 records = localRecords;
+                window.records = localRecords;
+                saveRecords();
             }
 
             return importedCount;
@@ -311,6 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveRecords = () => {
         localStorage.setItem('shiftRecords', JSON.stringify(records));
         localStorage.setItem('shiftRecords_backup', JSON.stringify(records));
+        localStorage.setItem('shiftRecords_initialized', 'true');
         localStorage.setItem('shiftBalances', JSON.stringify(shiftBalances));
         localStorage.setItem('workerRates', JSON.stringify(workerRates));
         window.records = records;
@@ -321,6 +384,53 @@ document.addEventListener('DOMContentLoaded', () => {
             window.parent.postMessage('sync_cloud', '*');
         }
     };
+
+    const normalizeWorkerName = name => name.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
+    const syncWorkerWithPayrollLists = (name, quincena) => {
+        ['dimalcco_nomina_workers_v1', 'dimalcco_publicidad_nomina_workers_v1'].forEach(key => {
+            try {
+                const saved = JSON.parse(localStorage.getItem(key) || '[]');
+                const list = Array.isArray(saved) ? saved : Object.entries(saved).map(([workerName, salary]) => ({ name: workerName, salary }));
+                const existing = list.find(worker => normalizeWorkerName(worker.name || '') === normalizeWorkerName(name));
+                if (existing) existing.salary = quincena;
+                else list.push({ name, salary: quincena });
+                localStorage.setItem(key, JSON.stringify(list));
+            } catch (error) {
+                console.warn(`No se pudo sincronizar la lista ${key}.`, error);
+            }
+        });
+    };
+
+    if (addWorkerButton && addWorkerModal && addWorkerForm) {
+        addWorkerButton.addEventListener('click', () => {
+            addWorkerForm.reset();
+            addWorkerModal.style.display = 'flex';
+            addWorkerNameInput.focus();
+        });
+        cancelAddWorkerButton?.addEventListener('click', () => { addWorkerModal.style.display = 'none'; });
+        addWorkerModal.addEventListener('click', event => {
+            if (event.target === addWorkerModal) addWorkerModal.style.display = 'none';
+        });
+        addWorkerForm.addEventListener('submit', event => {
+            event.preventDefault();
+            const name = addWorkerNameInput.value.trim().toUpperCase().replace(/\s+/g, ' ');
+            const normalizedName = normalizeWorkerName(name);
+            const quincena = parseAmount(addWorkerQuincenaInput.value);
+            if (!name || quincena <= 0) return alert('Ingrese el nombre y un salario quincenal válido.');
+            const duplicate = Object.keys(workerRates).some(worker => normalizeWorkerName(worker) === normalizedName);
+            if (duplicate) return alert('Esta persona ya está registrada.');
+
+            FIXED_QUINCENA[name] = quincena;
+            workerRates[name] = { quincena };
+            syncWorkerWithPayrollLists(name, quincena);
+            localStorage.setItem('workerRates', JSON.stringify(workerRates));
+            updateWorkerSelects();
+            saveRecords();
+            if (workerNameSelect) workerNameSelect.value = name;
+            addWorkerModal.style.display = 'none';
+            alert(`${name} quedó registrada con salario quincenal de $${quincena.toLocaleString('es-CO')}.`);
+        });
+    }
 
     const updateDatalists = () => {
         const projects = [...new Set(records.map(r => r.projectName))];
@@ -381,15 +491,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return { day, dayName, isSunday, isHoliday, holidayName };
     };
 
-    const getOrdinaryHours = (dateStr, location, esMedioDia = false) => {
+    const getOrdinaryHours = (dateStr, location, esMedioDia = false, workerName = '') => {
         const { day, isHoliday } = getDayInfo(dateStr);
         
         // En días festivos la jornada ordinaria es 0 (se paga todo como extra/recargo)
         if (isHoliday) return 0;
 
         let hours = 0;
-        if (location === 'obra') {
+        if ((workerName || '').trim().toUpperCase().startsWith('DECCY BAYONA')) {
+            if (day >= 1 && day <= 5) hours = 9;
+        } else if (location === 'administracion') {
             if (day >= 1 && day <= 5) hours = 10;
+        } else if (location === 'obra' || location === 'planta') {
+            if (day === 1) hours = 11;
+            else if (day >= 2 && day <= 5) hours = 10;
             else if (day === 6) hours = 5;
         } else {
             if (day === 1 || day === 2) hours = 11;
@@ -398,6 +513,70 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return esMedioDia ? hours / 2 : hours;
     };
+
+    const enrichRecordsWithDailyCap = recordsList => {
+        const groups = new Map();
+        recordsList.forEach(record => {
+            delete record._effectiveOrdHours;
+            delete record._pendingHours;
+            delete record._dayFraction;
+
+            if (record.isTravelRecord) {
+                record._effectiveOrdHours = 0;
+                record._pendingHours = 0;
+                record._dayFraction = 0;
+                return;
+            }
+
+            const key = `${(record.workerName || '').trim().toUpperCase()}_${record.date}`;
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(record);
+        });
+
+        groups.forEach(group => {
+            group.sort((a, b) => (a.timeIn || '').localeCompare(b.timeIn || ''));
+            const combineHalfShifts = group.length > 1 && group.every(record => record.esMedioDia);
+            const targetOrd = Math.max(...group.map(record =>
+                getOrdinaryHours(record.date, record.location, combineHalfShifts ? false : !!record.esMedioDia, record.workerName)
+            ));
+            let allocatedOrd = 0;
+            const hasIncapacity = group.some(record => record.absenceReason === 'incapacidad');
+
+            group.forEach((record, index) => {
+                const worked = Number.parseFloat(record.totalHours) || 0;
+                const effectiveOrd = Math.min(worked, Math.max(0, targetOrd - allocatedOrd));
+                allocatedOrd += effectiveOrd;
+                record._effectiveOrdHours = effectiveOrd;
+                record._pendingHours = 0;
+                record._dayFraction = targetOrd > 0 ? effectiveOrd / targetOrd : 0;
+
+                if (index === group.length - 1 && targetOrd > allocatedOrd) {
+                    const remainingOrd = targetOrd - allocatedOrd;
+                    if (hasIncapacity) {
+                        record._dayFraction += remainingOrd / targetOrd;
+                    } else {
+                        record._pendingHours = remainingOrd;
+                        record._dayFraction += record._pendingHours / targetOrd;
+                    }
+                }
+            });
+        });
+
+        return recordsList;
+    };
+
+    // Completa registros móviles/QR antiguos que no traían la jornada establecida.
+    let recordsWereNormalized = false;
+    records.forEach(record => {
+        const ordinaryHours = Number.parseFloat(record.ordinaryHours);
+        if (!Number.isFinite(ordinaryHours)) {
+            record.ordinaryHours = record.isTravelRecord
+                ? 0
+                : getOrdinaryHours(record.date, record.location, !!record.esMedioDia, record.workerName);
+            recordsWereNormalized = true;
+        }
+    });
+    if (recordsWereNormalized) saveRecords();
 
     const getDetailedShiftPay = (record, dynamicRates = null) => {
         const name = (record.workerName || "").trim().toUpperCase();
@@ -412,15 +591,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const totalHours = parseFloat(record.totalHours) || 0;
-        const ordHours = parseFloat(record.ordinaryHours) || 0;
-        const { isSunday, isHoliday } = getDayInfo(record.date);
-        const isSunOrHol = isSunday || isHoliday;
-        const esMedioDia = record.esMedioDia === true;
+        const ordHours = record._effectiveOrdHours !== undefined
+            ? record._effectiveOrdHours
+            : (parseFloat(record.ordinaryHours) || 0);
+        const dayFraction = record._dayFraction !== undefined
+            ? record._dayFraction
+            : (record.esMedioDia ? 0.5 : 1);
         
         // El pago ordinario base será 1 día completo (o medio si es medio día).
         // Si no hay horas, el detalle valdrá 0.
-        let tarifaDiaria = esMedioDia ? safeRates.dia / 2 : safeRates.dia;
-        if ((totalHours === 0 && !record.timeIn) || record.isTravelRecord) tarifaDiaria = 0;
+        let tarifaDiaria = safeRates.dia * dayFraction;
+        if ((totalHours === 0 && !record.timeIn && record.absenceReason !== 'incapacidad') || record.isTravelRecord) tarifaDiaria = 0;
         
         if (!record.timeIn && totalHours > 0) {
             console.warn(`Record for ${record.workerName} on ${record.date} has totalHours > 0 but no timeIn. Using 00:00.`);
@@ -442,7 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         if (totalHours === 0) {
-            const pending = record.isTravelRecord ? 0 : ordHours;
+            const pending = record.isTravelRecord || record.absenceReason === 'incapacidad' ? 0 : (record._pendingHours !== undefined ? record._pendingHours : ordHours);
             const pendingVal = pending * (safeRates.extDia || 0);
             details.totalShift = details.rawPay - pendingVal;
             return details;
@@ -450,45 +631,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const [hIn, mIn] = (record.timeIn || "00:00").split(':').map(Number);
         const ratesForCalcs = safeRates;
-        let currentTime = hIn * 60 + mIn;
-        let hourCount = 0;
+        const shiftStart = hIn * 60 + mIn;
+        const totalMinutes = Math.max(0, Math.round(totalHours * 60));
+        const ordinaryMinutes = Math.max(0, Math.round(ordHours * 60));
+        const startDate = new Date(`${record.date}T00:00:00`);
+        const dateInfoByOffset = new Map();
 
-        // Skip normal extra calculation if it's a travel-only record
         if (!record.isTravelRecord) {
-            while (hourCount < totalHours) {
-                const currentHour = (Math.floor(currentTime / 60)) % 24;
-                const isNight = (currentHour >= 21 || currentHour < 5);
-                const currentDayInfo = getDayInfo(record.date, Math.floor(currentTime / 60));
-
-                if (hourCount < ordHours) {
-                    // Horas Ordinarias
-                    if (isSunOrHol) {
-                        details.recDomQty++;
-                        details.recDomVal += ratesForCalcs.rDom;
-                    } else if (isNight) {
-                        details.recNoctQty++;
-                        details.recNoctVal += ratesForCalcs.rNoct;
-                    }
-                } else {
-                    // Horas Extras
-                    if (isSunOrHol) {
-                        details.extDomQty++;
-                        details.extDomVal += ratesForCalcs.extDom;
-                    } else if (isNight) {
-                        details.extNoctQty++;
-                        details.extNoctVal += ratesForCalcs.extNoct;
-                    } else {
-                        details.extDiaQty++;
-                        details.extDiaVal += ratesForCalcs.extDia;
-                    }
+            for (let elapsed = 0; elapsed < totalMinutes; elapsed++) {
+                const minuteOfDay = ((shiftStart + elapsed) % 1440 + 1440) % 1440;
+                const dayOffset = Math.floor((shiftStart + elapsed) / 1440);
+                if (!dateInfoByOffset.has(dayOffset)) {
+                    const workDate = new Date(startDate);
+                    workDate.setDate(workDate.getDate() + dayOffset);
+                    const workDateStr = `${workDate.getFullYear()}-${String(workDate.getMonth() + 1).padStart(2, '0')}-${String(workDate.getDate()).padStart(2, '0')}`;
+                    dateInfoByOffset.set(dayOffset, getDayInfo(workDateStr));
                 }
+                const hour = Math.floor(minuteOfDay / 60);
+                const isNight = hour >= 21 || hour < 5;
+                const { isSunday, isHoliday } = dateInfoByOffset.get(dayOffset);
+                const isSunOrHol = isSunday || isHoliday;
+                const isOrdinary = elapsed < ordinaryMinutes;
+                const minuteQty = 1 / 60;
 
-                currentTime += 60;
-                hourCount++;
+                if (isOrdinary) {
+                    if (isSunOrHol) {
+                        details.recDomQty += minuteQty;
+                        details.recDomVal += ratesForCalcs.rDom * minuteQty;
+                    } else if (isNight) {
+                        details.recNoctQty += minuteQty;
+                        details.recNoctVal += ratesForCalcs.rNoct * minuteQty;
+                    }
+                } else if (isSunOrHol) {
+                    details.extDomQty += minuteQty;
+                    details.extDomVal += ratesForCalcs.extDom * minuteQty;
+                } else if (isNight) {
+                    details.extNoctQty += minuteQty;
+                    details.extNoctVal += ratesForCalcs.extNoct * minuteQty;
+                } else {
+                    details.extDiaQty += minuteQty;
+                    details.extDiaVal += ratesForCalcs.extDia * minuteQty;
+                }
             }
         }
 
-        const pending = Math.max(0, ordHours - totalHours);
+        const pending = record.absenceReason === 'incapacidad' ? 0 : (record._pendingHours !== undefined
+            ? record._pendingHours
+            : Math.max(0, ordHours - totalHours));
         const pendingVal = pending * ratesForCalcs.extDia;
 
         details.rawPay = details.ordPay + details.extDiaVal + details.recNoctVal + details.extNoctVal + details.recDomVal + details.extDomVal + details.travelVal;
@@ -542,8 +731,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        enrichRecordsWithDailyCap(workerRecords);
+
         // We calculate equivalent worked days first to determine dynamic daily rate
-        const equivalentDays = workerRecords.reduce((acc, r) => acc + (r.isTravelRecord ? 0 : (r.esMedioDia ? 0.5 : 1)), 0);
+        const equivalentDays = workerRecords.reduce((acc, r) => acc + (r._dayFraction || 0), 0);
         
         const quincenaBase = (workerRates[worker] && workerRates[worker].quincena) ? workerRates[worker].quincena : (1750905 / 2);
         const rates = calculateDynamicRates(quincenaBase, equivalentDays || 1); 
@@ -579,14 +770,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             aggregate.totalExtraMoney += (d.extDiaVal + d.extNoctVal + d.extDomVal + d.recNoctVal + d.recDomVal + d.travelVal);
 
-            const pending = r.isTravelRecord ? 0 : Math.max(0, r.ordinaryHours - r.totalHours);
+            const pending = r.isTravelRecord ? 0 : (r._pendingHours || 0);
             const pendingVal = pending * rates.extDia;
             aggregate.totalPendingHours.q += pending;
             aggregate.totalPendingHours.v += pendingVal;
 
             const opKey = `${r.opNumber || 'S/N'} | ${r.projectName}`;
             if (!aggregate.ops[opKey]) aggregate.ops[opKey] = { days: 0, extra: 0, location: r.location, pending: 0 };
-            aggregate.ops[opKey].days += r.isTravelRecord ? 0 : (r.esMedioDia ? 0.5 : 1);
+            aggregate.ops[opKey].days += r._dayFraction || 0;
             aggregate.ops[opKey].extra += (d.extDiaVal + d.extNoctVal + d.extDomVal + d.recNoctVal + d.recDomVal + d.travelVal);
             aggregate.ops[opKey].pending += pendingVal;
         });
@@ -707,11 +898,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="payroll-cell value">$${Math.round(baseAsignada).toLocaleString()}</div>
                 </div>
 
+                ${[
+                    ['HORA EXTRA DIURNA', rates.extDia, aggregate.extDia],
+                    ['RECARGO NOCTURNO ORDINARIO (9PM - 5AM)', rates.rNoct, aggregate.rNoct],
+                    ['HORA EXTRA NOCTURNA', rates.extNoct, aggregate.extNoct],
+                    ['RECARGO DOMINICAL / FESTIVO', rates.rDom, aggregate.rDom],
+                    ['HORA EXTRA DOMINICAL / FESTIVA', rates.extDom, aggregate.extDom]
+                ].map(([label, rate, item]) => `
+                    <div class="payroll-row">
+                        <div class="payroll-cell">${label}</div>
+                        <div class="payroll-cell value">$${rate.toLocaleString()}</div>
+                        <div class="payroll-cell value">${item.q.toFixed(1)} h</div>
+                        <div class="payroll-cell value">$${item.v.toLocaleString()}</div>
+                    </div>
+                `).join('')}
+
                 <div class="payroll-row">
-                    <div class="payroll-cell">HORAS EXTRAS Y RECARGOS (BRUTO)</div>
-                    <div class="payroll-cell value">-</div>
-                    <div class="payroll-cell value">${(aggregate.extDia.q + aggregate.extNoct.q + aggregate.extDom.q).toFixed(1)} h</div>
-                    <div class="payroll-cell value">$${aggregate.totalExtraMoney.toLocaleString()}</div>
+                    <div class="payroll-cell">HORAS DE VIAJE</div>
+                    <div class="payroll-cell value">$${rates.travel.toLocaleString()}</div>
+                    <div class="payroll-cell value">${aggregate.travel.q.toFixed(1)} h</div>
+                    <div class="payroll-cell value">$${aggregate.travel.v.toLocaleString()}</div>
                 </div>
 
                 <div class="payroll-row" style="color: ${aggregate.totalPendingHours.q > 0 ? '#dc2626' : 'inherit'}">
@@ -800,6 +1006,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         });
 
+        enrichRecordsWithDailyCap(recordsToDisplay);
+
         if (recordsToDisplay.length === 0) {
             const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
             const mName = selectedMonthStr === "ALL" ? "Todos los Meses" : (monthNames[selMonth - 1] || 'este mes');
@@ -807,7 +1015,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             tableBody.innerHTML = `
                 <tr>
-                    <td colspan="12" style="text-align: center; padding: 2.5rem 1rem; color: #64748b; background: #f8fafc;">
+                    <td colspan="13" style="text-align: center; padding: 2.5rem 1rem; color: #64748b; background: #f8fafc;">
                         <i class="ph ph-calendar-x" style="font-size: 2.2rem; color: #cbd5e1; display: block; margin: 0 auto 0.5rem auto;"></i>
                         <strong style="font-size: 1.05rem; color: #1e293b; display: block; margin-bottom: 0.25rem;">
                             No hay turnos registrados ${workerToFilter ? `para <strong>${workerToFilter}</strong>` : ''}
@@ -819,12 +1027,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                 </tr>
             `;
+            updateBulkSelectionState();
             return;
         }
 
         recordsToDisplay.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach((rec) => {
-            const extras = Math.max(0, rec.totalHours - rec.ordinaryHours).toFixed(2);
-            const pending = Math.max(0, rec.ordinaryHours - rec.totalHours).toFixed(2);
+            const ordinaryHours = rec._effectiveOrdHours || 0;
+            const totalHours = Number.parseFloat(rec.totalHours) || 0;
+            const extras = Math.max(0, totalHours - ordinaryHours).toFixed(2);
+            const pending = (rec._pendingHours || 0).toFixed(2);
             const diffDisplay = extras > 0 ? `<span style="color: var(--color-success)">+${extras}h</span>` :
                 pending > 0 ? `<span style="color: var(--color-danger)">-${pending}h</span>` : '-';
 
@@ -835,6 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
+                <td class="no-print" style="text-align: center;"><input type="checkbox" class="record-select" data-record-id="${String(rec.id)}" title="Seleccionar registro"></td>
                 <td>
                     <strong>${rec.workerName}</strong>
                     <div style="font-size: 0.75rem; color: var(--color-accent-primary);">OP: ${rec.opNumber || '-'}</div>
@@ -848,27 +1060,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="badge badge-${rec.location}">${(rec.location || '').toUpperCase()}</span>
                     <div style="font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 4px;">${rec.projectName || '-'}</div>
                     ${rec.esMedioDia && !rec.isTravelRecord ? '<span class="badge" style="background: #fef08a; color: #854d0e; margin-top: 4px;"> MEDIO DÍA </span>' : ''}
-                    ${isFalta ? '<span class="badge" style="background: #fee2e2; color: #991b1b; margin-top: 4px;"> FALTA INJUSTIFICADA </span>' : ''}
+                    ${isFalta ? `<span class="badge" style="background: ${rec.absenceReason && rec.absenceReason !== 'injustificada' ? '#fef3c7' : '#fee2e2'}; color: ${rec.absenceReason && rec.absenceReason !== 'injustificada' ? '#92400e' : '#991b1b'}; margin-top: 4px;">${({ permiso: 'PERMISO', calamidad: 'CALAMIDAD DOMÉSTICA', incapacidad: 'INCAPACIDAD' })[rec.absenceReason] || 'FALTA INJUSTIFICADA'}</span>` : ''}
                     ${rec.isTravelRecord ? '<span class="badge" style="background: #e0e7ff; color: #4338ca; margin-top: 4px;"> VIAJE </span>' : ''}
                 </td>
                 <td><small>${isFalta ? 'N/A' : `${rec.timeIn || ''} - ${rec.timeOut || ''}`}</small></td>
-                <td><span class="badge" style="background: #f1f5f9">${rec.isTravelRecord ? 'Viaje' : (detail.recNoctQty > 0 ? 'Nocturno' : 'Diurno')}</span></td>
-                <td style="font-weight: 700;">${rec.isTravelRecord ? '-' : rec.ordinaryHours + 'h'}</td>
-                <td style="font-weight: 700;">${rec.isTravelRecord ? rec.travelHours + 'h' : rec.totalHours + 'h'}</td>
+                <td>
+                    <span class="badge" style="background: #f1f5f9">${rec.isTravelRecord ? 'Viaje' : ((detail.recNoctQty > 0 || detail.extNoctQty > 0) ? 'Nocturno' : 'Diurno')}</span>
+                    ${detail.recNoctQty > 0 ? `<div style="font-size:0.7rem; color:#475569; margin-top:3px;">Recargo: ${detail.recNoctQty.toFixed(2)} h ($${detail.recNoctVal.toLocaleString()})</div>` : ''}
+                    ${detail.extNoctQty > 0 ? `<div style="font-size:0.7rem; color:#475569; margin-top:3px;">Extra nocturna: ${detail.extNoctQty.toFixed(2)} h ($${detail.extNoctVal.toLocaleString()})</div>` : ''}
+                </td>
+                <td style="font-weight: 700;">${rec.isTravelRecord ? '-' : ordinaryHours + 'h'}</td>
+                <td style="font-weight: 700;">${rec.isTravelRecord ? (Number.parseFloat(rec.travelHours) || 0) + 'h' : totalHours + 'h'}</td>
                 <td style="font-weight: 700;">${rec.isTravelRecord ? '-' : diffDisplay}</td>
                 <td><small>${rec.observations || '-'}</small></td>
                 <td style="font-weight: 800; color: var(--color-success)">$${detail.totalShift.toLocaleString()}</td>
                 <td class="no-pdf">
-                    <button onclick="editRecord(${rec.id})" style="background:none; border:none; color:var(--color-accent-primary); cursor:pointer; margin-right: 10px;">
+                    <button type="button" data-record-action="edit" data-record-id="${String(rec.id).replace(/&/g, '&amp;').replace(/\"/g, '&quot;')}" title="Editar turno" aria-label="Editar turno" style="background:none; border:none; color:var(--color-accent-primary); cursor:pointer; margin-right: 10px;">
                         <i class="ph ph-pencil-simple"></i>
                     </button>
-                    <button onclick="deleteRecord(${rec.id})" style="background:none; border:none; color:var(--color-danger); cursor:pointer;">
+                    <button type="button" data-record-action="delete" data-record-id="${String(rec.id).replace(/&/g, '&amp;').replace(/\"/g, '&quot;')}" title="Eliminar turno" aria-label="Eliminar turno" style="background:none; border:none; color:var(--color-danger); cursor:pointer;">
                         <i class="ph ph-trash"></i>
                     </button>
                 </td>
             `;
             tableBody.appendChild(tr);
         });
+
+        updateBulkSelectionState();
 
         // Populate filter with actual workers from records if not already populated correctly
         const uniqueWorkersInRecords = [...new Set(records.map(r => r.workerName))];
@@ -882,8 +1100,48 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSummary();
     };
 
+    function updateBulkSelectionState() {
+        const checkboxes = [...document.querySelectorAll('.record-select')];
+        const selected = checkboxes.filter(input => input.checked);
+        if (selectedRecordsCount) selectedRecordsCount.textContent = `(${selected.length})`;
+        if (btnDeleteSelected) btnDeleteSelected.disabled = selected.length === 0;
+        if (selectAllRecords) {
+            selectAllRecords.checked = checkboxes.length > 0 && selected.length === checkboxes.length;
+            selectAllRecords.indeterminate = selected.length > 0 && selected.length < checkboxes.length;
+        }
+    }
+
+    document.addEventListener('change', event => {
+        if (event.target.matches('.record-select')) updateBulkSelectionState();
+    });
+
+    if (selectAllRecords) {
+        selectAllRecords.addEventListener('change', () => {
+            document.querySelectorAll('.record-select').forEach(input => {
+                input.checked = selectAllRecords.checked;
+            });
+            updateBulkSelectionState();
+        });
+    }
+
+    if (btnDeleteSelected) {
+        btnDeleteSelected.addEventListener('click', () => {
+            const selectedIds = new Set(
+                [...document.querySelectorAll('.record-select:checked')].map(input => String(input.dataset.recordId))
+            );
+            if (!selectedIds.size) return;
+            if (!confirm(`¿Borrar ${selectedIds.size} registro(s) seleccionado(s)? Esta acción no se puede deshacer.`)) return;
+
+            markShiftRecordsDeleted([...selectedIds]);
+            records = records.filter(record => !selectedIds.has(String(record.id)));
+            saveRecords();
+            renderTable();
+            renderSummary();
+        });
+    }
+
     window.editRecord = (id) => {
-        const rec = records.find(r => r.id === id);
+        const rec = records.find(r => String(r.id) === String(id));
         if (!rec) return;
         document.getElementById('workerName').value = rec.workerName;
         document.getElementById('date').value = rec.date;
@@ -897,12 +1155,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const isFalta = rec.totalHours == 0 && !rec.isTravelRecord;
+        if (absenceReasonSelect) absenceReasonSelect.value = rec.absenceReason || 'injustificada';
         if (isHalfDayCheckbox) isHalfDayCheckbox.checked = rec.esMedioDia === true;
         if (isAbsentCheckbox) {
             isAbsentCheckbox.checked = isFalta;
             document.getElementById('timeIn').disabled = isFalta;
             document.getElementById('timeOut').disabled = isFalta;
         }
+        syncAbsenceReasonVisibility();
 
         editIdInput.value = rec.id;
         btnSubmit.innerHTML = '<i class="ph ph-check-circle"></i> Actualizar Turno';
@@ -912,11 +1172,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.deleteRecord = (id) => {
         if (confirm('¿Eliminar registro?')) {
-            records = records.filter(r => r.id !== id);
+            markShiftRecordsDeleted([id]);
+            records = records.filter(r => String(r.id) !== String(id));
             saveRecords();
             renderTable();
         }
     };
+
+    if (tableBody) {
+        tableBody.addEventListener('click', event => {
+            const button = event.target.closest('[data-record-action]');
+            if (!button || !tableBody.contains(button)) return;
+            const { recordAction, recordId } = button.dataset;
+            if (recordAction === 'edit') window.editRecord(recordId);
+            if (recordAction === 'delete') window.deleteRecord(recordId);
+        });
+    }
 
     hourForm.onsubmit = (e) => {
         e.preventDefault();
@@ -932,6 +1203,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const esMedioDia = isHalfDayCheckbox ? isHalfDayCheckbox.checked : false;
         const esFalta = isAbsentCheckbox ? isAbsentCheckbox.checked : false;
+        const absenceReason = esFalta && absenceReasonSelect ? absenceReasonSelect.value : '';
 
         let totalHours = "0.00";
         let travelHoursCount = 0;
@@ -963,15 +1235,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const ordinaryHours = isTravelRecord ? 0 : getOrdinaryHours(date, location, esMedioDia);
+        const ordinaryHours = isTravelRecord ? 0 : getOrdinaryHours(date, location, esMedioDia, workerName);
 
+        const editedRecord = editIdInput.value
+            ? records.find(record => String(record.id) === String(editIdInput.value))
+            : null;
+        if (editIdInput.value && !editedRecord) return alert('No se encontró el turno que intenta actualizar. Recargue la tabla e inténtelo nuevamente.');
         const recordData = {
-            id: editIdInput.value ? parseInt(editIdInput.value) : Date.now(),
-            workerName, date, location, projectName, opNumber, timeIn: finalTimeIn, timeOut: finalTimeOut, totalHours, ordinaryHours, esMedioDia: isTravelRecord ? false : esMedioDia, travelHours: travelHoursCount, isTravelRecord, observations
+            id: editedRecord ? editedRecord.id : Date.now(),
+            workerName, date, location, projectName, opNumber, timeIn: finalTimeIn, timeOut: finalTimeOut, totalHours, ordinaryHours, esMedioDia: isTravelRecord ? false : esMedioDia, travelHours: travelHoursCount, isTravelRecord, observations, absenceReason
         };
 
         if (editIdInput.value) {
-            const index = records.findIndex(r => r.id === parseInt(editIdInput.value));
+            const index = records.findIndex(r => String(r.id) === String(editIdInput.value));
             if (index !== -1) {
                 records[index] = recordData;
             }
@@ -1183,7 +1459,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (workerRecords.length === 0) return alert('No hay registros para este trabajador en el periodo seleccionado (Mes/Quincena).');
 
-            const equivalentDays = workerRecords.reduce((acc, r) => acc + (r.esMedioDia ? 0.5 : 1), 0);
+            enrichRecordsWithDailyCap(workerRecords);
+            const equivalentDays = workerRecords.reduce((acc, r) => acc + (r._dayFraction || 0), 0);
             const quincenaBase = (workerRates[worker] && workerRates[worker].quincena) ? workerRates[worker].quincena : (1750905 / 2);
             const rates = calculateDynamicRates(quincenaBase, equivalentDays || 1);
 
@@ -1193,7 +1470,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Aquí replicamos la lógica de renderSummary para obtener los totales
             let aggregate = {
                 extDia: { q: 0, v: 0 }, rNoct: { q: 0, v: 0 }, extNoct: { q: 0, v: 0 },
-                rDom: { q: 0, v: 0 }, extDom: { q: 0, v: 0 }, totalExtra: 0,
+                rDom: { q: 0, v: 0 }, extDom: { q: 0, v: 0 }, travel: { q: 0, v: 0 }, totalExtra: 0,
                 pendingHours: { q: 0, v: 0 }, ops: {}
             };
 
@@ -1205,17 +1482,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 aggregate.extNoct.q += d.extNoctQty; aggregate.extNoct.v += d.extNoctVal;
                 aggregate.rDom.q += d.recDomQty; aggregate.rDom.v += d.recDomVal;
                 aggregate.extDom.q += d.extDomQty; aggregate.extDom.v += d.extDomVal;
-                aggregate.totalExtra += (d.extDiaVal + d.extNoctVal + d.extDomVal + d.recNoctVal + d.recDomVal);
+                aggregate.travel.q += d.travelQty; aggregate.travel.v += d.travelVal;
+                aggregate.totalExtra += (d.extDiaVal + d.extNoctVal + d.extDomVal + d.recNoctVal + d.recDomVal + d.travelVal);
 
-                const pending = Math.max(0, r.ordinaryHours - r.totalHours);
+                const pending = r._pendingHours || 0;
                 const pendingVal = pending * rates.extDia;
                 aggregate.pendingHours.q += pending;
                 aggregate.pendingHours.v += pendingVal;
 
                 const opKey = `${r.opNumber || 'S/N'} | ${r.projectName}`;
                 if (!aggregate.ops[opKey]) aggregate.ops[opKey] = { days: 0, extra: 0, location: r.location, pending: 0 };
-                aggregate.ops[opKey].days += r.esMedioDia ? 0.5 : 1;
-                aggregate.ops[opKey].extra += (d.extDiaVal + d.extNoctVal + d.extDomVal + d.recNoctVal + d.recDomVal);
+                aggregate.ops[opKey].days += r._dayFraction || 0;
+                aggregate.ops[opKey].extra += (d.extDiaVal + d.extNoctVal + d.extDomVal + d.recNoctVal + d.recDomVal + d.travelVal);
                 aggregate.ops[opKey].pending += pendingVal;
             });
 
@@ -1258,7 +1536,7 @@ document.addEventListener('DOMContentLoaded', () => {
             XLSX.utils.book_append_sheet(wb, wsSummary, "Resumen Nómina");
 
             // Generar archivo Excel
-            XLSX.writeFile(wb, `Nomina_${worker}_${selectedMonth}_Q${selectedFortnight}.xlsx`);
+            downloadExcelWorkbook(wb, `Nomina_${worker}_${selectedMonth}_Q${selectedFortnight}.xlsx`);
         };
     }
 
@@ -1266,6 +1544,20 @@ document.addEventListener('DOMContentLoaded', () => {
         printSummaryBtn.onclick = () => {
             const worker = workerFilter.value;
             if (!worker) return alert('Debe seleccionar un trabajador en el Resumen de Nómina antes de imprimir.');
+            document.body.classList.add('print-summary-only');
+            window.addEventListener('afterprint', () => {
+                document.body.classList.remove('print-summary-only');
+            }, { once: true });
+            window.print();
+        };
+    }
+
+    if (printRecordsBtn) {
+        printRecordsBtn.onclick = () => {
+            document.body.classList.add('print-records-only');
+            window.addEventListener('afterprint', () => {
+                document.body.classList.remove('print-records-only');
+            }, { once: true });
             window.print();
         };
     }
@@ -1331,6 +1623,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (workerRecords.length === 0) return alert('No hay registros para este trabajador en el periodo seleccionado (Mes/Quincena).');
 
+            enrichRecordsWithDailyCap(workerRecords);
+
             // Reutilizar la lógica de exportar el resumen y añadir la hoja de detalles de turnos
             const rates = calculateDynamicRates(workerRates[worker]?.quincena || (1750905 / 2), 15);
             const wb = XLSX.utils.book_new();
@@ -1338,7 +1632,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Hoja 1: Resumen
             let aggregate = {
                 extDia: { q: 0, v: 0 }, rNoct: { q: 0, v: 0 }, extNoct: { q: 0, v: 0 },
-                rDom: { q: 0, v: 0 }, extDom: { q: 0, v: 0 }, totalExtra: 0,
+                rDom: { q: 0, v: 0 }, extDom: { q: 0, v: 0 }, travel: { q: 0, v: 0 }, totalExtra: 0,
                 pendingHours: { q: 0, v: 0 }, ops: {}
             };
 
@@ -1349,21 +1643,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 aggregate.extNoct.q += d.extNoctQty; aggregate.extNoct.v += d.extNoctVal;
                 aggregate.rDom.q += d.recDomQty; aggregate.rDom.v += d.recDomVal;
                 aggregate.extDom.q += d.extDomQty; aggregate.extDom.v += d.extDomVal;
-                aggregate.totalExtra += (d.extDiaVal + d.extNoctVal + d.extDomVal + d.recNoctVal + d.recDomVal);
+                aggregate.travel.q += d.travelQty; aggregate.travel.v += d.travelVal;
+                aggregate.totalExtra += (d.extDiaVal + d.extNoctVal + d.extDomVal + d.recNoctVal + d.recDomVal + d.travelVal);
 
-                const pending = Math.max(0, r.ordinaryHours - r.totalHours);
+                const pending = r._pendingHours || 0;
                 const pendingVal = pending * rates.extDia;
                 aggregate.pendingHours.q += pending;
                 aggregate.pendingHours.v += pendingVal;
 
                 const opKey = `${r.opNumber || 'S/N'} | ${r.projectName}`;
                 if (!aggregate.ops[opKey]) aggregate.ops[opKey] = { days: 0, extra: 0, location: r.location, pending: 0 };
-                aggregate.ops[opKey].days += r.esMedioDia ? 0.5 : 1;
-                aggregate.ops[opKey].extra += (d.extDiaVal + d.extNoctVal + d.extDomVal + d.recNoctVal + d.recDomVal);
+                aggregate.ops[opKey].days += r._dayFraction || 0;
+                aggregate.ops[opKey].extra += (d.extDiaVal + d.extNoctVal + d.extDomVal + d.recNoctVal + d.recDomVal + d.travelVal);
                 aggregate.ops[opKey].pending += pendingVal;
             });
 
-            const equivalentDays = workerRecords.reduce((acc, r) => acc + (r.esMedioDia ? 0.5 : 1), 0);
+            const equivalentDays = workerRecords.reduce((acc, r) => acc + (r._dayFraction || 0), 0);
             const baseAsignada = equivalentDays * rates.dia;
 
             let finalExtra = aggregate.totalExtra - aggregate.pendingHours.v;
@@ -1411,7 +1706,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sortedRecords.forEach(rec => {
                 const { dayName } = getDayInfo(rec.date);
                 const detail = getDetailedShiftPay(rec);
-                const pending = Math.max(0, rec.ordinaryHours - rec.totalHours);
+                const pending = rec._pendingHours || 0;
                 const pendingVal = pending * rates.extDia;
 
                 summaryData.push([
@@ -1421,7 +1716,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     rec.location.toUpperCase(),
                     rec.timeIn,
                     rec.timeOut,
-                    rec.ordinaryHours,
+                    rec._effectiveOrdHours || 0,
                     rec.totalHours,
                     detail.extDiaQty,
                     detail.extDiaVal,
@@ -1442,9 +1737,125 @@ document.addEventListener('DOMContentLoaded', () => {
             const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
             XLSX.utils.book_append_sheet(wb, wsSummary, "Reporte Completo");
 
-            XLSX.writeFile(wb, `Reporte_Completo_${worker}.xlsx`);
+            downloadExcelWorkbook(wb, `Reporte_Completo_${worker}.xlsx`);
         };
     }
+
+    const exportAllReports = () => {
+        if (typeof XLSX === 'undefined') return alert('No está disponible la librería Excel. Compruebe la conexión y vuelva a intentar.');
+
+        const month = filterMonth ? filterMonth.value : '';
+        const fortnight = filterFortnight ? filterFortnight.value : '1';
+        const periodRecords = records.filter(record => {
+            const parts = String(record.date || '').split(/[-/]/);
+            if (parts.length !== 3) return false;
+            const monthPart = Number(parts[1]);
+            const dayPart = Number(parts[0].length === 4 ? parts[2] : parts[0]);
+            return monthPart === Number(month) && (fortnight === '1' ? dayPart <= 15 : dayPart > 15);
+        });
+        if (!periodRecords.length) return alert('No hay registros para el mes y la quincena seleccionados.');
+
+        enrichRecordsWithDailyCap(periodRecords);
+        const byWorker = new Map();
+        periodRecords.forEach(record => {
+            const key = (record.workerName || '').trim().toUpperCase();
+            if (!byWorker.has(key)) byWorker.set(key, []);
+            byWorker.get(key).push(record);
+        });
+
+        const workbook = XLSX.utils.book_new();
+        const summaryRows = [[
+            'Trabajador', 'Días equivalentes', 'Salario base quincenal', 'Horas ordinarias', 'Horas trabajadas',
+            'Horas extra diurnas', 'Valor extra diurna', 'Recargo nocturno', 'Valor recargo nocturno',
+            'Horas extra nocturnas', 'Valor extra nocturna', 'Recargo dominical/festivo', 'Valor recargo dominical/festivo',
+            'Horas viaje', 'Valor viaje', 'Horas faltantes', 'Descuento faltantes', 'Total estimado a pagar', 'Saldo acumulado (h)'
+        ]];
+        const detailRows = [[
+            'Fecha', 'Día', 'Trabajador', 'Ubicación', 'Proyecto', 'OP', 'Entrada', 'Salida', 'Jornada ordinaria (h)',
+            'Horas trabajadas', 'Horas permiso', 'Extra diurna (h)', 'Valor extra diurna', 'Recargo nocturno (h)',
+            'Valor recargo nocturno', 'Extra nocturna (h)', 'Valor extra nocturna', 'Recargo dominical/festivo (h)',
+            'Valor recargo dominical/festivo', 'Horas viaje', 'Valor viaje', 'Motivo ausencia', 'Horas faltantes',
+            'Descuento faltantes', 'Pago del turno', 'Observaciones'
+        ]];
+        const absenceRows = [['Fecha', 'Trabajador', 'Ubicación', 'Proyecto', 'OP', 'Motivo', 'Horas faltantes', 'Descuento']];
+        const travelRows = [['Fecha', 'Trabajador', 'Ubicación', 'Proyecto', 'OP', 'Entrada', 'Salida', 'Horas de viaje', 'Valor viaje', 'Observaciones']];
+        const reasonNames = { permiso: 'Permiso', calamidad: 'Calamidad doméstica', incapacidad: 'Incapacidad', injustificada: 'Falta no justificada' };
+
+        [...byWorker.keys()].sort((a, b) => a.localeCompare(b)).forEach(worker => {
+            const workerRecords = byWorker.get(worker);
+            const equivalentDays = workerRecords.reduce((sum, record) => sum + (record._dayFraction || 0), 0);
+            const baseSalary = workerRates[worker]?.quincena || (1750905 / 2);
+            const rates = calculateDynamicRates(baseSalary, equivalentDays || 1);
+            const totals = { ordinary: 0, worked: 0, extraDayH: 0, extraDay: 0, nightH: 0, night: 0, extraNightH: 0, extraNight: 0, holidayH: 0, holiday: 0, travelH: 0, travel: 0, pending: 0, deduction: 0, extraTotal: 0 };
+
+            workerRecords.forEach(record => {
+                const detail = getDetailedShiftPay(record, rates);
+                const pending = record.isTravelRecord ? 0 : Math.max(0, Number(record._pendingHours) || 0);
+                const discount = record.absenceReason === 'incapacidad' ? 0 : pending * rates.extDia;
+                const worked = Number.parseFloat(record.realWorkedHours ?? record.totalHours) || 0;
+                const permission = Number.parseFloat(record.permissionHours) || 0;
+                const ordinary = Number.parseFloat(record.ordinaryHours) || 0;
+                const extraTotal = detail.extDiaVal + detail.extNoctVal + detail.extDomVal + detail.recNoctVal + detail.recDomVal + detail.travelVal;
+                const { dayName } = getDayInfo(record.date);
+
+                totals.ordinary += ordinary;
+                totals.worked += worked;
+                totals.extraDayH += detail.extDiaQty; totals.extraDay += detail.extDiaVal;
+                totals.nightH += detail.recNoctQty; totals.night += detail.recNoctVal;
+                totals.extraNightH += detail.extNoctQty; totals.extraNight += detail.extNoctVal;
+                totals.holidayH += detail.recDomQty + detail.extDomQty; totals.holiday += detail.recDomVal + detail.extDomVal;
+                totals.travelH += detail.travelQty; totals.travel += detail.travelVal;
+                totals.pending += pending; totals.deduction += discount; totals.extraTotal += extraTotal;
+
+                const reason = reasonNames[record.absenceReason] || (pending > 0 ? 'Horas faltantes' : '');
+                detailRows.push([
+                    record.date, dayName, record.workerName, record.location, record.projectName, record.opNumber || '',
+                    record.timeIn || '', record.timeOut || '', ordinary, worked, permission,
+                    detail.extDiaQty, detail.extDiaVal, detail.recNoctQty, detail.recNoctVal,
+                    detail.extNoctQty, detail.extNoctVal, detail.recDomQty + detail.extDomQty,
+                    detail.recDomVal + detail.extDomVal, detail.travelQty, detail.travelVal, reason,
+                    pending, discount, detail.totalShift, record.observations || ''
+                ]);
+
+                if (record.absenceReason || pending > 0 || (!record.isTravelRecord && worked === 0)) {
+                    absenceRows.push([
+                        record.date, record.workerName, record.location, record.projectName, record.opNumber || '',
+                        reason || 'Falta no justificada', pending, discount
+                    ]);
+                }
+                if (record.isTravelRecord || detail.travelQty > 0) {
+                    travelRows.push([
+                        record.date, record.workerName, record.location, record.projectName, record.opNumber || '',
+                        record.timeIn || '', record.timeOut || '', detail.travelQty, detail.travelVal, record.observations || ''
+                    ]);
+                }
+            });
+
+            const totalPay = baseSalary + totals.extraTotal - totals.deduction;
+            summaryRows.push([
+                worker, equivalentDays, baseSalary, totals.ordinary, totals.worked,
+                totals.extraDayH, totals.extraDay, totals.nightH, totals.night, totals.extraNightH, totals.extraNight,
+                totals.holidayH, totals.holiday, totals.travelH, totals.travel, totals.pending, totals.deduction,
+                totalPay, shiftBalances[worker] || 0
+            ]);
+        });
+
+        const appendSheet = (rows, name, widths) => {
+            const sheet = XLSX.utils.aoa_to_sheet(rows);
+            sheet['!cols'] = widths.map(wch => ({ wch }));
+            XLSX.utils.book_append_sheet(workbook, sheet, name);
+        };
+        appendSheet(summaryRows, 'Resumen nómina', [30, 16, 22, 18, 17, 18, 20, 18, 20, 19, 20, 23, 25, 14, 17, 17, 20, 22, 20]);
+        appendSheet(detailRows, 'Detalle turnos', [13, 14, 28, 18, 28, 12, 12, 12, 18, 17, 15, 16, 18, 19, 20, 17, 19, 25, 27, 14, 17, 24, 16, 20, 18, 34]);
+        appendSheet(absenceRows, 'Faltas y permisos', [13, 28, 18, 28, 12, 25, 17, 19]);
+        appendSheet(travelRows, 'Horas de viaje', [13, 28, 18, 28, 12, 12, 12, 16, 18, 34]);
+
+        const periodTag = `${month}_Q${fortnight}`;
+        downloadExcelWorkbook(workbook, `Reportes_Completos_${periodTag}.xlsx`);
+    };
+
+    const exportAllReportsBtn = document.getElementById('exportAllReports');
+    if (exportAllReportsBtn) exportAllReportsBtn.addEventListener('click', exportAllReports);
 
     // Funciones PDF removidas, dejamos solo la advertencia en caso de que quieran exportar la tabla simple como PDF
     function generatePDF(element, filename, isCustomContainer) {
@@ -1572,11 +1983,12 @@ document.addEventListener('DOMContentLoaded', () => {
                             <select class="b-loc" style="width:100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;">
                                 <option value="obra" ${glLoc==='obra'?'selected':''}>Obra</option>
                                 <option value="planta" ${glLoc==='planta'?'selected':''}>Planta</option>
+                                <option value="administracion" ${glLoc==='administracion'?'selected':''}>Administración</option>
                             </select>
                         </td>
                         <td style="padding: 8px;"><input type="text" class="b-prj" value="${glPrj.replace(/"/g, '&quot;')}" list="projectsList" style="width:100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;"></td>
                         <td style="padding: 8px;"><input type="text" class="b-op" value="${glOp.replace(/"/g, '&quot;')}" list="opList" style="width:100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;"></td>
-                        <td style="padding: 8px; text-align: center;"><input type="checkbox" class="b-falta" style="width: 1.2rem; height: 1.2rem; accent-color: var(--color-danger);"></td>
+                        <td style="padding: 8px; text-align: center;"><input type="checkbox" class="b-falta" style="width: 1.2rem; height: 1.2rem; accent-color: var(--color-danger);"><select class="b-absence-reason" aria-label="Motivo de falta" style="display:none; max-width:130px; margin-top:5px;"><option value="injustificada">No justificada</option><option value="permiso">Permiso</option><option value="calamidad">Calamidad doméstica</option><option value="incapacidad">Incapacidad</option></select></td>
                         <td style="padding: 8px; text-align: center;"><input type="checkbox" class="b-medio" style="width: 1.2rem; height: 1.2rem; accent-color: var(--color-warning);"></td>
                         <td style="padding: 8px; text-align: center;"><input type="checkbox" class="b-viaje" style="width: 1.2rem; height: 1.2rem; accent-color: var(--color-accent-primary);"></td>
                         <td style="padding: 8px;"><input type="time" class="b-in" style="width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;"></td>
@@ -1593,6 +2005,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const row = this.closest('tr');
                     row.querySelector('.b-in').disabled = this.checked;
                     row.querySelector('.b-out').disabled = this.checked;
+                    row.querySelector('.b-absence-reason').style.display = this.checked ? 'block' : 'none';
                 });
             });
         };
@@ -1600,8 +2013,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handlers para botones de acción rápida de carga masiva
     const btnAutoFillNormal = document.getElementById('btnAutoFillNormal');
+    const bulkScheduleType = document.getElementById('bulkScheduleType');
     if (btnAutoFillNormal) {
         btnAutoFillNormal.onclick = () => {
+            const schedule = bulkScheduleType ? bulkScheduleType.value : 'planta';
+            const selectedWorker = (bulkWorkerName.value || '').trim().toUpperCase();
             const rows = bulkTableBody.querySelectorAll('tr');
             rows.forEach(row => {
                 const dateStr = row.getAttribute('data-date');
@@ -1616,19 +2032,72 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isFalta) return; // Respetar faltas marcadas
 
                 if (dayOfWeek === 0 || isHoliday) {
-                    // Domingo o Festivo -> dejar en blanco por defecto
+                    row.querySelector('.b-in').value = '';
+                    row.querySelector('.b-out').value = '';
                     return;
                 } else if (dayOfWeek === 6) {
-                    // Sábado -> 07:00 a 12:00
-                    row.querySelector('.b-in').value = '07:00';
-                    row.querySelector('.b-out').value = '12:00';
+                    if (!selectedWorker.startsWith('DECCY BAYONA') && (schedule === 'planta' || schedule === 'obra')) {
+                        row.querySelector('.b-in').value = '07:00';
+                        row.querySelector('.b-out').value = '12:00';
+                        row.querySelector('.b-loc').value = schedule;
+                    } else {
+                        row.querySelector('.b-in').value = '';
+                        row.querySelector('.b-out').value = '';
+                        if (schedule === 'administracion') row.querySelector('.b-loc').value = 'administracion';
+                    }
                 } else {
-                    // Lunes a Viernes -> 07:00 a 17:00
                     row.querySelector('.b-in').value = '07:00';
-                    row.querySelector('.b-out').value = '17:00';
+                    if (schedule === 'deccy') {
+                        row.querySelector('.b-out').value = '16:00';
+                        row.querySelector('.b-loc').value = 'administracion';
+                    } else if (schedule === 'administracion') {
+                        row.querySelector('.b-out').value = '17:00';
+                        row.querySelector('.b-loc').value = 'administracion';
+                    } else {
+                        row.querySelector('.b-out').value = dayOfWeek === 1 ? '18:00' : '17:00';
+                        row.querySelector('.b-loc').value = schedule;
+                    }
                 }
             });
         };
+    }
+
+    if (bulkTableBody) {
+        bulkTableBody.addEventListener('change', event => {
+            if (!event.target.matches('.b-loc')) return;
+            const row = event.target.closest('tr');
+            if (!row || row.querySelector('.b-falta').checked) return;
+            const weekday = new Date(row.dataset.date + 'T00:00:00').getDay();
+            const worker = (bulkWorkerName.value || '').trim().toUpperCase();
+            if (weekday === 6 && worker.startsWith('DECCY BAYONA')) {
+                row.querySelector('.b-in').value = '';
+                row.querySelector('.b-out').value = '';
+                return;
+            }
+            if (weekday === 6 && event.target.value === 'administracion') {
+                row.querySelector('.b-in').value = '';
+                row.querySelector('.b-out').value = '';
+                return;
+            }
+            if (weekday === 6) {
+                row.querySelector('.b-in').value = '07:00';
+                row.querySelector('.b-out').value = '12:00';
+                return;
+            }
+            if (weekday < 1 || weekday > 5) return;
+            row.querySelector('.b-in').value = '07:00';
+            row.querySelector('.b-out').value = event.target.value === 'administracion'
+                ? (worker.startsWith('DECCY BAYONA') ? '16:00' : '17:00')
+                : (event.target.value === 'obra' || event.target.value === 'planta' ? (weekday === 1 ? '18:00' : '17:00') : '');
+        });
+    }
+
+    if (bulkWorkerName) {
+        bulkWorkerName.addEventListener('change', () => {
+            const worker = (bulkWorkerName.value || '').trim().toUpperCase();
+            const note = document.getElementById('deccyScheduleNote');
+            if (note) note.style.display = worker.startsWith('DECCY BAYONA') ? 'block' : 'none';
+        });
     }
 
     const btnClearBulkTimes = document.getElementById('btnClearBulkTimes');
@@ -1639,6 +2108,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.querySelector('.b-in').value = '';
                 row.querySelector('.b-out').value = '';
                 row.querySelector('.b-falta').checked = false;
+                row.querySelector('.b-absence-reason').style.display = 'none';
                 row.querySelector('.b-medio').checked = false;
                 row.querySelector('.b-viaje').checked = false;
                 row.querySelector('.b-in').disabled = false;
@@ -1658,6 +2128,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isFalta = row.querySelector('.b-falta').checked;
                 const isMedio = row.querySelector('.b-medio').checked;
                 const isViaje = row.querySelector('.b-viaje').checked;
+                const absenceReason = isFalta ? row.querySelector('.b-absence-reason').value : '';
                 const inVal = row.querySelector('.b-in').value;
                 const outVal = row.querySelector('.b-out').value;
                 
@@ -1693,7 +2164,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                const ordinaryHours = isViaje ? 0 : getOrdinaryHours(date, location, isMedio);
+                const ordinaryHours = isViaje ? 0 : getOrdinaryHours(date, location, isMedio, worker);
 
                 const recordData = {
                     id: Date.now() + Math.floor(Math.random()*10000), // Randomize id to avoid overlaps
@@ -1708,7 +2179,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     ordinaryHours: ordinaryHours, 
                     esMedioDia: isViaje ? false : isMedio, 
                     travelHours: travelHoursCount, 
-                    isTravelRecord: isViaje
+                    isTravelRecord: isViaje,
+                    absenceReason
                 };
 
                 // Si ya existe registro de ese trabajador ese dia, lo reemplazamos
@@ -1856,6 +2328,9 @@ document.addEventListener('DOMContentLoaded', () => {
             subtitle = `Paso rápido para marcar Entrada o Salida`;
         }
 
+        const separator = targetUrl.includes('?') ? '&' : '?';
+        targetUrl += `${separator}appv=20261023-2`;
+
         if (posterTitle) posterTitle.textContent = title;
         if (posterSub) posterSub.textContent = subtitle;
         if (posterUrlPreview) posterUrlPreview.textContent = targetUrl;
@@ -1916,6 +2391,7 @@ document.addEventListener('DOMContentLoaded', () => {
             `);
             printWindow.document.close();
         });
+    }
     // --- LÓGICA DE SINCRONIZACIÓN DE TURNOS MÓVILES ---
     const btnSyncMobile = document.getElementById('btn-sync-mobile');
     const modalSyncMobile = document.getElementById('modal-sync-mobile');
@@ -1942,11 +2418,11 @@ document.addEventListener('DOMContentLoaded', () => {
             btnPullCloudData.innerHTML = '<i class="ph ph-spinner animate-spin"></i> Descargando de la Nube...';
             try {
                 let downloadedCount = 0;
-                if (typeof pullMobileShiftsFromCloud === 'function') {
-                    downloadedCount = await pullMobileShiftsFromCloud();
-                }
                 if (typeof pullFromCloud === 'function') {
                     await pullFromCloud();
+                }
+                if (typeof pullMobileShiftsFromCloud === 'function') {
+                    downloadedCount = await pullMobileShiftsFromCloud();
                 }
                 
                 records = JSON.parse(localStorage.getItem('shiftRecords')) || [];
